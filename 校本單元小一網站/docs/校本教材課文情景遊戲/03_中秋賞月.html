@@ -1,0 +1,1824 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>中秋賞月 · 月光小偵探（課文情景遊戲）</title>
+<meta name="description" content="配合課文《中秋賞月》的繁體字情景遊戲：四關互動理解課文、內建即時音效，並可全文普通話朗讀。">
+<style>
+  :root{
+    --ink:#241f47;
+    --paper:#fffaf0;
+    --moon:#ffe9a8;
+    --moon-deep:#f6c959;
+    --line:rgba(255,255,255,.16);
+    --panel:rgba(255,255,255,.07);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:"PingFang TC","Hiragino Sans TC","Microsoft JhengHei","Heiti TC","Noto Sans TC","Noto Sans CJK TC",system-ui,-apple-system,"Segoe UI",sans-serif;
+    background:#06091c;
+    color:#f5f2ff;
+    -webkit-text-size-adjust:100%;
+    overflow-x:hidden;
+  }
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    background-image:
+      radial-gradient(1.6px 1.6px at 12% 18%, rgba(255,255,255,.55), transparent),
+      radial-gradient(1.6px 1.6px at 78% 12%, rgba(255,255,255,.45), transparent),
+      radial-gradient(1.6px 1.6px at 32% 72%, rgba(255,255,255,.35), transparent),
+      radial-gradient(1.6px 1.6px at 88% 62%, rgba(255,255,255,.4), transparent),
+      radial-gradient(1.6px 1.6px at 56% 34%, rgba(255,255,255,.3), transparent);
+  }
+  [hidden]{display:none !important;}
+  .app{
+    position:relative;
+    width:100%;
+    max-width:520px;
+    margin:0 auto;
+    min-height:100vh;
+    min-height:100dvh;
+    padding:.5rem .8rem max(1rem, env(safe-area-inset-bottom));
+    display:flex;
+    flex-direction:column;
+    gap:.6rem;
+    background:linear-gradient(180deg,#141a44 0%,#1d2456 46%,#2a2f6a 100%);
+  }
+  /* ---------- HUD ---------- */
+  .topbar{
+    position:sticky;
+    top:0;
+    z-index:8;
+    display:flex;
+    align-items:center;
+    gap:.5rem;
+    padding:.45rem .2rem;
+    margin:0 -.2rem;
+    background:linear-gradient(180deg,rgba(18,23,62,.96) 60%,rgba(18,23,62,.55));
+    backdrop-filter:blur(6px);
+  }
+  .icon-btn{
+    flex:0 0 auto;
+    width:2.75rem;
+    height:2.75rem;
+    border-radius:50%;
+    border:1px solid var(--line);
+    background:rgba(255,255,255,.08);
+    color:#fff;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    padding:0;
+  }
+  .icon-btn svg{width:1.35rem;height:1.35rem;display:block;}
+  .icon-btn:active{transform:scale(.95);}
+  .icon-btn[aria-pressed="false"]{opacity:.75;}
+  .hud-center{
+    flex:1 1 auto;
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:.12rem;
+    text-align:center;
+  }
+  .hud-title{
+    font-size:clamp(.95rem,3.7vw,1.1rem);
+    font-weight:800;
+    letter-spacing:.03em;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    max-width:100%;
+  }
+  .star-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:.28rem;
+    font-size:.78rem;
+    font-weight:700;
+    color:var(--moon);
+    background:rgba(255,225,150,.16);
+    border:1px solid rgba(255,225,150,.4);
+    border-radius:999px;
+    padding:.1rem .55rem;
+  }
+  .star-pill svg{width:.95rem;height:.95rem;}
+  .notice-bar{
+    display:flex;
+    gap:.4rem;
+    align-items:flex-start;
+    font-size:.78rem;
+    line-height:1.5;
+    padding:.55rem .7rem;
+    border-radius:.8rem;
+    background:rgba(255,190,120,.16);
+    border:1px solid rgba(255,190,120,.45);
+    color:#ffe6c2;
+  }
+  /* ---------- Views ---------- */
+  .view{display:flex;flex-direction:column;gap:.65rem;flex:1 1 auto;min-height:0;}
+  .level-head{display:flex;align-items:center;gap:.45rem;flex-wrap:wrap;font-size:.85rem;}
+  .level-badge{
+    background:rgba(255,225,150,.18);
+    color:var(--moon);
+    border-radius:999px;
+    padding:.15rem .6rem;
+    font-weight:800;
+    font-size:.78rem;
+  }
+  .level-name{color:#cfcaf0;font-weight:700;}
+  .home-title{text-align:center;display:flex;flex-direction:column;align-items:center;gap:.25rem;}
+  .home-title .badge{
+    font-size:.72rem;
+    letter-spacing:.28em;
+    color:var(--moon);
+    background:rgba(255,225,150,.14);
+    border-radius:999px;
+    padding:.2rem .8rem;
+  }
+  .home-title h1{
+    margin:0;
+    font-size:clamp(1.5rem,7.4vw,2rem);
+    letter-spacing:.12em;
+    text-shadow:0 0 1.2rem rgba(255,225,150,.45);
+  }
+  .home-title p{margin:0;font-size:.82rem;color:#c7c2ea;}
+  /* ---------- 場景 ---------- */
+  .scene{
+    position:relative;
+    width:100%;
+    border-radius:1.1rem;
+    overflow:hidden;
+    border:1px solid var(--line);
+    background:linear-gradient(180deg,#0c1134,#1b2352 62%,#2c3573);
+  }
+  .scene-home{aspect-ratio:16 / 11;}
+  .scene-stage{aspect-ratio:4 / 3;}
+  .scene-art{position:absolute;inset:0;width:100%;height:100%;display:block;}
+  .moon-btn{
+    position:absolute;
+    right:14%;
+    top:10%;
+    width:26%;
+    padding:0;
+    border:0;
+    background:none;
+    cursor:pointer;
+    line-height:0;
+    border-radius:50%;
+    animation:floaty 4.2s ease-in-out infinite;
+  }
+  .moon-btn svg{width:100%;height:auto;display:block;}
+  .moon-btn::after{content:"";position:absolute;inset:-.6rem;border-radius:50%;}
+  .moon-btn:focus-visible{outline:3px solid var(--moon);outline-offset:3px;}
+  @keyframes floaty{0%,100%{transform:translateY(0);}50%{transform:translateY(-4%);}}
+  .obj{
+    position:absolute;
+    transform:translate(-50%,-50%);
+    padding:0;
+    border:0;
+    background:none;
+    cursor:pointer;
+    line-height:0;
+    transition:left .55s cubic-bezier(.3,1.4,.5,1),top .55s cubic-bezier(.3,1.4,.5,1),width .55s cubic-bezier(.3,1.4,.5,1),opacity .35s ease,filter .35s ease;
+  }
+  .obj svg{width:100%;height:auto;display:block;}
+  .obj::after{content:"";position:absolute;inset:-.55rem;border-radius:50%;}
+  .obj:focus-visible{outline:3px solid var(--moon);outline-offset:3px;}
+  .obj.fade{opacity:.16;filter:saturate(.35);}
+  .obj.stage{filter:drop-shadow(0 0 1.1rem rgba(255,224,150,.9));}
+  .obj:disabled{cursor:default;}
+  .shake{animation:shake .42s ease;}
+  @keyframes shake{
+    0%,100%{transform:translate(-50%,-50%) rotate(0deg);}
+    25%{transform:translate(-58%,-50%) rotate(-7deg);}
+    70%{transform:translate(-42%,-50%) rotate(7deg);}
+  }
+  /* ---------- 野餐 ---------- */
+  .slot{
+    position:absolute;
+    transform:translate(-50%,-50%);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:.1rem;
+    padding:.2rem;
+    border:2px dashed rgba(255,255,255,.55);
+    border-radius:.9rem;
+    background:rgba(255,255,255,.07);
+    color:rgba(255,255,255,.9);
+    font:inherit;
+    font-size:.62rem;
+    font-weight:700;
+    cursor:pointer;
+    line-height:1.2;
+  }
+  .slot svg{width:88%;height:auto;max-height:92%;display:block;}
+  .slot .slot-label{font-size:.62rem;}
+  .slot.filled{border-style:solid;border-color:rgba(255,225,150,.8);background:rgba(255,225,150,.14);}
+  .slot.ready{border-color:var(--moon);}
+  .slot:focus-visible{outline:3px solid var(--moon);outline-offset:2px;}
+  .tray{
+    display:flex;
+    flex-wrap:wrap;
+    gap:.45rem;
+    justify-content:center;
+    padding:.55rem;
+    border-radius:1rem;
+    background:var(--panel);
+    border:1px solid var(--line);
+  }
+  .tray-item{
+    width:4.4rem;
+    min-height:4.4rem;
+    border-radius:.9rem;
+    border:2px solid transparent;
+    background:rgba(255,255,255,.08);
+    color:#f5f2ff;
+    font:inherit;
+    font-size:.68rem;
+    font-weight:700;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:.15rem;
+    cursor:pointer;
+    padding:.35rem .2rem;
+    transition:transform .18s ease,background .18s ease,border-color .18s ease;
+  }
+  .tray-item svg{width:2.6rem;height:auto;max-height:2.6rem;display:block;}
+  .tray-item.selected{border-color:var(--moon);background:rgba(255,225,150,.24);transform:translateY(-.2rem);}
+  .tray-item:focus-visible{outline:3px solid var(--moon);outline-offset:2px;}
+  /* ---------- 燈籠 ---------- */
+  .lant{
+    position:absolute;
+    transform:translate(-50%,-50%);
+    padding:0;
+    border:0;
+    background:none;
+    cursor:pointer;
+    line-height:0;
+    transition:transform .2s ease,filter .3s ease;
+  }
+  .lant svg{width:100%;height:auto;display:block;}
+  .lant::after{content:"";position:absolute;inset:-.5rem;}
+  .lant.red{color:#ef5a5a;}
+  .lant.green{color:#4fc082;}
+  .lant.lit{filter:drop-shadow(0 0 .7rem currentColor) brightness(1.12);}
+  .lant.lit{transform:translate(-50%,-50%) scale(1.06);}
+  .lant:focus-visible{outline:3px solid var(--moon);outline-offset:3px;}
+  /* ---------- 字詞卡 ---------- */
+  .quiz-card{
+    display:flex;
+    flex-direction:column;
+    gap:.7rem;
+    padding:.85rem;
+    border-radius:1rem;
+    background:var(--panel);
+    border:1px solid var(--line);
+  }
+  .quiz-line{
+    margin:0;
+    font-size:clamp(1rem,4.3vw,1.15rem);
+    line-height:2;
+    color:#fff;
+  }
+  .blank{
+    display:inline-block;
+    min-width:4.6em;
+    padding:0 .3rem;
+    margin:0 .15rem;
+    border-bottom:2px dashed rgba(255,225,150,.85);
+    color:var(--moon);
+    font-weight:800;
+    text-align:center;
+  }
+  .options{display:flex;flex-direction:column;gap:.5rem;}
+  .opt{
+    font:inherit;
+    font-size:.95rem;
+    font-weight:700;
+    min-height:2.75rem;
+    padding:.55rem .9rem;
+    border-radius:.85rem;
+    border:1px solid var(--line);
+    background:rgba(255,255,255,.09);
+    color:#f5f2ff;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:.5rem;
+  }
+  .opt .opt-mark{font-size:.9rem;}
+  .opt.ok{border-color:rgba(140,235,190,.85);background:rgba(140,235,190,.18);}
+  .opt.no{border-color:rgba(255,150,150,.8);background:rgba(255,150,150,.14);}
+  .opt:disabled{cursor:default;}
+  .opt:focus-visible{outline:3px solid var(--moon);outline-offset:2px;}
+  /* ---------- 提示與動作 ---------- */
+  .hint{
+    margin:0;
+    font-size:.86rem;
+    line-height:1.6;
+    color:#ded9ff;
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-left:3px solid var(--moon);
+    border-radius:.7rem;
+    padding:.5rem .7rem;
+  }
+  .actions{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;}
+  .btn{
+    font:inherit;
+    font-size:.95rem;
+    font-weight:800;
+    min-height:2.85rem;
+    padding:.65rem 1.15rem;
+    border-radius:999px;
+    border:1px solid transparent;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:.35rem;
+  }
+  .btn svg{width:1.05rem;height:1.05rem;}
+  .btn.primary{
+    background:linear-gradient(180deg,#ffeaa9,#f3c34f);
+    color:#3b2c07;
+    box-shadow:0 .28rem 0 rgba(0,0,0,.28);
+  }
+  .btn.ghost{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.32);color:#f5f2ff;}
+  .btn:disabled{opacity:.45;cursor:not-allowed;}
+  .btn:focus-visible{outline:3px solid var(--moon);outline-offset:2px;}
+  .btn:not(:disabled):active{transform:translateY(.1rem);}
+  /* ---------- 課文 ---------- */
+  .lesson-card{display:flex;flex-direction:column;gap:.5rem;}
+  .lesson-title{
+    margin:0;
+    text-align:center;
+    font-size:1.05rem;
+    letter-spacing:.2em;
+    color:var(--moon);
+    font-weight:800;
+  }
+  .line{
+    display:flex;
+    align-items:flex-start;
+    gap:.55rem;
+    width:100%;
+    padding:.6rem .65rem;
+    border-radius:.85rem;
+    border:1px solid var(--line);
+    background:rgba(255,255,255,.06);
+    color:inherit;
+    cursor:pointer;
+    text-align:left;
+    transition:background .2s ease,border-color .2s ease;
+  }
+  .line.speaking{background:rgba(255,225,150,.2);border-color:rgba(255,225,150,.75);}
+  .line-idx{
+    flex:0 0 auto;
+    width:1.6rem;height:1.6rem;
+    border-radius:50%;
+    background:rgba(255,225,150,.2);
+    color:var(--moon);
+    display:flex;align-items:center;justify-content:center;
+    font-size:.75rem;font-weight:800;
+    margin-top:.15rem;
+  }
+  .line-text{flex:1 1 auto;min-width:0;font-size:clamp(1rem,4.1vw,1.12rem);line-height:1.8;}
+  .line-speak{
+    flex:0 0 auto;
+    width:2.2rem;height:2.2rem;
+    border-radius:50%;
+    border:1px solid var(--line);
+    background:rgba(255,255,255,.1);
+    color:var(--moon);
+    display:inline-flex;align-items:center;justify-content:center;
+    cursor:pointer;padding:0;
+  }
+  .line-speak svg{width:1.05rem;height:1.05rem;}
+  .line-speak:disabled{opacity:.4;cursor:not-allowed;}
+  .task-list{
+    margin:0;
+    padding:.2rem 0 0;
+    list-style:none;
+    display:flex;
+    flex-direction:column;
+    gap:.4rem;
+    font-size:.8rem;
+    color:#cfcaf0;
+  }
+  .task-list li{display:flex;gap:.5rem;align-items:flex-start;background:var(--panel);border:1px solid var(--line);border-radius:.7rem;padding:.45rem .6rem;}
+  .task-list b{color:var(--moon);font-weight:800;flex:0 0 auto;}
+  /* ---------- 結算 ---------- */
+  .finish-box{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:.5rem;
+    text-align:center;
+    padding:.9rem .8rem;
+    border-radius:1rem;
+    background:var(--panel);
+    border:1px solid var(--line);
+  }
+  .finish-box h2{margin:0;font-size:clamp(1.05rem,4.6vw,1.3rem);letter-spacing:.05em;}
+  .finish-box p{margin:0;font-size:.86rem;line-height:1.7;color:#ded9ff;}
+  .stars-big{display:flex;gap:.35rem;justify-content:center;flex-wrap:wrap;}
+  .stars-big svg{width:2rem;height:2rem;}
+  .star-on{color:var(--moon);}
+  .star-off{color:rgba(255,255,255,.22);}
+  /* ---------- 桌面 ---------- */
+  @media (min-width:560px){
+    body{padding:1.2rem 0;display:flex;justify-content:center;}
+    .app{
+      height:min(900px, calc(100dvh - 2.4rem));
+      min-height:0;
+      border-radius:1.4rem;
+      box-shadow:0 1.4rem 3rem rgba(0,0,0,.55);
+      overflow-y:auto;
+      padding-bottom:1rem;
+    }
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.001s !important;animation-iteration-count:1 !important;transition-duration:.001s !important;}
+  }
+</style>
+</head>
+<body>
+
+<svg class="sprite" aria-hidden="true" focusable="false" style="position:absolute;width:0;height:0;overflow:hidden">
+  <defs>
+    <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0b1031"/>
+      <stop offset=".55" stop-color="#1c2457"/>
+      <stop offset="1" stop-color="#333a78"/>
+    </linearGradient>
+    <linearGradient id="grassGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2f6a55"/>
+      <stop offset="1" stop-color="#1f4a3c"/>
+    </linearGradient>
+    <radialGradient id="moonGlow" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#ffe9a8" stop-opacity=".5"/>
+      <stop offset="1" stop-color="#ffe9a8" stop-opacity="0"/>
+    </radialGradient>
+
+    <symbol id="ic-moon-full" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="42" fill="#ffe9a8" stroke="#e6b83c" stroke-width="4"/>
+      <circle cx="47" cy="33" r="5" fill="#f4d27f" opacity=".85"/>
+      <circle cx="62" cy="72" r="4.5" fill="#f4d27f" opacity=".75"/>
+      <path d="M31 46 q5 -6 10 0" stroke="#d98f34" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M59 46 q5 -6 10 0" stroke="#d98f34" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <path d="M42 60 q8 8 16 0" stroke="#d98f34" stroke-width="4" fill="none" stroke-linecap="round"/>
+      <circle cx="26" cy="59" r="6" fill="#ffc2c2" opacity=".75"/>
+      <circle cx="74" cy="59" r="6" fill="#ffc2c2" opacity=".75"/>
+    </symbol>
+
+    <symbol id="ic-moon-plain" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="42" fill="#f6e3ac" stroke="#d8b866" stroke-width="4"/>
+      <circle cx="40" cy="42" r="6" fill="#e2c98a" opacity=".9"/>
+      <circle cx="62" cy="60" r="5" fill="#e2c98a" opacity=".9"/>
+    </symbol>
+
+    <symbol id="ic-moon-half" viewBox="0 0 100 100">
+      <path d="M50 8 A42 42 0 0 0 50 92 Z" fill="#ffeec4" stroke="#d8b866" stroke-width="4" stroke-linejoin="round"/>
+    </symbol>
+
+    <symbol id="ic-moon-crescent" viewBox="0 0 100 100">
+      <path d="M64 10 A42 42 0 1 0 64 90 A33 33 0 1 1 64 10 Z" fill="#ffeec4" stroke="#d8b866" stroke-width="4" stroke-linejoin="round"/>
+    </symbol>
+
+    <symbol id="ic-star" viewBox="0 0 100 100">
+      <path d="M50 6 L62 38 L96 40 L69 61 L79 94 L50 74 L21 94 L31 61 L4 40 L38 38 Z"
+            fill="#ffe9a8" stroke="#e0b84a" stroke-width="4" stroke-linejoin="round"/>
+    </symbol>
+
+    <symbol id="ic-cloud" viewBox="0 0 100 100">
+      <g fill="#cfd6f2" stroke="#a9b3dd" stroke-width="4" stroke-linejoin="round">
+        <path d="M26 70 q-16 0 -16 -14 q0 -13 15 -13 q3 -18 22 -18 q16 0 20 14 q18 -2 20 13 q2 18 -20 18 z"/>
+      </g>
+    </symbol>
+
+    <symbol id="ic-lantern" viewBox="0 0 100 100">
+      <line x1="50" y1="0" x2="50" y2="8" stroke="#c9963f" stroke-width="4"/>
+      <rect x="30" y="8" width="40" height="8" rx="3" fill="#c9963f"/>
+      <ellipse cx="50" cy="52" rx="30" ry="36" fill="currentColor" stroke="rgba(0,0,0,.22)" stroke-width="3"/>
+      <path d="M50 18 V86" stroke="rgba(255,255,255,.5)" stroke-width="3"/>
+      <path d="M24 40 q26 -12 52 0" stroke="rgba(255,255,255,.42)" stroke-width="3" fill="none"/>
+      <path d="M24 64 q26 12 52 0" stroke="rgba(255,255,255,.42)" stroke-width="3" fill="none"/>
+      <rect x="30" y="86" width="40" height="8" rx="3" fill="#c9963f"/>
+      <line x1="50" y1="94" x2="50" y2="100" stroke="#c9963f" stroke-width="4"/>
+    </symbol>
+
+    <symbol id="ic-mat" viewBox="0 0 100 60">
+      <rect x="4" y="6" width="92" height="48" rx="12" fill="#f0a8bd" stroke="#cf7d95" stroke-width="6"/>
+      <path d="M26 10 V50 M50 10 V50 M74 10 V50" stroke="rgba(255,255,255,.65)" stroke-width="5"/>
+    </symbol>
+
+    <symbol id="ic-mooncake" viewBox="0 0 100 100">
+      <path d="M14 42 H86 L79 88 Q50 96 21 88 Z" fill="#eab96f" stroke="#c1873c" stroke-width="4" stroke-linejoin="round"/>
+      <ellipse cx="50" cy="42" rx="36" ry="13" fill="#f8dca8" stroke="#c1873c" stroke-width="4"/>
+      <circle cx="50" cy="64" r="12" fill="none" stroke="#c1873c" stroke-width="3" opacity=".55"/>
+      <circle cx="50" cy="64" r="4" fill="#c1873c" opacity=".5"/>
+    </symbol>
+
+    <symbol id="ic-pomelo" viewBox="0 0 100 100">
+      <circle cx="50" cy="60" r="34" fill="#e6d873" stroke="#b8a53c" stroke-width="4"/>
+      <path d="M50 26 q3 -14 17 -17 q-1 13 -14 17 z" fill="#5fae6c" stroke="#3f8a4f" stroke-width="3" stroke-linejoin="round"/>
+      <circle cx="38" cy="52" r="4" fill="#cbbb54" opacity=".6"/>
+      <circle cx="60" cy="70" r="4" fill="#cbbb54" opacity=".6"/>
+    </symbol>
+
+    <symbol id="ic-cake" viewBox="0 0 100 100">
+      <path d="M22 44 H78 V84 H22 Z" fill="#f6c1c8" stroke="#cf8b96" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M22 44 q14 -10 28 0 q14 10 28 0" fill="#fff2d8" stroke="#cf8b96" stroke-width="4"/>
+      <line x1="50" y1="18" x2="50" y2="38" stroke="#8fbf6a" stroke-width="5"/>
+      <circle cx="50" cy="15" r="5" fill="#f2a03f"/>
+    </symbol>
+
+    <symbol id="ic-ball" viewBox="0 0 100 100">
+      <circle cx="50" cy="54" r="36" fill="#8fb8f0" stroke="#5d86c4" stroke-width="4"/>
+      <path d="M14 54 H86 M50 18 V90" stroke="#e7f0ff" stroke-width="4"/>
+      <path d="M26 28 q24 26 48 0" stroke="#e7f0ff" stroke-width="4" fill="none"/>
+    </symbol>
+
+    <symbol id="ic-home" viewBox="0 0 100 100">
+      <path d="M50 10 L92 46 H80 V90 H60 V66 H40 V90 H20 V46 H8 Z"
+            fill="none" stroke="currentColor" stroke-width="8" stroke-linejoin="round"/>
+    </symbol>
+
+    <symbol id="ic-sound-on" viewBox="0 0 100 100">
+      <path d="M14 40 H30 L50 22 V78 L30 60 H14 Z" fill="currentColor"/>
+      <path d="M60 36 q14 14 0 28" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+      <path d="M72 24 q24 26 0 52" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="ic-sound-off" viewBox="0 0 100 100">
+      <path d="M14 40 H30 L50 22 V78 L30 60 H14 Z" fill="currentColor"/>
+      <path d="M64 36 L88 64 M88 36 L64 64" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+    </symbol>
+
+    <symbol id="ic-speak" viewBox="0 0 100 100">
+      <path d="M14 40 H30 L50 22 V78 L30 60 H14 Z" fill="currentColor"/>
+      <path d="M62 34 q16 16 0 32" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+      <path d="M76 22 q26 28 0 56" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<main class="app" data-generated-by="vibe-coding-frontend-design">
+
+  <header class="topbar">
+    <button id="btn-home" class="icon-btn" type="button" aria-label="回到首頁">
+      <svg viewBox="0 0 100 100" aria-hidden="true"><use href="#ic-home"/></svg>
+    </button>
+    <div class="hud-center">
+      <span id="hud-title" class="hud-title">第三課　中秋賞月</span>
+      <span class="star-pill"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#ic-star"/></svg><span id="star-count">0</span>／5</span>
+    </div>
+    <button id="btn-sound" class="icon-btn" type="button" aria-pressed="true" aria-label="音效開關（目前開啟）">
+      <svg viewBox="0 0 100 100" aria-hidden="true"><use id="sound-use" href="#ic-sound-on"/></svg>
+    </button>
+  </header>
+
+  <p id="notice-bar" class="notice-bar" role="status" hidden></p>
+
+  <!-- ========== 首頁 ========== -->
+  <section id="view-home" class="view" aria-label="首頁">
+    <div class="home-title">
+      <span class="badge">第三課</span>
+      <h1>中秋賞月</h1>
+      <p>課文情景遊戲 · 月光小偵探</p>
+    </div>
+
+    <div class="scene scene-home">
+      <svg class="scene-art" viewBox="0 0 320 220" aria-hidden="true">
+        <rect width="320" height="220" fill="url(#skyGrad)"/>
+        <circle cx="36" cy="28" r="1.8" fill="#fff" opacity=".85"/>
+        <circle cx="88" cy="18" r="1.5" fill="#fff" opacity=".7"/>
+        <circle cx="140" cy="36" r="1.6" fill="#fff" opacity=".6"/>
+        <circle cx="292" cy="30" r="1.6" fill="#fff" opacity=".7"/>
+        <circle cx="262" cy="106" r="1.5" fill="#fff" opacity=".6"/>
+        <circle cx="40" cy="96" r="1.5" fill="#fff" opacity=".55"/>
+        <use href="#ic-cloud" x="60" y="14" width="52" height="52" opacity=".5"/>
+        <circle cx="233" cy="62" r="72" fill="url(#moonGlow)"/>
+        <path d="M0 176 Q80 160 160 172 T320 168 L320 220 L0 220 Z" fill="url(#grassGrad)"/>
+        <g opacity=".9">
+          <path d="M12 178 q4 -12 10 -2 q6 -10 8 2 z" fill="#3f8664"/>
+          <path d="M240 174 q5 -12 11 -2 q5 -9 8 3 z" fill="#3f8664"/>
+        </g>
+        <rect x="40" y="112" width="15" height="68" rx="7" fill="#6b4a2a"/>
+        <circle cx="46" cy="94" r="40" fill="#3f7d5b"/>
+        <circle cx="16" cy="116" r="24" fill="#35704f"/>
+        <circle cx="78" cy="114" r="22" fill="#4a9068"/>
+        <use href="#ic-lantern" x="40" y="126" width="19" height="19" color="#ef5a5a"/>
+        <use href="#ic-lantern" x="80" y="134" width="16" height="16" color="#4fc082"/>
+        <use href="#ic-lantern" x="18" y="140" width="14" height="14" color="#ef5a5a"/>
+        <ellipse cx="160" cy="200" rx="66" ry="13" fill="#f0a8bd" stroke="#cf7d95" stroke-width="2"/>
+        <g>
+          <g transform="translate(124,178)">
+            <path d="M-14 22 q0 -20 14 -20 q14 0 14 20 z" fill="#ef5a5a"/>
+            <circle cx="0" cy="-6" r="11" fill="#ffe0c2" stroke="#dda87f" stroke-width="2"/>
+            <path d="M-11 -8 q11 -13 22 0 q-8 -7 -22 0 z" fill="#3b2a20"/>
+            <circle cx="-5" cy="-4" r="1.8" fill="#3b2a20"/>
+            <circle cx="5" cy="-4" r="1.8" fill="#3b2a20"/>
+            <circle cx="-7.5" cy="1" r="2.6" fill="#ffb3b3" opacity=".8"/>
+            <circle cx="7.5" cy="1" r="2.6" fill="#ffb3b3" opacity=".8"/>
+          </g>
+          <g transform="translate(160,172)">
+            <path d="M-16 28 q0 -24 16 -24 q16 0 16 24 z" fill="#6d8fe0"/>
+            <circle cx="0" cy="-8" r="12" fill="#ffe0c2" stroke="#dda87f" stroke-width="2"/>
+            <path d="M-12 -10 q12 -14 24 0 q-9 -8 -24 0 z" fill="#2f241d"/>
+            <circle cx="-5" cy="-6" r="1.8" fill="#2f241d"/>
+            <circle cx="5" cy="-6" r="1.8" fill="#2f241d"/>
+            <circle cx="-8" cy="0" r="2.6" fill="#ffb3b3" opacity=".8"/>
+            <circle cx="8" cy="0" r="2.6" fill="#ffb3b3" opacity=".8"/>
+          </g>
+          <g transform="translate(196,178)">
+            <path d="M-13 22 q0 -19 13 -19 q13 0 13 19 z" fill="#f0b454"/>
+            <circle cx="0" cy="-6" r="10.5" fill="#ffe0c2" stroke="#dda87f" stroke-width="2"/>
+            <path d="M-10.5 -8 q10.5 -12 21 0 q-7 -6 -21 0 z" fill="#4a3524"/>
+            <circle cx="-4.5" cy="-4" r="1.7" fill="#3b2a20"/>
+            <circle cx="4.5" cy="-4" r="1.7" fill="#3b2a20"/>
+            <circle cx="-7" cy="1" r="2.4" fill="#ffb3b3" opacity=".8"/>
+            <circle cx="7" cy="1" r="2.4" fill="#ffb3b3" opacity=".8"/>
+          </g>
+        </g>
+        <use href="#ic-mooncake" x="176" y="188" width="26" height="26"/>
+        <use href="#ic-pomelo" x="206" y="190" width="24" height="24"/>
+      </svg>
+      <button id="moon-btn" class="moon-btn" type="button" data-speak="1" aria-label="點一點月亮，聽第一句課文">
+        <svg viewBox="0 0 100 100" aria-hidden="true"><use href="#ic-moon-full"/></svg>
+      </button>
+    </div>
+
+    <p id="home-hint" class="hint" role="status">點一點天上的月亮，聽聽課文的第一句；再按「開始闖關」，跟著課文過中秋吧！</p>
+
+    <div class="actions">
+      <button id="btn-start" class="btn primary" type="button">開始闖關</button>
+      <button id="btn-read" class="btn ghost" type="button">全文朗讀</button>
+    </div>
+
+    <ul class="task-list">
+      <li><b>第 1 關</b><span>找出又圓又大的月亮</span></li>
+      <li><b>第 2 關</b><span>草地上鋪墊子、放月餅和柚子</span></li>
+      <li><b>第 3 關</b><span>把「圓圓的、甜甜的、大大小小的」放進句子</span></li>
+      <li><b>第 4 關</b><span>點亮樹上大大小小的紅燈籠和綠燈籠</span></li>
+    </ul>
+  </section>
+
+  <!-- ========== 第 1 關 ========== -->
+  <section id="view-l1" class="view" aria-label="第一關" hidden>
+    <div class="level-head">
+      <span class="level-badge">第 1 關</span>
+      <span class="level-name">又圓又大的月亮</span>
+    </div>
+    <div id="l1-scene" class="scene scene-stage">
+      <svg class="scene-art" viewBox="0 0 320 240" aria-hidden="true">
+        <rect width="320" height="240" fill="url(#skyGrad)"/>
+        <circle cx="30" cy="40" r="1.7" fill="#fff" opacity=".8"/>
+        <circle cx="96" cy="20" r="1.4" fill="#fff" opacity=".65"/>
+        <circle cx="150" cy="60" r="1.5" fill="#fff" opacity=".55"/>
+        <circle cx="200" cy="24" r="1.6" fill="#fff" opacity=".7"/>
+        <circle cx="270" cy="86" r="1.4" fill="#fff" opacity=".5"/>
+        <circle cx="286" cy="150" r="1.6" fill="#fff" opacity=".45"/>
+        <circle cx="46" cy="150" r="1.5" fill="#fff" opacity=".45"/>
+        <circle cx="118" cy="112" r="1.3" fill="#fff" opacity=".4"/>
+        <path d="M0 206 Q90 190 170 202 T320 196 L320 240 L0 240 Z" fill="url(#grassGrad)"/>
+        <g opacity=".85">
+          <path d="M26 210 q5 -14 12 -3 q6 -11 9 3 z" fill="#3f8664"/>
+          <path d="M252 204 q5 -14 12 -3 q6 -11 9 3 z" fill="#3f8664"/>
+        </g>
+      </svg>
+    </div>
+    <p id="l1-hint" class="hint" role="status">課文說「月亮又圓又大」。夜空裡哪一個才是呢？點一點它！</p>
+    <div class="actions">
+      <button id="l1-say" class="btn ghost" type="button" data-speak="1" hidden>聽一聽句子</button>
+      <button id="l1-next" class="btn primary" type="button" hidden>下一關</button>
+    </div>
+  </section>
+
+  <!-- ========== 第 2 關 ========== -->
+  <section id="view-l2" class="view" aria-label="第二關" hidden>
+    <div class="level-head">
+      <span class="level-badge">第 2 關</span>
+      <span class="level-name">草地上的中秋野餐</span>
+    </div>
+    <div id="l2-scene" class="scene scene-stage">
+      <svg class="scene-art" viewBox="0 0 320 240" aria-hidden="true">
+        <rect width="320" height="240" fill="url(#skyGrad)"/>
+        <circle cx="42" cy="30" r="1.6" fill="#fff" opacity=".75"/>
+        <circle cx="120" cy="50" r="1.4" fill="#fff" opacity=".6"/>
+        <circle cx="228" cy="26" r="1.5" fill="#fff" opacity=".7"/>
+        <use href="#ic-cloud" x="180" y="8" width="56" height="56" opacity=".45"/>
+        <path d="M0 132 Q80 118 160 130 T320 126 L320 240 L0 240 Z" fill="url(#grassGrad)"/>
+        <path d="M96 128 q6 -18 16 -4 q8 -14 12 4 z" fill="#3f8664"/>
+        <path d="M212 126 q6 -18 16 -4 q8 -14 12 4 z" fill="#3f8664"/>
+        <rect x="262" y="96" width="13" height="44" rx="6" fill="#6b4a2a"/>
+        <circle cx="268" cy="84" r="30" fill="#3f7d5b"/>
+        <circle cx="244" cy="100" r="18" fill="#35704f"/>
+        <circle cx="290" cy="98" r="16" fill="#4a9068"/>
+        <use href="#ic-lantern" x="258" y="112" width="14" height="14" color="#ef5a5a"/>
+      </svg>
+    </div>
+    <div id="l2-tray" class="tray" aria-label="可選物品"></div>
+    <p id="l2-hint" class="hint" role="status">先點下面的野餐墊，再點草地上虛線的位置，把課文裡的東西一件件放好。</p>
+    <div class="actions">
+      <button id="l2-say" class="btn ghost" type="button" data-speak="1" hidden>聽一聽句子</button>
+      <button id="l2-next" class="btn primary" type="button" hidden>下一關</button>
+    </div>
+  </section>
+
+  <!-- ========== 第 3 關 ========== -->
+  <section id="view-l3" class="view" aria-label="第三關" hidden>
+    <div class="level-head">
+      <span class="level-badge">第 3 關</span>
+      <span class="level-name">把詞語放回句子裡</span>
+    </div>
+    <div class="quiz-card">
+      <p id="l3-line" class="quiz-line"></p>
+      <div id="l3-options" class="options"></div>
+    </div>
+    <p id="l3-hint" class="hint" role="status">讀一讀課文，想一想括號裡應該填哪一個詞。</p>
+    <div class="actions">
+      <button id="l3-say" class="btn ghost" type="button" data-speak="1" hidden>聽一聽句子</button>
+      <button id="l3-next" class="btn primary" type="button" hidden>下一題</button>
+    </div>
+  </section>
+
+  <!-- ========== 第 4 關 ========== -->
+  <section id="view-l4" class="view" aria-label="第四關" hidden>
+    <div class="level-head">
+      <span class="level-badge">第 4 關</span>
+      <span class="level-name">樹上的燈籠</span>
+    </div>
+    <div id="l4-scene" class="scene scene-stage">
+      <svg class="scene-art" viewBox="0 0 320 240" aria-hidden="true">
+        <rect width="320" height="240" fill="url(#skyGrad)"/>
+        <circle cx="34" cy="26" r="1.6" fill="#fff" opacity=".75"/>
+        <circle cx="290" cy="34" r="1.5" fill="#fff" opacity=".65"/>
+        <circle cx="150" cy="18" r="1.4" fill="#fff" opacity=".5"/>
+        <path d="M0 214 Q90 200 170 210 T320 204 L320 240 L0 240 Z" fill="url(#grassGrad)"/>
+        <rect x="146" y="120" width="26" height="94" rx="12" fill="#6b4a2a"/>
+        <path d="M159 140 q-40 -18 -70 -30 M159 150 q40 -20 68 -32" stroke="#6b4a2a" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <circle cx="160" cy="86" r="62" fill="#3f7d5b"/>
+        <circle cx="96" cy="112" r="34" fill="#35704f"/>
+        <circle cx="226" cy="108" r="32" fill="#4a9068"/>
+        <circle cx="150" cy="46" r="34" fill="#47916a"/>
+      </svg>
+    </div>
+    <p id="l4-hint" class="hint" role="status"></p>
+    <div class="actions">
+      <button id="l4-say" class="btn ghost" type="button" data-speak="1" hidden>聽一聽句子</button>
+      <button id="l4-next" class="btn primary" type="button" hidden>完成，看獎勵</button>
+    </div>
+  </section>
+
+  <!-- ========== 課文朗讀 ========== -->
+  <section id="view-read" class="view" aria-label="課文朗讀" hidden>
+    <div class="level-head">
+      <span class="level-badge">課文</span>
+      <span class="level-name">第三課　中秋賞月</span>
+    </div>
+    <div class="lesson-card">
+      <h2 class="lesson-title">中秋賞月</h2>
+      <div id="read-list"></div>
+    </div>
+    <p id="read-note" class="hint" role="status">按「全文朗讀」會一句一句用普通話讀出來，讀到哪一句，那一句就會亮起來；也可以只點某一句旁邊的喇叭。</p>
+    <div class="actions">
+      <button id="btn-read-all" class="btn primary" type="button" data-speak="1">全文朗讀</button>
+      <button id="btn-stop" class="btn ghost" type="button" hidden>停止朗讀</button>
+      <button id="btn-finish" class="btn ghost" type="button" hidden>完成學習，看獎勵</button>
+    </div>
+  </section>
+
+  <!-- ========== 結算 ========== -->
+  <section id="view-finish" class="view" aria-label="完成" hidden>
+    <div class="scene scene-stage">
+      <svg class="scene-art" viewBox="0 0 320 240" aria-hidden="true">
+        <rect width="320" height="240" fill="url(#skyGrad)"/>
+        <circle cx="160" cy="70" r="86" fill="url(#moonGlow)"/>
+        <use href="#ic-moon-full" x="118" y="28" width="84" height="84"/>
+        <circle cx="40" cy="40" r="1.7" fill="#fff" opacity=".8"/>
+        <circle cx="270" cy="34" r="1.5" fill="#fff" opacity=".7"/>
+        <circle cx="60" cy="120" r="1.4" fill="#fff" opacity=".5"/>
+        <circle cx="256" cy="128" r="1.4" fill="#fff" opacity=".5"/>
+        <path d="M0 168 Q80 154 160 166 T320 162 L320 240 L0 240 Z" fill="url(#grassGrad)"/>
+        <rect x="32" y="150" width="12" height="42" rx="6" fill="#6b4a2a"/>
+        <circle cx="38" cy="134" r="28" fill="#3f7d5b"/>
+        <use href="#ic-lantern" x="28" y="158" width="16" height="16" color="#ef5a5a"/>
+        <use href="#ic-lantern" x="52" y="166" width="14" height="14" color="#4fc082"/>
+        <ellipse cx="204" cy="214" rx="62" ry="12" fill="#f0a8bd" stroke="#cf7d95" stroke-width="2"/>
+        <g transform="translate(178,196)">
+          <path d="M-13 20 q0 -18 13 -18 q13 0 13 18 z" fill="#f0b454"/>
+          <circle cx="0" cy="-6" r="10" fill="#ffe0c2" stroke="#dda87f" stroke-width="2"/>
+          <path d="M-10 -8 q10 -12 20 0 q-7 -6 -20 0 z" fill="#4a3524"/>
+          <circle cx="-4.5" cy="-4" r="1.7" fill="#3b2a20"/>
+          <circle cx="4.5" cy="-4" r="1.7" fill="#3b2a20"/>
+          <circle cx="-7" cy="1" r="2.4" fill="#ffb3b3" opacity=".8"/>
+          <circle cx="7" cy="1" r="2.4" fill="#ffb3b3" opacity=".8"/>
+        </g>
+        <use href="#ic-mooncake" x="222" y="200" width="24" height="24"/>
+        <use href="#ic-pomelo" x="248" y="202" width="22" height="22"/>
+      </svg>
+    </div>
+    <div class="finish-box">
+      <h2 id="finish-title">恭喜你，讀懂了《中秋賞月》！</h2>
+      <div id="finish-stars" class="stars-big" aria-hidden="true"></div>
+      <p id="finish-sub"></p>
+    </div>
+    <div class="actions">
+      <button id="btn-again" class="btn primary" type="button">再玩一次</button>
+      <button id="btn-back-read" class="btn ghost" type="button">回到課文朗讀</button>
+    </div>
+  </section>
+</main>
+
+<script>
+(function(){
+  'use strict';
+
+  var NS = 'http://www.w3.org/2000/svg';
+
+  /* ================= 課文資料（依課本原文） ================= */
+  var LESSON = {
+    title: '第三課　中秋賞月',
+    sentences: [
+      '中秋節的晚上，月亮又圓又大。',
+      '我和家人到公園賞月。',
+      '我們在草地上鋪上墊子，上面放了圓圓的月餅和甜甜的柚子。',
+      '我們一邊吃東西，一邊看着天上的月亮，十分開心。',
+      '公園的樹上掛了大大小小的燈籠，有的紅，有的綠，多好看啊！'
+    ]
+  };
+
+  /* ================= 音效（Web Audio 即時合成，無需外部檔案） ================= */
+  var Sfx = (function(){
+    var ctx = null, master = null, enabled = true;
+    function ensure(){
+      if(ctx){
+        if(ctx.state === 'suspended'){ try{ ctx.resume(); }catch(e){} }
+        return ctx;
+      }
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if(!AC){ return null; }
+      try{
+        ctx = new AC();
+        master = ctx.createGain();
+        master.gain.value = 0.8;
+        master.connect(ctx.destination);
+      }catch(err){ ctx = null; master = null; return null; }
+      if(ctx.state === 'suspended'){ try{ ctx.resume(); }catch(e){} }
+      return ctx;
+    }
+    function schedule(freq, offset, dur, type, vol){
+      var t = ctx.currentTime + offset + 0.02;
+      var osc = ctx.createOscillator();
+      var g = ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, t);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(vol, t + 0.015);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      osc.connect(g);
+      g.connect(master);
+      osc.start(t);
+      osc.stop(t + dur + 0.05);
+    }
+    var PRESETS = {
+      tap:     [[880, 0, .08, 'triangle', .16]],
+      select:  [[660, 0, .08, 'triangle', .18], [990, .07, .12, 'triangle', .16]],
+      correct: [[523.25, 0, .13, 'sine', .2], [659.25, .1, .13, 'sine', .2], [783.99, .2, .26, 'sine', .2]],
+      wrong:   [[311.13, 0, .15, 'sine', .16], [233.08, .14, .22, 'sine', .14]],
+      lantern: [[1174.66, 0, .5, 'sine', .14], [1567.98, 0, .32, 'sine', .05]],
+      star:    [[1046.5, 0, .1, 'triangle', .18], [1318.51, .08, .2, 'triangle', .16]],
+      win:     [[523.25, 0, .14, 'triangle', .2], [659.25, .12, .14, 'triangle', .2], [783.99, .24, .14, 'triangle', .2], [1046.5, .36, .42, 'triangle', .22]]
+    };
+    return {
+      play: function(name){
+        if(!enabled){ return; }
+        var seq = PRESETS[name];
+        if(!seq){ return; }
+        if(!ensure()){ return; }
+        for(var i = 0; i < seq.length; i++){
+          schedule(seq[i][0], seq[i][1], seq[i][2], seq[i][3], seq[i][4]);
+        }
+      },
+      unlock: function(){ ensure(); },
+      setEnabled: function(v){ enabled = !!v; },
+      isEnabled: function(){ return enabled; },
+      isAvailable: function(){ return !!(window.AudioContext || window.webkitAudioContext); }
+    };
+  })();
+
+  /* ================= 普通話朗讀 ================= */
+  var Narrator = (function(){
+    var supported = (typeof window.speechSynthesis !== 'undefined') &&
+                    (typeof window.SpeechSynthesisUtterance !== 'undefined');
+    var voice = null, token = 0, active = false, watchdog = 0;
+
+    function pickVoice(list){
+      if(!list || !list.length){ return null; }
+      var i, v, low;
+      for(i = 0; i < list.length; i++){
+        v = list[i]; low = String(v.lang || '').toLowerCase().replace('_', '-');
+        if(low.indexOf('zh-cn') === 0 || low.indexOf('zh-hans') === 0){ return v; }
+      }
+      for(i = 0; i < list.length; i++){
+        v = list[i]; low = String(v.lang || '').toLowerCase().replace('_', '-');
+        if(low.indexOf('zh') === 0){ return v; }
+      }
+      for(i = 0; i < list.length; i++){
+        v = list[i];
+        if(/chinese|mandarin|putonghua|中文|國語|普通话|普通话/i.test(String(v.name || ''))){ return v; }
+      }
+      return null;
+    }
+    function loadVoices(){
+      if(!supported){ return; }
+      try{ voice = pickVoice(window.speechSynthesis.getVoices()); }catch(e){ voice = null; }
+    }
+    if(supported){
+      loadVoices();
+      try{
+        if(typeof window.speechSynthesis.addEventListener === 'function'){
+          window.speechSynthesis.addEventListener('voiceschanged', loadVoices);
+        }else{
+          window.speechSynthesis.onvoiceschanged = loadVoices;
+        }
+      }catch(e){ /* 忽略：部分瀏覽器不支援事件 */ }
+    }
+    function clearWatchdog(){
+      if(watchdog){ clearTimeout(watchdog); watchdog = 0; }
+    }
+    function stop(){
+      token++;
+      active = false;
+      clearWatchdog();
+      if(supported){ try{ window.speechSynthesis.cancel(); }catch(e){} }
+    }
+    function speakList(list, onIndex, onDone, onFail){
+      stop();
+      if(!supported || !list || !list.length){
+        if(onFail){ onFail('unsupported'); }
+        return;
+      }
+      if(!voice){ loadVoices(); }
+      var my = ++token;
+      active = true;
+      var i = 0;
+      function step(){
+        if(!active || my !== token){ return; }
+        if(i >= list.length){
+          active = false;
+          if(onDone){ onDone(); }
+          return;
+        }
+        var idx = i++;
+        if(onIndex){ onIndex(idx); }
+        var u;
+        try{
+          u = new window.SpeechSynthesisUtterance(list[idx]);
+        }catch(e){
+          active = false;
+          if(onFail){ onFail('error'); }
+          return;
+        }
+        u.lang = 'zh-CN';
+        if(voice){ u.voice = voice; }
+        u.rate = 0.85;
+        u.pitch = 1.06;
+        u.volume = 1;
+        var started = false;
+        clearWatchdog();
+        watchdog = setTimeout(function(){
+          if(active && my === token && !started){
+            active = false;
+            if(onFail){ onFail('timeout'); }
+          }
+        }, 3200);
+        u.onstart = function(){ started = true; clearWatchdog(); };
+        u.onend = function(){
+          clearWatchdog();
+          if(my !== token){ return; }
+          step();
+        };
+        u.onerror = function(){
+          clearWatchdog();
+          if(my !== token){ return; }
+          active = false;
+          if(onFail){ onFail('error'); }
+        };
+        try{
+          window.speechSynthesis.speak(u);
+        }catch(e){
+          active = false;
+          if(onFail){ onFail('error'); }
+        }
+      }
+      step();
+    }
+    return {
+      isSupported: function(){ return supported; },
+      isActive: function(){ return active; },
+      stop: stop,
+      speak: function(text, onIndex, onDone, onFail){ speakList([text], onIndex, onDone, onFail); },
+      speakAll: speakList
+    };
+  })();
+
+  /* ================= 狀態 ================= */
+  var state = { view: 'home', stars: 0, awarded: {}, readDone: false, speechBroken: false };
+
+  function $(id){ return document.getElementById(id); }
+  function clear(node){ while(node && node.firstChild){ node.removeChild(node.firstChild); } }
+  function clearDynamic(node, cls){
+    if(!node){ return; }
+    var list = node.querySelectorAll('.' + cls), i;
+    for(i = 0; i < list.length; i++){ node.removeChild(list[i]); }
+  }
+  function makeSvg(symbolId, extraClass){
+    var svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 100 100');
+    svg.setAttribute('aria-hidden', 'true');
+    if(extraClass){ svg.setAttribute('class', extraClass); }
+    var use = document.createElementNS(NS, 'use');
+    use.setAttribute('href', '#' + symbolId);
+    svg.appendChild(use);
+    return svg;
+  }
+  function makeIcon(symbolId){
+    var svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 100 100');
+    svg.setAttribute('aria-hidden', 'true');
+    var use = document.createElementNS(NS, 'use');
+    use.setAttribute('href', '#' + symbolId);
+    svg.appendChild(use);
+    return svg;
+  }
+  function setHint(id, text){ var el = $(id); if(el){ el.textContent = text; } }
+  function showNotice(msg){
+    var el = $('notice-bar');
+    el.textContent = msg;
+    el.hidden = false;
+  }
+  function hideNotice(){ $('notice-bar').hidden = true; }
+  function onSpeechFail(reason){
+    state.speechBroken = true;
+    showNotice('這個裝置暫時沒有可用的普通話語音（' + reason + '）。你可以先閱讀課文文字與彩色標示，或改用 Chrome、Edge、Safari 開啟以聽取朗讀。');
+    var btns = document.querySelectorAll('[data-speak]');
+    for(var i = 0; i < btns.length; i++){ btns[i].disabled = true; }
+    var sign = $('read-note');
+    if(sign){ sign.textContent = '普通話語音無法使用：請改用 Chrome、Edge 或 Safari 開啟本頁，就能聽全文朗讀。'; }
+  }
+  function saySentences(indexes, onDone){
+    var list = [], i;
+    for(i = 0; i < indexes.length; i++){ list.push(LESSON.sentences[indexes[i]]); }
+    Narrator.speakAll(list, null, onDone || null, onSpeechFail);
+  }
+
+  /* ================= HUD ================= */
+  var VIEW_TITLE = {
+    home: '第三課　中秋賞月',
+    l1: '第 1 關　又圓又大的月亮',
+    l2: '第 2 關　草地上的中秋野餐',
+    l3: '第 3 關　把詞語放回句子裡',
+    l4: '第 4 關　樹上的燈籠',
+    read: '課文朗讀　中秋賞月',
+    finish: '完成學習'
+  };
+  function updateStars(){
+    $('star-count').textContent = String(state.stars);
+  }
+  function award(key){
+    if(state.awarded[key]){ return; }
+    state.awarded[key] = true;
+    state.stars++;
+    updateStars();
+    Sfx.play('star');
+  }
+  function setView(name){
+    state.view = name;
+    var keys = ['home', 'l1', 'l2', 'l3', 'l4', 'read', 'finish'], i;
+    for(i = 0; i < keys.length; i++){
+      var el = $('view-' + keys[i]);
+      if(el){ el.hidden = (keys[i] !== name); }
+    }
+    if(name !== 'read'){ Narrator.stop(); setReadState('idle'); }
+    $('hud-title').textContent = VIEW_TITLE[name] || LESSON.title;
+    if(name === 'read'){ resetReadHighlight(); }
+    if(name === 'finish'){ renderFinish(); }
+    var app = document.querySelector('.app');
+    if(app){ app.scrollTop = 0; }
+    if(window.scrollTo){ window.scrollTo(0, 0); }
+  }
+
+  /* ================= 第 1 關 ================= */
+  var L1 = { done: false, objects: [] };
+  function initL1(){
+    L1.done = false;
+    L1.objects = [
+      { id: 'tiny',     sym: 'ic-moon-plain',    label: '小小的月亮', ok: false, x: 14, y: 20, size: 13,
+        reason: '這個月亮太小了，課文說月亮「又圓又大」喔！' },
+      { id: 'half',     sym: 'ic-moon-half',     label: '半個月亮',   ok: false, x: 74, y: 22, size: 18,
+        reason: '這個月亮不夠圓，再找找看又圓又大的月亮。' },
+      { id: 'full',     sym: 'ic-moon-full',     label: '又圓又大的月亮', ok: true, x: 34, y: 48, size: 30 },
+      { id: 'crescent', sym: 'ic-moon-crescent', label: '彎彎的月亮', ok: false, x: 16, y: 76, size: 16,
+        reason: '這是彎彎的月亮，不是又圓又大的月亮。' },
+      { id: 'star',     sym: 'ic-star',          label: '星星',       ok: false, x: 82, y: 72, size: 14,
+        reason: '這是星星，不是月亮呢！' },
+      { id: 'cloud',    sym: 'ic-cloud',         label: '雲朵',       ok: false, x: 50, y: 84, size: 26,
+        reason: '這是雲朵，月亮是不是躲在後面？再找找！' }
+    ];
+  }
+  function buildL1(){
+    initL1();
+    var scene = $('l1-scene');
+    clearDynamic(scene, 'obj');
+    var i;
+    for(i = 0; i < L1.objects.length; i++){
+      (function(o){
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'obj';
+        btn.style.left = o.x + '%';
+        btn.style.top = o.y + '%';
+        btn.style.width = o.size + '%';
+        btn.setAttribute('aria-label', o.label);
+        btn.appendChild(makeSvg(o.sym));
+        btn.addEventListener('click', function(){ tapL1(o, btn); });
+        scene.appendChild(btn);
+      })(L1.objects[i]);
+    }
+    setHint('l1-hint', '課文說「月亮又圓又大」。夜空裡哪一個才是呢？點一點它！');
+    $('l1-next').hidden = true;
+    $('l1-say').hidden = true;
+  }
+  function tapL1(o, btn){
+    if(L1.done){ return; }
+    if(o.ok){
+      L1.done = true;
+      btn.classList.add('stage');
+      btn.style.left = '50%';
+      btn.style.top = '44%';
+      btn.style.width = '46%';
+      var others = $('l1-scene').querySelectorAll('.obj');
+      for(var i = 0; i < others.length; i++){
+        if(others[i] !== btn){
+          others[i].classList.add('fade');
+          others[i].disabled = true;
+        }
+      }
+      Sfx.play('correct');
+      setHint('l1-hint', '答對啦！中秋節的晚上，月亮又圓又大。');
+      award('l1');
+      saySentences([0]);
+      $('l1-say').hidden = false;
+      $('l1-next').hidden = false;
+    }else{
+      Sfx.play('wrong');
+      btn.classList.add('shake');
+      setTimeout(function(){ btn.classList.remove('shake'); }, 460);
+      setHint('l1-hint', o.reason);
+    }
+  }
+
+  /* ================= 第 2 關 ================= */
+  var L2 = { done: false, items: [], slots: [], placed: {}, selected: null };
+  function initL2(){
+    L2.done = false;
+    L2.placed = {};
+    L2.selected = null;
+    L2.items = [
+      { id: 'mat',      name: '野餐墊',      sym: 'ic-mat' },
+      { id: 'mooncake', name: '圓圓的月餅',  sym: 'ic-mooncake' },
+      { id: 'pomelo',   name: '甜甜的柚子',  sym: 'ic-pomelo' },
+      { id: 'cake',     name: '生日蛋糕',    sym: 'ic-cake', decoy: true },
+      { id: 'ball',     name: '小皮球',      sym: 'ic-ball', decoy: true }
+    ];
+    L2.slots = [
+      { id: 'slot-mat',      accept: 'mat',      label: '墊子',   x: 50, y: 66, w: 56, h: 34, order: 1 },
+      { id: 'slot-mooncake', accept: 'mooncake', label: '月餅',   x: 38, y: 56, w: 16, h: 20, order: 2 },
+      { id: 'slot-pomelo',   accept: 'pomelo',   label: '柚子',   x: 62, y: 56, w: 16, h: 20, order: 2 }
+    ];
+  }
+  function hideUsedTray(){
+    var tray = $('l2-tray');
+    var btns = tray.querySelectorAll('.tray-item');
+    for(var i = 0; i < btns.length; i++){
+      var id = btns[i].getAttribute('data-item');
+      btns[i].hidden = !!L2.placed[id];
+      btns[i].classList.toggle('selected', L2.selected === id);
+    }
+  }
+  function buildL2(){
+    initL2();
+    var scene = $('l2-scene');
+    clearDynamic(scene, 'slot');
+    var i;
+    for(i = 0; i < L2.slots.length; i++){
+      (function(slot){
+        var el = document.createElement('button');
+        el.type = 'button';
+        el.className = 'slot';
+        el.id = slot.id;
+        el.setAttribute('data-accept', slot.accept);
+        el.setAttribute('aria-label', '放置位置：' + slot.label);
+        el.style.left = slot.x + '%';
+        el.style.top = slot.y + '%';
+        el.style.width = slot.w + '%';
+        el.style.height = slot.h + '%';
+        var lab = document.createElement('span');
+        lab.className = 'slot-label';
+        lab.textContent = slot.label;
+        el.appendChild(lab);
+        el.addEventListener('click', function(){ tapSlot(slot, el); });
+        scene.appendChild(el);
+      })(L2.slots[i]);
+    }
+    var tray = $('l2-tray');
+    clear(tray);
+    for(i = 0; i < L2.items.length; i++){
+      (function(item){
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'tray-item';
+        btn.setAttribute('data-item', item.id);
+        btn.appendChild(makeSvg(item.sym));
+        var name = document.createElement('span');
+        name.textContent = item.name;
+        btn.appendChild(name);
+        btn.setAttribute('aria-label', item.name);
+        btn.addEventListener('click', function(){ tapItem(item.id); });
+        tray.appendChild(btn);
+      })(L2.items[i]);
+    }
+    setHint('l2-hint', '先點下面的野餐墊，再點草地上虛線的位置，把課文裡的東西一件件放好。');
+    $('l2-next').hidden = true;
+    $('l2-say').hidden = true;
+    hideUsedTray();
+  }
+  function itemById(id){
+    for(var i = 0; i < L2.items.length; i++){ if(L2.items[i].id === id){ return L2.items[i]; } }
+    return null;
+  }
+  function matPlaced(){ return !!L2.placed['mat']; }
+  function tapItem(id){
+    if(L2.done){ return; }
+    if(L2.placed[id]){ return; }
+    Sfx.play('select');
+    L2.selected = (L2.selected === id) ? null : id;
+    hideUsedTray();
+    if(L2.selected){
+      var it = itemById(id);
+      setHint('l2-hint', '拿起了「' + (it ? it.name : '') + '」，現在點一下草地上虛線的位置。');
+    }else{
+      setHint('l2-hint', '放下了。想放哪一件，先點它一下。');
+    }
+  }
+  function renderSlot(slot){
+    var el = $(slot.id);
+    if(!el){ return; }
+    var placedId = L2.placed[slot.accept];
+    clear(el);
+    if(placedId){
+      el.classList.add('filled');
+      el.appendChild(makeSvg(itemById(placedId).sym));
+    }else{
+      el.classList.remove('filled');
+      var lab = document.createElement('span');
+      lab.className = 'slot-label';
+      lab.textContent = slot.label;
+      el.appendChild(lab);
+    }
+  }
+  function tapSlot(slot, el){
+    if(L2.done){ return; }
+    if(L2.placed[slot.accept]){
+      Sfx.play('tap');
+      setHint('l2-hint', '這裡已經放好了。還有東西沒放呢！');
+      return;
+    }
+    if(!L2.selected){
+      Sfx.play('tap');
+      setHint('l2-hint', '先點下面的一樣東西，再點草地上的位置喔。');
+      return;
+    }
+    if(slot.accept !== 'mat' && !matPlaced()){
+      Sfx.play('wrong');
+      el.classList.add('shake');
+      setTimeout(function(){ el.classList.remove('shake'); }, 460);
+      setHint('l2-hint', '課文說「在草地上鋪上墊子」，所以要先鋪好墊子，才可以放食物。');
+      return;
+    }
+    var item = itemById(L2.selected);
+    if(slot.accept !== L2.selected){
+      Sfx.play('wrong');
+      el.classList.add('shake');
+      setTimeout(function(){ el.classList.remove('shake'); }, 460);
+      if(item && item.decoy){
+        setHint('l2-hint', '課文裡的野餐沒有這一樣東西，再看看其他物品吧。');
+      }else{
+        setHint('l2-hint', '這裡要放的是「' + slot.label + '」，再看看哪一個才是。');
+      }
+      return;
+    }
+    L2.placed[slot.accept] = slot.accept;
+    L2.selected = null;
+    renderSlot(slot);
+    hideUsedTray();
+    Sfx.play('correct');
+    setHint('l2-hint', '放好了！' + (slot.accept === 'mat' ? '墊子鋪好了，可以放食物囉。' : ''));
+    hideUsedTray();
+    var all = 0, i;
+    for(i = 0; i < L2.slots.length; i++){ if(L2.placed[L2.slots[i].accept]){ all++; } }
+    if(all === L2.slots.length){
+      L2.done = true;
+      Sfx.play('win');
+      setHint('l2-hint', '野餐準備好了！我們在草地上鋪上墊子，上面放了圓圓的月餅和甜甜的柚子。');
+      award('l2');
+      saySentences([1, 2]);
+      $('l2-say').hidden = false;
+      $('l2-next').hidden = false;
+      var tray = $('l2-tray');
+      var btns = tray.querySelectorAll('.tray-item');
+      for(i = 0; i < btns.length; i++){ btns[i].disabled = true; }
+    }
+  }
+
+  /* ================= 第 3 關 ================= */
+  var L3 = { idx: 0, solved: [], done: false, qs: [] };
+  function initL3(){
+    L3.idx = 0;
+    L3.solved = [false, false, false];
+    L3.done = false;
+    L3.qs = [
+      {
+        before: '我們在草地上鋪上墊子，上面放了',
+        after: '月餅',
+        answer: 'a',
+        wrongHint: '月餅是圓形的，想一想哪個詞是在說形狀？',
+        okHint: '對！課文說「圓圓的月餅」，因為月餅的形狀是圓的。',
+        options: [
+          { id: 'a', t: '圓圓的' },
+          { id: 'b', t: '甜甜的' },
+          { id: 'c', t: '大大小小的' }
+        ]
+      },
+      {
+        before: '上面還放了',
+        after: '柚子',
+        answer: 'b',
+        wrongHint: '柚子吃起來是甜的，哪個詞是在說味道呢？',
+        okHint: '厲害！課文說「甜甜的柚子」，說的是吃起來的味道。',
+        options: [
+          { id: 'a', t: '圓圓的' },
+          { id: 'b', t: '甜甜的' },
+          { id: 'c', t: '又圓又大' }
+        ]
+      },
+      {
+        before: '公園的樹上掛了',
+        after: '燈籠',
+        answer: 'c',
+        wrongHint: '樹上的燈籠有大有小，哪個詞把這一點說出來了？',
+        okHint: '太棒了！課文說「大大小小的燈籠」，因為樹上的燈籠有大也有小。',
+        options: [
+          { id: 'a', t: '甜甜的' },
+          { id: 'b', t: '圓圓的' },
+          { id: 'c', t: '大大小小的' }
+        ]
+      }
+    ];
+  }
+  function buildL3(){
+    initL3();
+    renderL3();
+    $('l3-next').hidden = true;
+    $('l3-say').hidden = true;
+  }
+  function answerText(q){
+    for(var i = 0; i < q.options.length; i++){
+      if(q.options[i].id === q.answer){ return q.options[i].t; }
+    }
+    return '';
+  }
+  function renderL3Line(q){
+    var line = $('l3-line');
+    clear(line);
+    line.appendChild(document.createTextNode(q.before));
+    var blank = document.createElement('span');
+    blank.className = 'blank';
+    blank.textContent = L3.solved[L3.idx] ? answerText(q) : '？';
+    line.appendChild(blank);
+    line.appendChild(document.createTextNode(q.after + '。'));
+  }
+  function renderL3(){
+    var q = L3.qs[L3.idx];
+    renderL3Line(q);
+
+    var box = $('l3-options');
+    clear(box);
+    for(var i = 0; i < q.options.length; i++){
+      (function(opt){
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'opt';
+        var mark = document.createElement('span');
+        mark.className = 'opt-mark';
+        mark.textContent = '○';
+        btn.appendChild(mark);
+        var t = document.createElement('span');
+        t.textContent = opt.t;
+        btn.appendChild(t);
+        if(L3.solved[L3.idx]){
+          btn.disabled = true;
+          if(opt.id === q.answer){
+            btn.classList.add('ok');
+            mark.textContent = '✓';
+          }
+        }
+        btn.addEventListener('click', function(){ tapOption(q, opt, btn, mark); });
+        box.appendChild(btn);
+      })(q.options[i]);
+    }
+    setHint('l3-hint', '第 ' + (L3.idx + 1) + '／' + L3.qs.length + ' 題：讀一讀課文，想一想括號裡應該填哪一個詞。');
+  }
+  function tapOption(q, opt, btn, mark){
+    if(L3.solved[L3.idx]){ return; }
+    if(opt.id === q.answer){
+      L3.solved[L3.idx] = true;
+      btn.classList.add('ok');
+      mark.textContent = '✓';
+      var opts = $('l3-options').querySelectorAll('.opt');
+      for(var i = 0; i < opts.length; i++){ opts[i].disabled = true; }
+      Sfx.play('correct');
+      setHint('l3-hint', q.okHint);
+      markL3Solved();
+      var all = true;
+      for(i = 0; i < L3.solved.length; i++){ if(!L3.solved[i]){ all = false; } }
+      if(L3.idx < L3.qs.length - 1){
+        $('l3-next').hidden = false;
+        $('l3-next').textContent = '下一題';
+      }else if(all){
+        L3.done = true;
+        Sfx.play('win');
+        setHint('l3-hint', '三個詞語都放對了！這一邊吃東西，一邊看着天上的月亮，十分開心。');
+        award('l3');
+        saySentences([3]);
+        $('l3-say').hidden = false;
+        $('l3-next').hidden = false;
+        $('l3-next').textContent = '下一關';
+      }
+    }else{
+      Sfx.play('wrong');
+      btn.classList.add('no');
+      btn.classList.add('shake');
+      setTimeout(function(){
+        btn.classList.remove('shake');
+        btn.classList.remove('no');
+      }, 520);
+      setHint('l3-hint', q.wrongHint);
+    }
+  }
+  function markL3Solved(){
+    var q = L3.qs[L3.idx];
+    var opts = $('l3-options').querySelectorAll('.opt');
+    for(var i = 0; i < opts.length; i++){
+      if(q.options[i].id === q.answer){
+        opts[i].classList.add('ok');
+        var mark = opts[i].querySelector('.opt-mark');
+        if(mark){ mark.textContent = '✓'; }
+      }
+      opts[i].disabled = true;
+    }
+    renderL3Line(q);
+  }
+
+  /* ================= 第 4 關 ================= */
+  var L4 = { done: false, phase: 'red', lit: 0, lanterns: [] };
+  function initL4(){
+    L4.done = false;
+    L4.phase = 'red';
+    L4.lit = 0;
+    L4.lanterns = [
+      { id: 'r1', color: 'red',   x: 24, y: 26, size: 18, lit: false },
+      { id: 'r2', color: 'red',   x: 40, y: 44, size: 15, lit: false },
+      { id: 'r3', color: 'red',   x: 60, y: 22, size: 20, lit: false },
+      { id: 'r4', color: 'red',   x: 77, y: 40, size: 16, lit: false },
+      { id: 'g1', color: 'green', x: 30, y: 60, size: 16, lit: false },
+      { id: 'g2', color: 'green', x: 50, y: 64, size: 18, lit: false },
+      { id: 'g3', color: 'green', x: 68, y: 58, size: 14, lit: false }
+    ];
+  }
+  function buildL4(){
+    initL4();
+    var scene = $('l4-scene');
+    clearDynamic(scene, 'lant');
+    for(var i = 0; i < L4.lanterns.length; i++){
+      (function(l){
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'lant ' + l.color;
+        btn.setAttribute('data-lant', l.id);
+        btn.setAttribute('aria-label', (l.color === 'red' ? '紅色的燈籠' : '綠色的燈籠'));
+        btn.style.left = l.x + '%';
+        btn.style.top = l.y + '%';
+        btn.style.width = l.size + '%';
+        btn.appendChild(makeSvg('ic-lantern'));
+        btn.addEventListener('click', function(){ tapLantern(l, btn); });
+        scene.appendChild(btn);
+      })(L4.lanterns[i]);
+    }
+    L4.lit = 0;
+    updateL4Hint();
+    $('l4-next').hidden = true;
+    $('l4-say').hidden = true;
+  }
+  function updateL4Hint(){
+    if(L4.phase === 'red'){
+      setHint('l4-hint', '先點亮樹上紅色的燈籠，一共 4 個（已點亮 ' + L4.lit + '／4）。');
+    }else{
+      setHint('l4-hint', '紅燈籠都亮了！接著點亮綠色的燈籠，一共 3 個（已點亮 ' + L4.lit + '／3）。');
+    }
+  }
+  function tapLantern(l, btn){
+    if(L4.done){ return; }
+    if(l.lit){
+      Sfx.play('tap');
+      setHint('l4-hint', '這個燈籠已經亮起來了，換別的燈籠吧。');
+      return;
+    }
+    if(l.color !== L4.phase){
+      Sfx.play('wrong');
+      btn.classList.add('shake');
+      setTimeout(function(){ btn.classList.remove('shake'); }, 460);
+      setHint('l4-hint', '這一個是' + (l.color === 'red' ? '紅色' : '綠色') + '的燈籠，我們先點亮' + (L4.phase === 'red' ? '紅色' : '綠色') + '的。');
+      return;
+    }
+    l.lit = true;
+    btn.classList.add('lit');
+    L4.lit++;
+    Sfx.play('lantern');
+    var need = (L4.phase === 'red') ? 4 : 3;
+    if(L4.lit >= need){
+      if(L4.phase === 'red'){
+        L4.phase = 'green';
+        L4.lit = 0;
+        Sfx.play('correct');
+        setHint('l4-hint', '四個紅燈籠都亮起來了！接著點亮綠色的燈籠，一共 3 個。');
+      }else{
+        L4.done = true;
+        Sfx.play('win');
+        setHint('l4-hint', '大大小小的燈籠都亮起來了，有的紅，有的綠，多好看啊！');
+        award('l4');
+        saySentences([4]);
+        $('l4-say').hidden = false;
+        $('l4-next').hidden = false;
+        var all = $('l4-scene').querySelectorAll('.lant'), i;
+        for(i = 0; i < all.length; i++){ all[i].disabled = true; }
+      }
+    }else{
+      updateL4Hint();
+    }
+  }
+
+  /* ================= 課文朗讀 ================= */
+  var readBuilt = false;
+  function buildRead(){
+    if(readBuilt){ return; }
+    var list = $('read-list');
+    clear(list);
+    for(var i = 0; i < LESSON.sentences.length; i++){
+      (function(idx){
+        var row = document.createElement('div');
+        row.className = 'line';
+        row.setAttribute('data-line', String(idx));
+        var num = document.createElement('span');
+        num.className = 'line-idx';
+        num.textContent = String(idx + 1);
+        var text = document.createElement('span');
+        text.className = 'line-text';
+        text.textContent = LESSON.sentences[idx];
+        var spk = document.createElement('button');
+        spk.type = 'button';
+        spk.className = 'line-speak';
+        spk.setAttribute('data-speak', '1');
+        spk.setAttribute('aria-label', '朗讀第 ' + (idx + 1) + ' 句');
+        spk.appendChild(makeIcon('ic-speak'));
+        spk.addEventListener('click', function(ev){
+          ev.stopPropagation();
+          speakOneLine(idx);
+        });
+        row.appendChild(num);
+        row.appendChild(text);
+        row.appendChild(spk);
+        row.addEventListener('click', function(){ speakOneLine(idx); });
+        list.appendChild(row);
+      })(i);
+    }
+    readBuilt = true;
+  }
+  function resetReadHighlight(){
+    buildRead();
+    var rows = $('read-list').querySelectorAll('.line');
+    for(var i = 0; i < rows.length; i++){ rows[i].classList.remove('speaking'); }
+  }
+  function markReadLine(idx){
+    resetReadHighlight();
+    if(idx < 0){ return; }
+    var row = $('read-list').querySelector('[data-line="' + idx + '"]');
+    if(row){ row.classList.add('speaking'); }
+  }
+  function setReadState(mode){
+    var all = $('btn-read-all'), stopBtn = $('btn-stop');
+    if(mode === 'playing'){
+      all.hidden = true;
+      stopBtn.hidden = false;
+    }else{
+      all.hidden = false;
+      stopBtn.hidden = true;
+    }
+  }
+  function speakOneLine(idx){
+    if(state.speechBroken){ return; }
+    setReadState('playing');
+    Narrator.speak(LESSON.sentences[idx], function(){ markReadLine(idx); }, function(){
+      setReadState('idle');
+      resetReadHighlight();
+    }, function(reason){
+      markReadLine(-1);
+      setReadState('idle');
+      onSpeechFail(reason);
+    });
+  }
+  function speakAllLines(){
+    if(state.speechBroken){ return; }
+    setReadState('playing');
+    Narrator.speakAll(LESSON.sentences, function(i){ markReadLine(i); }, function(){
+      setReadState('idle');
+      resetReadHighlight();
+      if(!state.readDone){
+        state.readDone = true;
+        award('read');
+        setHint('read-note', '全文讀完了！你已經聽完整篇《中秋賞月》，可以按「完成學習，看獎勵」看看拿到幾顆星。');
+        $('btn-finish').hidden = false;
+      }
+    }, function(reason){
+      markReadLine(-1);
+      setReadState('idle');
+      onSpeechFail(reason);
+    });
+  }
+
+  /* ================= 結算 ================= */
+  var FINISH_TEXT = {
+    5: '五顆星全部到手！你不但讀懂了課文，還會聽、會說中秋節的故事。',
+    4: '很棒！只差一顆星。回到還沒完成的關卡，把課文再讀一次吧。',
+    3: '不錯喔！還有關卡沒完成，回去看看課文裡寫了些甚麼。',
+    2: '加油！再玩一次，一邊玩一邊讀課文，就會更明白。',
+    1: '先別急，把四個關卡玩一玩，你會發現課文很好懂。',
+    0: '一起來當月光小偵探：先按「開始闖關」，跟著課文過中秋吧。'
+  };
+  function renderFinish(){
+    var box = $('finish-stars');
+    clear(box);
+    for(var i = 1; i <= 5; i++){
+      var svg = makeSvg('ic-star');
+      svg.setAttribute('class', i <= state.stars ? 'star-on' : 'star-off');
+      box.appendChild(svg);
+    }
+    $('finish-sub').textContent = '你收集了 ' + state.stars + ' 顆星（共 5 顆）。' + (FINISH_TEXT[state.stars] || '');
+    Sfx.play('win');
+  }
+
+  /* ================= 重置 ================= */
+  function resetAll(){
+    Narrator.stop();
+    state.stars = 0;
+    state.awarded = {};
+    state.readDone = false;
+    state.speechBroken = false;
+    updateStars();
+    buildL1();
+    buildL2();
+    buildL3();
+    buildL4();
+    readBuilt = false;
+    buildRead();
+    resetReadHighlight();
+    setReadState('idle');
+    $('btn-finish').hidden = true;
+    hideNotice();
+    if(Narrator.isSupported()){
+      var btns = document.querySelectorAll('[data-speak]');
+      for(var i = 0; i < btns.length; i++){ btns[i].disabled = false; }
+      $('read-note').textContent = '按「全文朗讀」會一句一句用普通話讀出來，讀到哪一句，那一句就會亮起來；也可以只點某一句旁邊的喇叭。';
+    }
+    setHint('home-hint', '點一點天上的月亮，聽聽課文的第一句；再按「開始闖關」，跟著課文過中秋吧！');
+    setView('home');
+  }
+
+  /* ================= 事件綁定 ================= */
+  function bind(){
+    $('btn-home').addEventListener('click', function(){
+      Sfx.play('tap');
+      setView('home');
+    });
+    $('btn-sound').addEventListener('click', function(){
+      var on = !Sfx.isEnabled();
+      Sfx.setEnabled(on);
+      this.setAttribute('aria-pressed', on ? 'true' : 'false');
+      this.setAttribute('aria-label', '音效開關（目前' + (on ? '開啟' : '關閉') + '）');
+      var use = $('sound-use');
+      if(use){ use.setAttribute('href', on ? '#ic-sound-on' : '#ic-sound-off'); }
+      if(on){ Sfx.play('select'); }
+    });
+    $('moon-btn').addEventListener('click', function(){
+      Sfx.play('select');
+      if(state.speechBroken){ return; }
+      Narrator.speak(LESSON.sentences[0], null, null, onSpeechFail);
+      setHint('home-hint', '中秋節的晚上，月亮又圓又大。');
+    });
+    $('btn-start').addEventListener('click', function(){
+      Sfx.unlock();
+      Sfx.play('select');
+      setView('l1');
+    });
+    $('btn-read').addEventListener('click', function(){
+      Sfx.play('select');
+      setView('read');
+    });
+    $('l1-next').addEventListener('click', function(){ Sfx.play('tap'); setView('l2'); });
+    $('l1-say').addEventListener('click', function(){ Sfx.play('tap'); saySentences([0]); });
+    $('l2-next').addEventListener('click', function(){ Sfx.play('tap'); setView('l3'); });
+    $('l2-say').addEventListener('click', function(){ Sfx.play('tap'); saySentences([1, 2]); });
+    $('l3-next').addEventListener('click', function(){
+      Sfx.play('tap');
+      var all = true, i;
+      for(i = 0; i < L3.solved.length; i++){ if(!L3.solved[i]){ all = false; } }
+      if(L3.idx < L3.qs.length - 1){
+        L3.idx++;
+        renderL3();
+        $('l3-next').hidden = true;
+        $('l3-next').textContent = '下一題';
+      }else if(all){
+        setView('l4');
+      }
+    });
+    $('l3-say').addEventListener('click', function(){ Sfx.play('tap'); saySentences([3]); });
+    $('l4-next').addEventListener('click', function(){ Sfx.play('tap'); setView('finish'); });
+    $('l4-say').addEventListener('click', function(){ Sfx.play('tap'); saySentences([4]); });
+    $('btn-read-all').addEventListener('click', function(){ Sfx.play('select'); speakAllLines(); });
+    $('btn-stop').addEventListener('click', function(){
+      Sfx.play('tap');
+      Narrator.stop();
+      setReadState('idle');
+      resetReadHighlight();
+    });
+    $('btn-finish').addEventListener('click', function(){ Sfx.play('select'); setView('finish'); });
+    $('btn-back-read').addEventListener('click', function(){ Sfx.play('tap'); setView('read'); });
+    $('btn-again').addEventListener('click', function(){ Sfx.play('select'); resetAll(); });
+  }
+
+  /* ================= 啟動 ================= */
+  function start(){
+    updateStars();
+    buildL1();
+    buildL2();
+    buildL3();
+    buildL4();
+    buildRead();
+    resetReadHighlight();
+    setReadState('idle');
+    bind();
+    setView('home');
+    if(!Narrator.isSupported()){
+      state.speechBroken = true;
+      showNotice('此瀏覽器不支援普通話語音合成，朗讀按鈕已停用；你可以閱讀課文文字，或改用 Chrome、Edge、Safari 開啟以聽取朗讀。');
+      var btns = document.querySelectorAll('[data-speak]');
+      for(var i = 0; i < btns.length; i++){ btns[i].disabled = true; }
+    }
+    if(!Sfx.isAvailable() && $('notice-bar').hidden){
+      showNotice('此瀏覽器不支援即時音效，遊戲仍可進行。');
+    }
+  }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', start);
+  }else{
+    start();
+  }
+})();
+</script>
+</body>
+</html>

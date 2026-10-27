@@ -1,0 +1,1464 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>開學了 · 情景互動遊戲</title>
+<meta name="description" content="跟著課文《開學了》玩四關校園情景遊戲：背書包、過馬路、問聲好、排句子，最後聽一遍全文普通話朗讀。Q版可愛風，繁體字，全程有音效。">
+<style>
+:root{
+  --sky:#cdeaff;
+  --sky2:#eaf7ff;
+  --cream:#fffdf7;
+  --ink:#3f332c;
+  --ink-soft:#7d6c60;
+  --coral:#ff8a80;
+  --mint:#6ed3b0;
+  --sun:#ffcb52;
+  --blue:#6fb7ff;
+  --pink:#ffa5c3;
+  --line:rgba(63,51,44,.14);
+  --font:"PingFang TC","Hiragino Sans TC","Microsoft JhengHei","Noto Sans TC","Heiti TC",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:var(--font);
+  color:var(--ink);
+  background-color:var(--sky2);
+  background-image:
+    radial-gradient(1100px 560px at 12% -12%, #d8f0ff 0%, rgba(216,240,255,0) 62%),
+    radial-gradient(900px 520px at 92% -6%, #ffeef6 0%, rgba(255,238,246,0) 58%),
+    linear-gradient(180deg,#eaf7ff 0%,#fdfbff 42%,#fff7ee 100%);
+  background-repeat:no-repeat;
+  background-attachment:fixed;
+  min-height:100dvh;
+  -webkit-text-size-adjust:100%;
+  line-height:1.5;
+}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.app{max-width:1040px;margin:0 auto;padding:12px 14px 40px;display:flex;flex-direction:column;gap:12px;min-height:100dvh}
+
+/* ---------- 頂欄 ---------- */
+.topbar{
+  display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;
+  background:rgba(255,255,255,.82);border:2px solid var(--line);border-radius:20px;padding:8px 10px;
+}
+.brand{display:flex;align-items:center;gap:8px;min-width:0}
+.brand-art{width:34px;height:34px;flex:0 0 auto}
+.brand-art svg{width:100%;height:100%;display:block}
+.brand h1{font-size:clamp(1rem,3.8vw,1.35rem);margin:0;letter-spacing:.06em}
+.hud{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.stars{display:flex;gap:2px}
+.star{width:19px;height:19px;display:block}
+.star path{fill:rgba(63,51,44,.13)}
+.star.on path{fill:var(--sun)}
+.progress{font-size:.82rem;font-weight:800;color:var(--ink-soft);background:rgba(63,51,44,.06);border-radius:999px;padding:5px 11px;white-space:nowrap}
+.icon-btn{
+  width:44px;height:44px;border-radius:14px;border:2px solid var(--line);background:#fff;
+  display:grid;place-items:center;cursor:pointer;padding:0;color:var(--ink)
+}
+.icon-btn svg{width:22px;height:22px;display:block}
+.icon-btn[aria-pressed="false"]{opacity:.48}
+.icon-btn:active{transform:translateY(2px)}
+
+/* ---------- 提示 ---------- */
+.hint{
+  margin:0;background:#fff8e4;border:2px solid rgba(255,203,82,.55);border-radius:16px;
+  padding:9px 14px;font-size:clamp(.88rem,3.4vw,1rem);font-weight:700;text-align:center;min-height:44px;
+  display:flex;align-items:center;justify-content:center;transition:background .2s ease
+}
+.hint.good{background:#eefaf4;border-color:rgba(110,211,176,.7)}
+.hint.bad{background:#fff0ee;border-color:rgba(255,138,128,.7)}
+
+/* ---------- 畫面 ---------- */
+main{display:flex;flex-direction:column;gap:12px}
+.screen{display:flex;flex-direction:column;gap:14px}
+.screen[hidden]{display:none}
+
+/* ---------- 通用元件 ---------- */
+.panel{background:#fff;border:2px solid var(--line);border-radius:22px;padding:14px}
+.btn{
+  font:inherit;font-weight:800;border-radius:16px;padding:12px 20px;cursor:pointer;min-height:48px;
+  background:#fff;color:var(--ink);border:2px solid var(--line);box-shadow:0 4px 0 rgba(63,51,44,.13);
+  transition:transform .08s ease
+}
+.btn.primary{background:var(--coral);color:#fff;border-color:#f4736a;box-shadow:0 4px 0 #e05f57}
+.btn.mint{background:var(--mint);color:#14483a;border-color:#57c39f;box-shadow:0 4px 0 #4cae8c}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(63,51,44,.13)}
+.btn[disabled]{opacity:.42;cursor:not-allowed;transform:none}
+.btn.big{font-size:clamp(1rem,3.8vw,1.15rem);padding:14px 30px}
+.btn-row{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+
+/* ---------- 首頁 ---------- */
+.hero{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;background:#fff;border:3px solid rgba(63,51,44,.1);border-radius:26px;padding:18px 14px}
+.hero-art{width:min(100%,420px)}
+.hero-art svg{width:100%;height:auto;display:block}
+.hero-sub{margin:0;color:var(--ink-soft);font-size:clamp(.9rem,3.4vw,1.05rem)}
+.levels{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+.lv-card{display:flex;gap:10px;align-items:center;background:#fff;border:2px solid var(--line);border-radius:20px;padding:12px}
+.lv-card .tag{flex:0 0 auto;width:34px;height:34px;border-radius:12px;background:var(--sun);display:grid;place-items:center;font-weight:800;font-size:.9rem;color:#4a3a2c}
+.lv-card h3{margin:0;font-size:1rem}
+.lv-card p{margin:2px 0 0;font-size:.84rem;color:var(--ink-soft)}
+.lv-card .art{flex:0 0 auto;width:52px}
+.lv-card .art svg{width:100%;height:auto;display:block}
+
+/* ---------- 關卡標題 ---------- */
+.level-head{text-align:center;display:flex;flex-direction:column;gap:4px;align-items:center}
+.level-no{margin:0;background:var(--sun);color:#4a3a2c;border-radius:999px;padding:4px 14px;font-weight:800;font-size:.82rem}
+.level-head h2{margin:0;font-size:clamp(1.15rem,4.6vw,1.7rem);letter-spacing:.05em}
+.level-task{margin:0;color:var(--ink-soft);font-size:clamp(.86rem,3.3vw,1rem)}
+
+/* ---------- 第1關 ---------- */
+.l1-wrap{display:grid;gap:14px;grid-template-columns:1fr}
+@media(min-width:780px){.l1-wrap{grid-template-columns:1.5fr 1fr;align-items:start}}
+.items{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(94px,1fr))}
+.item{
+  position:relative;border:2px solid var(--line);border-radius:18px;background:#fff;padding:8px 6px;
+  display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;min-height:104px;font:inherit;
+  transition:transform .12s ease
+}
+.item svg{width:100%;max-width:62px;height:auto;display:block}
+.item b{font-size:.84rem;font-weight:800}
+.item:active{transform:translateY(2px)}
+.item[disabled]{opacity:.3;pointer-events:none;filter:grayscale(.9)}
+.item.shake{animation:shake .42s ease}
+.bag-panel{background:#fff;border:2px solid var(--line);border-radius:22px;padding:14px;text-align:center;display:flex;flex-direction:column;gap:8px;align-items:center}
+.bag-art{width:min(100%,180px)}
+.bag-art svg{width:100%;height:auto;display:block}
+.bag-count{margin:0;font-weight:800;font-size:1.05rem}
+.bag-count b{color:var(--coral);font-size:1.3rem}
+.bag-slots{display:grid;gap:8px;grid-template-columns:repeat(4,1fr);width:100%;max-width:280px}
+.bag-slot{aspect-ratio:1/1;border-radius:14px;border:2px dashed rgba(63,51,44,.22);display:grid;place-items:center;background:rgba(63,51,44,.03);overflow:hidden}
+.bag-slot svg{width:84%;height:84%;display:block}
+.bag-slot.on{border-style:solid;border-color:var(--mint);background:#eefaf4}
+
+/* ---------- 第2關 ---------- */
+.road-scene{
+  position:relative;height:clamp(210px,40vw,290px);border-radius:22px;overflow:hidden;border:2px solid var(--line);
+  background:linear-gradient(180deg,#e7f6ff 0%,#f4fbff 44%,#8e9aad 44%,#6c788b 100%)
+}
+.road-scene .school{position:absolute;right:4%;top:5%;width:clamp(70px,20vw,120px)}
+.road-scene .school svg{width:100%;height:auto;display:block}
+.road-scene .zebra{position:absolute;left:0;right:0;bottom:8%;height:14%;display:flex;gap:3%;padding:0 4%}
+.road-scene .zebra i{flex:1 1 0;background:rgba(255,255,255,.72);border-radius:3px}
+.light-box{position:absolute;left:5%;top:8%;width:clamp(42px,10vw,58px)}
+.light-box svg{width:100%;height:auto;display:block}
+.kid-walker{position:absolute;left:4%;bottom:1%;width:clamp(52px,14vw,88px);transform:translateX(0)}
+.kid-walker svg{width:100%;height:auto;display:block}
+.kid-walker.walking{transition:transform 1.7s cubic-bezier(.45,.05,.55,.95);transform:translateX(var(--dx,0px))}
+@media(prefers-reduced-motion:reduce){.kid-walker.walking{transition-duration:.35s}}
+.kid-walker.shake{animation:shake .5s ease}
+.light-state{margin:0;text-align:center;font-weight:800;font-size:clamp(1rem,3.9vw,1.2rem)}
+.light-state.stop{color:#e05f57}
+.light-state.go{color:#2f9e73}
+
+/* ---------- 第3關 ---------- */
+.quiz-stage{display:flex;flex-direction:column;align-items:center;gap:14px}
+.quiz-speaker{width:clamp(96px,26vw,140px)}
+.quiz-speaker svg{width:100%;height:auto;display:block}
+.quiz-bubble{
+  position:relative;background:#fff;border:2px solid var(--line);border-radius:20px;padding:10px 22px;
+  font-size:clamp(1.1rem,4.4vw,1.5rem);font-weight:800;letter-spacing:.05em
+}
+.quiz-bubble::before{content:"";position:absolute;left:50%;margin-left:-10px;top:-19px;border:10px solid transparent;border-bottom-color:rgba(63,51,44,.14)}
+.quiz-bubble::after{content:"";position:absolute;left:50%;margin-left:-10px;top:-15px;border:10px solid transparent;border-bottom-color:#fff}
+.quiz-options{display:grid;gap:10px;width:100%;max-width:520px;margin:0 auto}
+.opt{
+  font:inherit;font-weight:800;font-size:clamp(.95rem,3.7vw,1.1rem);text-align:left;min-height:56px;
+  background:#fff;border:2px solid var(--line);border-radius:18px;padding:12px 16px;cursor:pointer;
+  display:flex;align-items:center;gap:10px;box-shadow:0 4px 0 rgba(63,51,44,.1)
+}
+.opt .bullet{flex:0 0 auto;width:28px;height:28px;border-radius:50%;background:rgba(111,183,255,.25);display:grid;place-items:center;font-size:.85rem}
+.opt:active{transform:translateY(2px)}
+.opt.shake{animation:shake .42s ease}
+.opt.right{background:#eefaf4;border-color:var(--mint)}
+.opt[disabled]{opacity:.5;cursor:not-allowed;transform:none}
+
+/* ---------- 第4關 ---------- */
+.slots{display:grid;gap:8px}
+.slot{display:flex;align-items:center;gap:10px;min-height:56px;border-radius:16px;border:2px dashed rgba(63,51,44,.22);padding:8px 12px;background:rgba(255,255,255,.72);font-weight:800;font-size:clamp(.92rem,3.6vw,1.1rem)}
+.slot .no{flex:0 0 auto;width:26px;height:26px;border-radius:50%;background:var(--sun);color:#4a3a2c;display:grid;place-items:center;font-size:.78rem}
+.slot.filled{border-style:solid;border-color:var(--mint);background:#f1fcf8}
+.blocks{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.block{
+  font:inherit;font-weight:800;font-size:clamp(.92rem,3.6vw,1.08rem);text-align:left;min-height:52px;
+  background:#fff;border:2px solid var(--line);border-radius:16px;padding:12px 14px;cursor:pointer;
+  box-shadow:0 4px 0 rgba(63,51,44,.1)
+}
+.block:active{transform:translateY(2px)}
+.block.shake{animation:shake .42s ease}
+.block[disabled]{opacity:.3;pointer-events:none}
+
+/* ---------- 課文繪本 ---------- */
+.book-list{display:grid;gap:10px}
+@media(min-width:860px){.book-list{grid-template-columns:1fr 1fr}}
+.line-row{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;font:inherit;
+  background:#fff;border:2px solid var(--line);border-radius:18px;padding:10px 14px;cursor:pointer;min-height:68px
+}
+.line-body{display:flex;flex-direction:column;min-width:0}
+.line-pinyin{font-size:.76rem;color:var(--ink-soft);letter-spacing:.02em}
+.line-text{font-size:clamp(1.05rem,4.1vw,1.35rem);font-weight:800;letter-spacing:.06em}
+.line-icon{flex:0 0 auto;width:26px;height:26px}
+.line-icon svg{width:100%;height:100%;display:block}
+.line-row.active{border-color:var(--coral);background:#fff6f4}
+.line-row.active .line-icon svg path{fill:var(--coral)}
+.speech-note{margin:0;background:#f3f0ff;border:2px solid rgba(155,138,240,.45);border-radius:16px;padding:10px 14px;font-size:.88rem;font-weight:700}
+.book-actions{display:flex;justify-content:center}
+
+/* ---------- 成果頁 ---------- */
+.reward-hero{text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px}
+.reward-hero h2{margin:0;font-size:clamp(1.3rem,5vw,1.9rem)}
+.reward-hero p{margin:0;color:var(--ink-soft)}
+.big-stars{display:flex;gap:6px;justify-content:center}
+.big-stars .star{width:34px;height:34px}
+.badges{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(132px,1fr))}
+.badge{background:#fff;border:2px solid var(--line);border-radius:20px;padding:12px 8px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:6px}
+.badge .art{width:56px}
+.badge .art svg{width:100%;height:auto;display:block}
+.badge b{font-size:.86rem}
+.badge.off{opacity:.42;filter:grayscale(.85)}
+.badge .state{font-size:.72rem;color:var(--ink-soft)}
+
+/* ---------- 彈層 ---------- */
+.overlay{position:fixed;inset:0;z-index:60;background:rgba(63,51,44,.45);display:grid;place-items:center;padding:18px}
+.overlay[hidden]{display:none}
+.overlay-card{
+  background:#fff;border:3px solid rgba(63,51,44,.1);border-radius:26px;padding:22px 18px;max-width:420px;width:100%;
+  display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center
+}
+.overlay-card h2{margin:0;font-size:clamp(1.2rem,4.4vw,1.6rem)}
+.overlay-card p{margin:0;color:var(--ink-soft);font-weight:700}
+.overlay-art{width:92px;animation:pop .4s ease}
+.overlay-art svg{width:100%;height:auto;display:block}
+
+/* ---------- 第2關 天空裝飾 ---------- */
+.road-scene .sky{position:absolute;left:0;right:0;top:0;height:46%;pointer-events:none}
+.road-scene .sky svg{width:100%;height:100%;display:block}
+
+/* ---------- 大螢幕編排 ---------- */
+@media(min-width:900px){
+  #screen-home{display:grid;grid-template-columns:1.05fr 1fr;gap:16px;align-items:start;align-content:center;min-height:calc(100dvh - 240px)}
+  #screen-home[hidden]{display:none}
+  #screen-home .levels{grid-template-columns:1fr}
+  .hero-art{width:min(100%,440px)}
+  .level-head{max-width:760px;width:100%;margin:0 auto}
+  .road-scene{max-width:840px;width:100%;margin:0 auto}
+  .slots{max-width:780px;width:100%;margin:0 auto}
+  .blocks{max-width:880px;width:100%;margin:0 auto}
+  .book-list{max-width:1000px;width:100%;margin:0 auto}
+  .badges{max-width:900px;width:100%;margin:0 auto}
+}
+
+/* ---------- 動效 ---------- */
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+@keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+@media(prefers-reduced-motion:reduce){
+  .item.shake,.opt.shake,.block.shake,.kid-walker.shake,.overlay-art{animation:none}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-art" aria-hidden="true"></span>
+      <h1>開學了</h1>
+    </div>
+    <div class="hud">
+      <span class="stars" id="starBox" role="img" aria-label="已獲得 0 顆星"></span>
+      <span class="progress" id="progressText">關卡 0 / 4</span>
+      <button type="button" class="icon-btn" id="soundBtn" aria-pressed="true" aria-label="音效開關"><span class="sr-only">音效開關</span></button>
+    </div>
+  </header>
+
+  <p class="hint" id="hint" role="status" aria-live="polite">點「開始上學」，跟著課文一起去上學。</p>
+
+  <main id="mainRoot">
+    <!-- P0 首頁 -->
+    <section class="screen" id="screen-home" aria-labelledby="homeTitle">
+      <div class="hero">
+        <h2 id="homeTitle" class="sr-only">開學了 情景互動遊戲</h2>
+        <div class="hero-art" id="homeArt"></div>
+        <p class="hero-sub">跟著課文《開學了》，走一遍上學的路。</p>
+        <button type="button" class="btn primary big" id="startBtn">開始上學</button>
+      </div>
+      <div class="levels" id="homeLevels"></div>
+    </section>
+
+    <!-- P1 第1關 -->
+    <section class="screen" id="screen-l1" hidden aria-labelledby="l1Title">
+      <div class="level-head">
+        <p class="level-no">第 1 關</p>
+        <h2 id="l1Title">背書包</h2>
+        <p class="level-task">把上學要用的東西，通通放進書包裡。</p>
+      </div>
+      <div class="l1-wrap">
+        <div class="items" id="l1Items"></div>
+        <div class="bag-panel">
+          <div class="bag-art" id="l1Bag"></div>
+          <p class="bag-count">已放進 <b id="l1Count">0</b> / 4 樣</p>
+          <div class="bag-slots" id="l1Slots"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- P1 第2關 -->
+    <section class="screen" id="screen-l2" hidden aria-labelledby="l2Title">
+      <div class="level-head">
+        <p class="level-no">第 2 關</p>
+        <h2 id="l2Title">上學路上</h2>
+        <p class="level-task">看清楚紅綠燈，安全過馬路。</p>
+      </div>
+      <div class="road-scene" id="l2Scene">
+        <div class="sky" aria-hidden="true">
+          <svg viewBox="0 0 400 120" preserveAspectRatio="xMidYMid slice">
+            <ellipse cx="150" cy="40" rx="34" ry="17" fill="#ffffff" opacity=".92"/>
+            <ellipse cx="182" cy="47" rx="26" ry="13" fill="#ffffff" opacity=".85"/>
+            <ellipse cx="248" cy="30" rx="27" ry="14" fill="#ffffff" opacity=".8"/>
+            <ellipse cx="274" cy="36" rx="20" ry="10" fill="#ffffff" opacity=".75"/>
+          </svg>
+        </div>
+        <div class="school" id="l2School"></div>
+        <div class="zebra" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="light-box" id="l2Light"></div>
+        <div class="kid-walker" id="l2Kid"></div>
+      </div>
+      <p class="light-state stop" id="l2State">紅燈，要停下來。</p>
+      <div class="btn-row">
+        <button type="button" class="btn primary big" id="l2Cross">過馬路</button>
+      </div>
+    </section>
+
+    <!-- P1 第3關 -->
+    <section class="screen" id="screen-l3" hidden aria-labelledby="l3Title">
+      <div class="level-head">
+        <p class="level-no">第 3 關</p>
+        <h2 id="l3Title">進教室問好</h2>
+        <p class="level-task">聽到問好，選一句最有禮貌的回答。</p>
+      </div>
+      <div class="quiz-stage">
+        <div class="quiz-speaker" id="l3Speaker"></div>
+        <p class="quiz-bubble" id="l3Line">早安！</p>
+      </div>
+      <div class="quiz-options" id="l3Options"></div>
+    </section>
+
+    <!-- P1 第4關 -->
+    <section class="screen" id="screen-l4" hidden aria-labelledby="l4Title">
+      <div class="level-head">
+        <p class="level-no">第 4 關</p>
+        <h2 id="l4Title">課文排排隊</h2>
+        <p class="level-task">按照課文的順序，把五個句子排好。</p>
+      </div>
+      <div class="slots" id="l4Slots"></div>
+      <div class="blocks" id="l4Blocks"></div>
+    </section>
+
+    <!-- P2 課文繪本 + 朗讀 -->
+    <section class="screen" id="screen-book" hidden aria-labelledby="bookTitle">
+      <div class="level-head">
+        <p class="level-no">課文繪本</p>
+        <h2 id="bookTitle">開學了</h2>
+        <p class="level-task">點任何一句，可以單獨聽；也可以聽全文朗讀。</p>
+      </div>
+      <div class="book-list" id="bookList"></div>
+      <p class="speech-note" id="speechNote" hidden></p>
+      <div class="btn-row">
+        <button type="button" class="btn primary" id="readAll">聽全文朗讀</button>
+        <button type="button" class="btn" id="readStop" disabled>停止朗讀</button>
+        <button type="button" class="btn" id="readRate" aria-pressed="false">速度：正常</button>
+      </div>
+      <div class="book-actions">
+        <button type="button" class="btn mint" id="toReward">看我的成果</button>
+      </div>
+    </section>
+
+    <!-- P3 成果頁 -->
+    <section class="screen" id="screen-reward" hidden aria-labelledby="rewardTitle">
+      <div class="reward-hero panel">
+        <div class="overlay-art" id="rewardArt"></div>
+        <h2 id="rewardTitle">你完成上學的一天了！</h2>
+        <div class="big-stars" id="rewardStars"></div>
+        <p id="rewardNote">天天上學真快樂！</p>
+      </div>
+      <div class="badges" id="rewardBadges"></div>
+      <div class="btn-row">
+        <button type="button" class="btn mint" id="readAgain">再讀一次課文</button>
+        <button type="button" class="btn primary" id="playAgain">再玩一次</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="overlay" id="overlay" hidden>
+  <div class="overlay-card" role="dialog" aria-modal="true" aria-labelledby="overlayTitle" aria-describedby="overlayText">
+    <div class="overlay-art" id="overlayArt"></div>
+    <h2 id="overlayTitle">太棒了！</h2>
+    <p id="overlayText"></p>
+    <button type="button" class="btn primary big" id="overlayBtn">下一關</button>
+  </div>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+/* =========================================================
+   1. 資料模型
+   ========================================================= */
+var LESSON = [
+  {id:'s1', pinyin:'kāi xué le, kāi xué le,',        text:'開學了，開學了，'},
+  {id:'s2', pinyin:'bèi shū bāo, shàng xué xiào.',    text:'背書包，上學校。'},
+  {id:'s3', pinyin:'lǎo shī hǎo, tóng xué zǎo,',      text:'老師好，同學早，'},
+  {id:'s4', pinyin:'xíng gè lǐ, wèn shēng hǎo.',      text:'行個禮，問聲好。'},
+  {id:'s5', pinyin:'tiān tiān shàng xué zhēn kuài lè!', text:'天天上學真快樂！'}
+];
+
+var ITEMS = [
+  {id:'book',   name:'課本',   ok:true,  why:''},
+  {id:'pencil', name:'鉛筆',   ok:true,  why:''},
+  {id:'bottle', name:'水壺',   ok:true,  why:''},
+  {id:'lunch',  name:'便當',   ok:true,  why:''},
+  {id:'teddy',  name:'玩具熊', ok:false, why:'玩具熊留在家裡陪你放學玩，書包要裝上學用的東西。'},
+  {id:'icecream', name:'雪糕', ok:false, why:'雪糕會溶掉，不可以放進書包哦。'}
+];
+
+var QUIZ = [
+  {
+    speaker:'teacher',
+    line:'早安！',
+    options:[
+      {t:'老師好！', ok:true,  why:'見到老師大聲問好，最有禮貌！'},
+      {t:'我要回家！', ok:false, why:'現在是上學時間，要留在學校上課哦。'},
+      {t:'低著頭不說話', ok:false, why:'老師跟你打招呼，要回應一聲才有禮貌。'}
+    ]
+  },
+  {
+    speaker:'mate',
+    line:'早！',
+    options:[
+      {t:'同學早！', ok:true,  why:'同學問早，你也問早，大家一起開心。'},
+      {t:'走開啦！', ok:false, why:'這樣說話會讓同學難過，換一句有禮貌的吧。'},
+      {t:'假裝沒看見', ok:false, why:'同學叫你，要看一看、回一聲，才是好朋友。'}
+    ]
+  }
+];
+
+var BADGES = [
+  {id:'l1', name:'書包小達人'},
+  {id:'l2', name:'交通小衛士'},
+  {id:'l3', name:'有禮小天使'},
+  {id:'l4', name:'排句小高手'},
+  {id:'read', name:'朗讀小明星'}
+];
+
+var NEXT_SCREEN = {l1:'l2', l2:'l3', l3:'l4', l4:'book'};
+
+/* =========================================================
+   2. 狀態（唯一來源）
+   ========================================================= */
+var state = {
+  screen:'home',
+  stars:0,
+  sound:true,
+  levelsDone:{l1:false, l2:false, l3:false, l4:false},
+  badges:{},
+  l1:{items:[], got:0},
+  l2:{phase:'red', running:false, crossing:false, done:false},
+  l3:{round:0, done:false},
+  l4:{placed:0, order:[], blocks:[]},
+  read:{mode:'idle', idx:-1, rate:0.9, fullDone:false}
+};
+
+/* =========================================================
+   3. 音效引擎（Web Audio 即時合成，無音檔）
+   ========================================================= */
+var Sound = {
+  ctx:null,
+  ok:true,
+  init:function(){
+    if(this.ctx) return;
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if(!AC){ this.ok = false; return; }
+    try{ this.ctx = new AC(); }catch(e){ this.ok = false; }
+  },
+  resume:function(){
+    if(this.ctx && this.ctx.state === 'suspended'){
+      try{ this.ctx.resume(); }catch(e){}
+    }
+  },
+  tone:function(freq, dur, type, vol, delay, slideTo){
+    if(!this.ctx) return;
+    var c = this.ctx, t0 = c.currentTime + (delay||0);
+    var o = c.createOscillator(), g = c.createGain();
+    o.type = type||'sine';
+    o.frequency.setValueAtTime(freq, t0);
+    if(slideTo) o.frequency.exponentialRampToValueAtTime(Math.max(30, slideTo), t0 + dur);
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(vol||0.18, t0 + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    o.connect(g); g.connect(c.destination);
+    o.start(t0); o.stop(t0 + dur + 0.04);
+  },
+  noise:function(dur, vol, freq, delay, q){
+    if(!this.ctx) return;
+    var c = this.ctx, t0 = c.currentTime + (delay||0);
+    var len = Math.max(1, Math.floor(c.sampleRate * dur));
+    var buf = c.createBuffer(1, len, c.sampleRate);
+    var d = buf.getChannelData(0);
+    for(var i=0;i<len;i++){ d[i] = (Math.random()*2-1) * (1 - i/len); }
+    var src = c.createBufferSource(); src.buffer = buf;
+    var f = c.createBiquadFilter(); f.type='bandpass'; f.frequency.value = freq||1400; f.Q.value = q||1.1;
+    var g = c.createGain(); g.gain.value = vol||0.16;
+    src.connect(f); f.connect(g); g.connect(c.destination);
+    src.start(t0);
+  },
+  play:function(name){
+    if(!state.sound || !this.ok) return;
+    this.init(); this.resume();
+    if(!this.ctx) return;
+    switch(name){
+      case 'click':   this.tone(760,0.07,'triangle',0.14); break;
+      case 'correct': this.tone(660,0.12,'sine',0.18); this.tone(880,0.12,'sine',0.16,0.10); this.tone(1180,0.18,'sine',0.15,0.20); break;
+      case 'wrong':   this.tone(210,0.24,'sawtooth',0.11,0,130); break;
+      case 'star':    this.tone(1046,0.10,'sine',0.15); this.tone(1318,0.10,'sine',0.14,0.08); this.tone(1568,0.20,'sine',0.13,0.16); break;
+      case 'bell':    this.tone(880,0.55,'triangle',0.13); this.tone(1320,0.45,'sine',0.09,0.02); this.tone(880,0.55,'triangle',0.11,0.36); this.tone(1320,0.45,'sine',0.08,0.38); break;
+      case 'clap':    this.noise(0.18,0.15,1700,0); this.noise(0.18,0.13,2100,0.09); this.noise(0.22,0.14,1800,0.19); this.noise(0.26,0.12,2300,0.31); break;
+      case 'zipper':  this.noise(0.10,0.11,900,0); this.noise(0.10,0.11,1500,0.07); this.noise(0.12,0.12,2300,0.15); break;
+      case 'page':    this.noise(0.22,0.12,900,0); this.noise(0.18,0.09,1700,0.10); break;
+      case 'step':    this.tone(165,0.09,'sine',0.11); break;
+      case 'tick':    this.tone(1180,0.05,'square',0.07); break;
+      case 'go':      this.tone(880,0.16,'sine',0.15); this.tone(1320,0.22,'sine',0.13,0.14); break;
+      case 'stop':    this.tone(300,0.26,'triangle',0.12); break;
+    }
+  }
+};
+
+/* =========================================================
+   4. 普通話朗讀（Web Speech API + 節拍朗讀降級）
+   ========================================================= */
+var Speech = (function(){
+  var gen = 0, timers = [], voice = null, beatForced = false;
+  var supported = (typeof window !== 'undefined') && ('speechSynthesis' in window) && (typeof window.SpeechSynthesisUtterance === 'function');
+  var mode = supported ? 'speech' : 'beat';
+
+  function pickVoice(){
+    if(!supported) return null;
+    var vs = [];
+    try{ vs = window.speechSynthesis.getVoices() || []; }catch(e){ vs = []; }
+    if(!vs.length) return null;
+    var zh = vs.filter(function(v){
+      var lang = (v.lang||''), nm = (v.name||'');
+      return /^(zh|cmn|yue)/i.test(lang) || /chinese|中文|國語|普通话|普通話|mandarin/i.test(nm);
+    });
+    if(!zh.length) return null;
+    var cn = zh.filter(function(v){ return /zh[-_]?(cn|hans)|cmn/i.test(v.lang||''); });
+    return cn[0] || zh[0];
+  }
+  function refresh(){
+    var v = pickVoice();
+    if(!v) return null;
+    voice = v;
+    if(mode === 'beat' && !beatForced) mode = 'speech';
+    return voice;
+  }
+  if(supported){
+    refresh();
+    try{ window.speechSynthesis.onvoiceschanged = refresh; }catch(e){}
+  }
+
+  function clearTimers(){
+    for(var i=0;i<timers.length;i++) clearTimeout(timers[i]);
+    timers.length = 0;
+  }
+  function later(fn, ms){
+    var t = setTimeout(fn, ms);
+    timers.push(t);
+    return t;
+  }
+  function estimate(i){
+    var clean = LESSON[i].text.replace(/[，。！、,!. ]/g,'');
+    return Math.round(clean.length * 240 / Math.max(0.5, state.read.rate)) + 900;
+  }
+  function switchToBeat(){
+    if(mode === 'beat') return;
+    beatForced = true;
+    mode = 'beat';
+    renderSpeechNote();
+  }
+  function beatRead(i, cb){
+    var clean = LESSON[i].text.replace(/[，。！、,!. ]/g,'');
+    var step = 440;
+    var beats = Math.max(3, Math.round((clean.length*230 + 400) / step));
+    for(var k=0;k<beats;k++){
+      (function(kk){ later(function(){ Sound.play('tick'); }, kk*step); })(k);
+    }
+    later(function(){ if(cb) cb(); }, beats*step + 260);
+  }
+
+  function speak(i, cb){
+    var myGen = ++gen;
+    clearTimers();
+    highlight(i);
+    var settled = false;
+    function finish(){ if(settled || gen!==myGen) return; settled = true; clearTimers(); if(cb) cb(); }
+    function fallbackNow(){
+      if(settled || gen!==myGen) return;
+      settled = true; clearTimers();
+      switchToBeat();
+      beatRead(i, function(){ if(gen===myGen && cb) cb(); });
+    }
+    if(mode === 'speech' && supported){
+      if(!voice) refresh();
+      var u = null;
+      try{ u = new window.SpeechSynthesisUtterance(LESSON[i].text); }catch(e){ u = null; }
+      if(u){
+        u.lang = 'zh-CN'; u.rate = state.read.rate; u.pitch = 1.05; u.volume = 1;
+        if(voice) u.voice = voice;
+        var started = false;
+        u.onstart = function(){ started = true; };
+        u.onend = function(){ if(gen!==myGen) return; finish(); };
+        u.onerror = function(){ if(gen!==myGen||settled) return; if(!started){ fallbackNow(); } else { finish(); } };
+        // 有語音引擎時給它多一點啟動時間；完全沒有語音時立刻改用節拍朗讀
+        later(function(){
+          if(gen!==myGen || settled || started) return;
+          try{ window.speechSynthesis.cancel(); }catch(e){}
+          fallbackNow();
+        }, voice ? 4000 : 1200);
+        try{ window.speechSynthesis.speak(u); }catch(e){ fallbackNow(); }
+        return;
+      }
+    }
+    settled = true;
+    beatRead(i, function(){ if(gen===myGen && cb) cb(); });
+  }
+
+  function stop(){
+    gen++;
+    clearTimers();
+    if(supported){ try{ window.speechSynthesis.cancel(); }catch(e){} }
+    state.read.mode = 'idle';
+    state.read.idx = -1;
+    clearHighlight();
+    renderReadControls();
+  }
+
+  return {
+    available:supported,
+    isBeat:function(){ return mode === 'beat'; },
+    speakOne:function(i, cb){ speak(i, cb); },
+    stop:stop,
+    refresh:refresh
+  };
+})();
+
+/* =========================================================
+   5. 插畫（全部內嵌 SVG，Q版可愛風）
+   ========================================================= */
+function kidSvg(o){
+  o = o || {};
+  var hair = o.hair || '#3b2b23';
+  var shirt = o.shirt || '#6fc0f5';
+  var s = '';
+  s += '<ellipse cx="60" cy="141" rx="32" ry="7" fill="rgba(60,40,30,.12)"/>';
+  if(o.skirt) s += '<path d="M38 106 L82 106 L92 138 L28 138 Z" fill="'+o.skirt+'"/>';
+  s += '<rect x="45" y="112" width="12" height="24" rx="6" fill="#f6c9a4"/>';
+  s += '<rect x="63" y="112" width="12" height="24" rx="6" fill="#f6c9a4"/>';
+  s += '<rect x="38" y="130" width="24" height="12" rx="6" fill="'+(o.shoe||'#ff8fa8')+'"/>';
+  s += '<rect x="58" y="130" width="24" height="12" rx="6" fill="'+(o.shoe||'#ff8fa8')+'"/>';
+  s += '<rect x="24" y="88" width="12" height="30" rx="6" fill="#f6c9a4" transform="rotate(14 30 92)"/>';
+  s += '<rect x="84" y="88" width="12" height="30" rx="6" fill="#f6c9a4" transform="rotate(-14 90 92)"/>';
+  s += '<rect x="36" y="82" width="48" height="36" rx="16" fill="'+shirt+'"/>';
+  if(o.pigtails) s += '<circle cx="26" cy="54" r="13" fill="'+hair+'"/><circle cx="94" cy="54" r="13" fill="'+hair+'"/>';
+  if(o.bun) s += '<circle cx="60" cy="12" r="13" fill="'+hair+'"/>';
+  s += '<circle cx="60" cy="52" r="34" fill="'+hair+'"/>';
+  s += '<circle cx="60" cy="56" r="30" fill="#ffdfc4"/>';
+  s += '<path d="M30 50 C36 24 84 24 90 50 C74 40 46 40 30 50 Z" fill="'+hair+'"/>';
+  s += '<ellipse cx="49" cy="56" rx="4.6" ry="6.2" fill="#3b2b23"/>';
+  s += '<ellipse cx="71" cy="56" rx="4.6" ry="6.2" fill="#3b2b23"/>';
+  s += '<circle cx="50.8" cy="53.6" r="1.7" fill="#fff"/>';
+  s += '<circle cx="72.8" cy="53.6" r="1.7" fill="#fff"/>';
+  s += '<ellipse cx="37" cy="68" rx="7" ry="4.6" fill="#ffb0ae" opacity=".85"/>';
+  s += '<ellipse cx="83" cy="68" rx="7" ry="4.6" fill="#ffb0ae" opacity=".85"/>';
+  s += '<path d="M52 70 Q60 78 68 70" stroke="#c2705a" stroke-width="3" fill="none" stroke-linecap="round"/>';
+  if(o.glasses){
+    s += '<circle cx="49" cy="56" r="11" fill="none" stroke="#5b4a40" stroke-width="2.4" opacity=".9"/>';
+    s += '<circle cx="71" cy="56" r="11" fill="none" stroke="#5b4a40" stroke-width="2.4" opacity=".9"/>';
+  }
+  if(o.backpack){
+    s += '<rect x="30" y="86" width="60" height="42" rx="14" fill="#ffa94d"/>';
+    s += '<rect x="42" y="96" width="36" height="22" rx="8" fill="#ffc078"/>';
+    s += '<rect x="36" y="78" width="9" height="18" rx="4.5" fill="#f08c00"/>';
+    s += '<rect x="75" y="78" width="9" height="18" rx="4.5" fill="#f08c00"/>';
+    s += '<rect x="56" y="104" width="10" height="6" rx="3" fill="#e8590c"/>';
+  }
+  return '<svg viewBox="0 0 120 150" role="img" aria-label="'+(o.label||'小朋友')+'">'+s+'</svg>';
+}
+
+function schoolSvg(){
+  return '<svg viewBox="0 0 320 180" role="img" aria-label="可愛的學校">'
+    + '<rect x="60" y="72" width="200" height="88" rx="14" fill="#ffe3ca"/>'
+    + '<path d="M46 76 L160 22 L274 76 Z" fill="#ff9db8"/>'
+    + '<circle cx="160" cy="54" r="13" fill="#fffdf7"/>'
+    + '<path d="M160 46 v8 h6" stroke="#ff9db8" stroke-width="3" fill="none" stroke-linecap="round"/>'
+    + '<rect x="140" y="110" width="40" height="50" rx="8" fill="#a9765a"/>'
+    + '<circle cx="150" cy="136" r="3.2" fill="#ffcb52"/>'
+    + '<rect x="82" y="94" width="34" height="30" rx="7" fill="#9fd8f7"/>'
+    + '<path d="M99 94 v30 M82 109 h34" stroke="#fffdf7" stroke-width="3"/>'
+    + '<rect x="204" y="94" width="34" height="30" rx="7" fill="#9fd8f7"/>'
+    + '<path d="M221 94 v30 M204 109 h34" stroke="#fffdf7" stroke-width="3"/>'
+    + '<rect x="0" y="156" width="320" height="24" rx="12" fill="#a8e6cf"/>'
+    + '<circle cx="46" cy="150" r="16" fill="#8edec0"/>'
+    + '<circle cx="274" cy="150" r="16" fill="#8edec0"/>'
+    + '</svg>';
+}
+
+function busSvg(){
+  return '<svg viewBox="0 0 120 100" role="img" aria-label="校車">'
+    + '<rect x="8" y="24" width="104" height="50" rx="12" fill="#ffcb52"/>'
+    + '<rect x="20" y="34" width="26" height="20" rx="5" fill="#cdeaff"/>'
+    + '<rect x="54" y="34" width="26" height="20" rx="5" fill="#cdeaff"/>'
+    + '<rect x="86" y="34" width="18" height="20" rx="5" fill="#cdeaff"/>'
+    + '<circle cx="34" cy="78" r="11" fill="#5b4a40"/><circle cx="34" cy="78" r="4" fill="#d9d9d9"/>'
+    + '<circle cx="88" cy="78" r="11" fill="#5b4a40"/><circle cx="88" cy="78" r="4" fill="#d9d9d9"/>'
+    + '<rect x="8" y="52" width="104" height="6" fill="#f0a92e"/>'
+    + '</svg>';
+}
+
+function itemSvg(id){
+  switch(id){
+    case 'book':
+      return '<svg viewBox="0 0 100 100" aria-hidden="true"><rect x="18" y="24" width="64" height="52" rx="7" fill="#7ec4f0"/><rect x="18" y="24" width="13" height="52" rx="6" fill="#4a9fd8"/><rect x="38" y="38" width="32" height="5" rx="2.5" fill="#fff" opacity=".85"/><rect x="38" y="50" width="26" height="5" rx="2.5" fill="#fff" opacity=".85"/><rect x="38" y="62" width="30" height="5" rx="2.5" fill="#fff" opacity=".7"/></svg>';
+    case 'pencil':
+      return '<svg viewBox="0 0 100 100" aria-hidden="true"><g transform="rotate(-36 50 50)"><rect x="42" y="14" width="16" height="56" rx="4" fill="#ffcb52"/><rect x="42" y="14" width="16" height="10" rx="4" fill="#ff9db8"/><path d="M42 70 h16 L50 90 Z" fill="#f6c9a4"/><path d="M46.4 86 h7.2 L50 90 Z" fill="#4a4038"/></g></svg>';
+    case 'bottle':
+      return '<svg viewBox="0 0 100 100" aria-hidden="true"><rect x="36" y="30" width="28" height="52" rx="12" fill="#8fd3f4"/><rect x="40" y="19" width="20" height="14" rx="5" fill="#5aa9d6"/><rect x="44" y="11" width="12" height="10" rx="4" fill="#8fd3f4"/><rect x="42" y="46" width="16" height="16" rx="5" fill="#fff" opacity=".65"/></svg>';
+    case 'lunch':
+      return '<svg viewBox="0 0 100 100" aria-hidden="true"><rect x="20" y="38" width="60" height="42" rx="10" fill="#ff9db8"/><rect x="20" y="38" width="60" height="16" rx="8" fill="#ffb3c9"/><path d="M40 38 v-8 a10 10 0 0 1 20 0 v8" fill="none" stroke="#e0708f" stroke-width="5"/><circle cx="50" cy="62" r="8" fill="#fff" opacity=".7"/></svg>';
+    case 'teddy':
+      return '<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="30" cy="30" r="12" fill="#c89b73"/><circle cx="70" cy="30" r="12" fill="#c89b73"/><ellipse cx="50" cy="78" rx="24" ry="18" fill="#c89b73"/><circle cx="50" cy="46" r="24" fill="#dcb389"/><circle cx="42" cy="44" r="3.4" fill="#4a3a2c"/><circle cx="58" cy="44" r="3.4" fill="#4a3a2c"/><ellipse cx="50" cy="56" rx="8" ry="6" fill="#f3e3d3"/><circle cx="50" cy="53" r="3" fill="#4a3a2c"/></svg>';
+    case 'icecream':
+      return '<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M32 48 h36 L50 90 Z" fill="#e0a35c"/><circle cx="50" cy="36" r="18" fill="#ffc9de"/><circle cx="37" cy="45" r="12" fill="#ffe08a"/><circle cx="63" cy="45" r="12" fill="#a8e6cf"/><circle cx="50" cy="19" r="8" fill="#ff8fa8"/></svg>';
+  }
+  return '';
+}
+
+function backpackSvg(){
+  return '<svg viewBox="0 0 160 170" role="img" aria-label="書包">'
+    + '<ellipse cx="80" cy="162" rx="46" ry="8" fill="rgba(60,40,30,.12)"/>'
+    + '<rect x="30" y="44" width="100" height="112" rx="40" fill="#ffa94d"/>'
+    + '<rect x="46" y="72" width="68" height="56" rx="22" fill="#ffc078"/>'
+    + '<rect x="30" y="46" width="100" height="30" rx="16" fill="#f59f3f"/>'
+    + '<rect x="58" y="100" width="44" height="12" rx="6" fill="#e8590c"/>'
+    + '<path d="M52 46 C52 20 108 20 108 46" fill="none" stroke="#f08c00" stroke-width="10" stroke-linecap="round"/>'
+    + '<circle cx="80" cy="106" r="7" fill="#fff4e6"/>'
+    + '</svg>';
+}
+
+function lightSvg(active){
+  var red = active === 'red', green = active === 'green';
+  var s = '<svg viewBox="0 0 80 172" role="img" aria-label="'+(red?'紅燈，要停下來':'綠燈，可以過馬路')+'">';
+  if(red) s += '<circle cx="40" cy="37" r="30" fill="#ff5a5f" opacity=".22"/>';
+  if(green) s += '<circle cx="40" cy="125" r="30" fill="#43d17a" opacity=".22"/>';
+  s += '<rect x="14" y="6" width="52" height="154" rx="20" fill="#4a5568"/>';
+  s += '<rect x="22" y="19" width="36" height="36" rx="18" fill="'+(red?'#ff5a5f':'#6b7a8f')+'"/>';
+  s += '<rect x="22" y="64" width="36" height="36" rx="18" fill="#6b7a8f"/>';
+  s += '<rect x="22" y="109" width="36" height="36" rx="18" fill="'+(green?'#43d17a':'#6b7a8f')+'"/>';
+  s += '<rect x="34" y="162" width="12" height="8" rx="4" fill="#3c4657"/>';
+  s += '</svg>';
+  return s;
+}
+
+function starPath(){ return '<path d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4 6.2 20.5l1.1-6.5L2.6 9.4l6.5-.9z"/>'; }
+function starSvg(on){ return '<svg class="star '+(on?'on':'off')+'" viewBox="0 0 24 24" aria-hidden="true">'+starPath()+'</svg>'; }
+function speakerIcon(active){
+  return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.2L12 5.6v12.8L7.2 14.5H4z" fill="'+(active?'#ff8a80':'#7d6c60')+'"/><path d="M15.4 8.6a4.6 4.6 0 0 1 0 6.8" fill="none" stroke="'+(active?'#ff8a80':'#7d6c60')+'" stroke-width="2" stroke-linecap="round"/><path d="M18 6.2a7.8 7.8 0 0 1 0 11.6" fill="none" stroke="'+(active?'#ff8a80':'#7d6c60')+'" stroke-width="2" stroke-linecap="round" opacity=".65"/></svg>';
+}
+function soundIcon(on){
+  var c = on ? '#3f332c' : '#b3a79e';
+  var s = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.2L12 5.6v12.8L7.2 14.5H4z" fill="'+c+'"/>';
+  if(on){
+    s += '<path d="M15.4 8.6a4.6 4.6 0 0 1 0 6.8" fill="none" stroke="'+c+'" stroke-width="2" stroke-linecap="round"/>';
+    s += '<path d="M18 6.2a7.8 7.8 0 0 1 0 11.6" fill="none" stroke="'+c+'" stroke-width="2" stroke-linecap="round" opacity=".6"/>';
+  } else {
+    s += '<path d="M15.5 9.8l4.6 4.6M20.1 9.8l-4.6 4.6" stroke="'+c+'" stroke-width="2" stroke-linecap="round"/>';
+  }
+  s += '</svg>';
+  return s;
+}
+function badgeSvg(on){
+  var c1 = on ? '#ffcb52' : '#cfc6bd';
+  var c2 = on ? '#ff8a80' : '#d8d0c8';
+  return '<svg viewBox="0 0 80 90" role="img" aria-label="徽章">'
+    + '<path d="M24 54 L14 86 L30 78 L40 88 L50 78 L66 86 L56 54 Z" fill="'+c2+'"/>'
+    + '<circle cx="40" cy="36" r="28" fill="'+c1+'"/>'
+    + '<circle cx="40" cy="36" r="20" fill="#fffdf7" opacity=".55"/>'
+    + '<g transform="translate(28 24) scale(1)"><path d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4 6.2 20.5l1.1-6.5L2.6 9.4l6.5-.9z" fill="'+(on?'#ff8a80':'#c9c0b8')+'"/></g>'
+    + '</svg>';
+}
+function trophySvg(){
+  return '<svg viewBox="0 0 100 100" role="img" aria-label="獎盃">'
+    + '<path d="M26 18h48v20a24 24 0 0 1-48 0z" fill="#ffcb52"/>'
+    + '<path d="M26 22H16a12 12 0 0 0 12 18z" fill="#f0a92e"/>'
+    + '<path d="M74 22h10a12 12 0 0 1-12 18z" fill="#f0a92e"/>'
+    + '<rect x="44" y="58" width="12" height="14" rx="4" fill="#f0a92e"/>'
+    + '<rect x="30" y="72" width="40" height="12" rx="6" fill="#e05f57"/>'
+    + '<path d="M50 26l2.6 5.4 6 .9-4.3 4.2 1 6-5.3-2.8-5.3 2.8 1-6-4.3-4.2 6-.9z" fill="#fffdf7"/>'
+    + '</svg>';
+}
+
+/* =========================================================
+   6. DOM 引用
+   ========================================================= */
+var $ = function(id){ return document.getElementById(id); };
+var screens = {
+  home:  $('screen-home'),
+  l1:    $('screen-l1'),
+  l2:    $('screen-l2'),
+  l3:    $('screen-l3'),
+  l4:    $('screen-l4'),
+  book:  $('screen-book'),
+  reward:$('screen-reward')
+};
+var el = {
+  main: $('mainRoot'), hint: $('hint'), starBox: $('starBox'), progress: $('progressText'),
+  soundBtn: $('soundBtn'), overlay: $('overlay'), overlayArt: $('overlayArt'),
+  overlayTitle: $('overlayTitle'), overlayText: $('overlayText'), overlayBtn: $('overlayBtn'),
+  homeArt: $('homeArt'), homeLevels: $('homeLevels'), startBtn: $('startBtn'),
+  l1Items: $('l1Items'), l1Bag: $('l1Bag'), l1Count: $('l1Count'), l1Slots: $('l1Slots'),
+  l2Scene: $('l2Scene'), l2School: $('l2School'), l2Light: $('l2Light'), l2Kid: $('l2Kid'),
+  l2State: $('l2State'), l2Cross: $('l2Cross'),
+  l3Speaker: $('l3Speaker'), l3Line: $('l3Line'), l3Options: $('l3Options'),
+  l4Slots: $('l4Slots'), l4Blocks: $('l4Blocks'),
+  bookList: $('bookList'), readAll: $('readAll'), readStop: $('readStop'),
+  readRate: $('readRate'), speechNote: $('speechNote'), toReward: $('toReward'),
+  rewardArt: $('rewardArt'), rewardStars: $('rewardStars'), rewardNote: $('rewardNote'),
+  rewardBadges: $('rewardBadges'), readAgain: $('readAgain'), playAgain: $('playAgain')
+};
+
+/* =========================================================
+   7. 畫面切換 / 通用渲染
+   ========================================================= */
+function setHint(text, kind){
+  el.hint.textContent = text;
+  el.hint.className = 'hint' + (kind ? ' ' + kind : '');
+}
+
+function renderHud(){
+  var s = '';
+  for(var i=0;i<5;i++) s += starSvg(i < state.stars);
+  el.starBox.innerHTML = s;
+  el.starBox.setAttribute('aria-label', '已獲得 ' + state.stars + ' 顆星');
+  var done = 0, lvKeys = ['l1','l2','l3','l4'];
+  for(var k=0;k<lvKeys.length;k++){ if(state.levelsDone[lvKeys[k]]) done++; }
+  el.progress.textContent = '關卡 ' + done + ' / 4';
+  el.soundBtn.innerHTML = '<span class="sr-only">音效開關</span>' + soundIcon(state.sound);
+  el.soundBtn.setAttribute('aria-pressed', state.sound ? 'true' : 'false');
+}
+
+var HINT_TEXT = {
+  home:'點「開始上學」，跟著課文一起去上學。',
+  l1:'把上學要用的東西放進書包，不是上學用的就留在家裡。',
+  l2:'看清楚紅綠燈：綠燈才過馬路，紅燈要停下來等一等。',
+  l3:'聽到問好，選一句最有禮貌的回答。',
+  l4:'按照課文的順序，一句一句排好。',
+  book:'點任何一句可以單獨聽，也可以聽全文朗讀。',
+  reward:'這是你今天的成果，真棒！'
+};
+
+function showScreen(name){
+  var prev = state.screen;
+  state.screen = name;
+  if(prev === 'l2' && name !== 'l2'){ stopL2(); }
+  for(var k in screens){
+    var on = (k === name);
+    screens[k].hidden = !on;
+    screens[k].setAttribute('aria-hidden', on ? 'false' : 'true');
+    if(on){ screens[k].removeAttribute('inert'); }
+    else { screens[k].setAttribute('inert',''); }
+  }
+  setHint(HINT_TEXT[name] || '');
+  renderHud();
+  if(name !== 'book'){ Speech.stop(); }
+  var enter = ENTER[name];
+  if(enter) enter();
+  try{ window.scrollTo(0,0); }catch(e){}
+}
+
+/* =========================================================
+   8. 彈層
+   ========================================================= */
+var overlayAction = null;
+function openOverlay(opt){
+  el.overlayArt.innerHTML = opt.art || '';
+  el.overlayTitle.textContent = opt.title || '';
+  el.overlayText.textContent = opt.text || '';
+  el.overlayBtn.textContent = opt.btn || '知道了';
+  overlayAction = opt.action || null;
+  el.overlay.hidden = false;
+  el.overlay.setAttribute('aria-hidden','false');
+  el.main.setAttribute('inert','');
+  try{ el.overlayBtn.focus(); }catch(e){}
+}
+function closeOverlay(){
+  el.overlay.hidden = true;
+  el.overlay.setAttribute('aria-hidden','true');
+  el.main.removeAttribute('inert');
+  overlayAction = null;
+}
+el.overlayBtn.addEventListener('click', function(){
+  var fn = overlayAction;
+  closeOverlay();
+  if(fn) fn();
+});
+
+/* =========================================================
+   9. 首頁
+   ========================================================= */
+function renderHome(){
+  el.homeArt.innerHTML = schoolSvg() + '<div style="display:flex;justify-content:center;gap:6px;margin-top:-26px">'
+    + '<div style="width:26%">' + kidSvg({backpack:true,label:'背書包的小朋友'}) + '</div>'
+    + '<div style="width:22%">' + kidSvg({pigtails:true,shirt:'#ffb3c9',pink:'#ffd6e3',label:'扎辮子的小朋友'}) + '</div>'
+    + '</div>';
+  var cards = [
+    {tag:'1', t:'背書包', d:'挑出上學要帶的東西', art:itemSvg('book')},
+    {tag:'2', t:'上學路上', d:'看紅綠燈平安過馬路', art:lightSvg('green')},
+    {tag:'3', t:'進教室問好', d:'選一句有禮貌的問候', art:kidSvg({bun:true,glasses:true,skirt:'#b9a2f5',label:'老師'})},
+    {tag:'4', t:'課文排排隊', d:'把五個句子排回原來的順序', art:backpackSvg()}
+  ];
+  var html = '';
+  for(var i=0;i<cards.length;i++){
+    html += '<div class="lv-card"><span class="tag">'+cards[i].tag+'</span>'
+      + '<div style="min-width:0"><h3>'+cards[i].t+'</h3><p>'+cards[i].d+'</p></div>'
+      + '<span class="art" aria-hidden="true">'+cards[i].art+'</span></div>';
+  }
+  el.homeLevels.innerHTML = html;
+}
+
+/* =========================================================
+   10. 第1關：背書包
+   ========================================================= */
+function shuffle(arr){
+  var a = arr.slice();
+  for(var i=a.length-1;i>0;i--){
+    var j = Math.floor(Math.random()*(i+1));
+    var t = a[i]; a[i] = a[j]; a[j] = t;
+  }
+  return a;
+}
+
+function startL1(){
+  state.l1.items = shuffle(ITEMS.map(function(x){ return x.id; }));
+  state.l1.okIds = [];
+  state.l1.slotIds = [];
+  state.l1.got = 0;
+  renderL1();
+  setHint('把上學要用的東西放進書包，不是上學用的就留在家裡。');
+}
+
+function renderL1(){
+  var html = '';
+  for(var i=0;i<state.l1.items.length;i++){
+    var id = state.l1.items[i];
+    var it = null;
+    for(var j=0;j<ITEMS.length;j++){ if(ITEMS[j].id === id) it = ITEMS[j]; }
+    if(!it) continue;
+    var taken = (state.l1.okIds && state.l1.okIds.indexOf(id) >= 0) || false;
+    html += '<button type="button" class="item" data-id="'+id+'"'+(taken?' disabled':'')+'>'
+      + itemSvg(id) + '<b>' + it.name + '</b></button>';
+  }
+  el.l1Items.innerHTML = html;
+  el.l1Bag.innerHTML = backpackSvg();
+  el.l1Count.textContent = String(state.l1.got);
+  var slots = '';
+  for(var s=0;s<4;s++){
+    var takenId = (state.l1.slotIds && state.l1.slotIds[s]) || null;
+    slots += '<div class="bag-slot'+(takenId?' on':'')+'">'+(takenId ? itemSvg(takenId) : '')+'</div>';
+  }
+  el.l1Slots.innerHTML = slots;
+}
+
+function onL1Click(ev){
+  var btn = ev.target.closest ? ev.target.closest('.item') : null;
+  if(!btn || btn.disabled) return;
+  var id = btn.getAttribute('data-id');
+  var it = null;
+  for(var i=0;i<ITEMS.length;i++){ if(ITEMS[i].id === id) it = ITEMS[i]; }
+  if(!it) return;
+  if(it.ok){
+    state.l1.okIds = state.l1.okIds || [];
+    if(state.l1.okIds.indexOf(id) >= 0) return;
+    state.l1.okIds.push(id);
+    state.l1.slotIds = state.l1.slotIds || [];
+    state.l1.slotIds.push(id);
+    state.l1.got = state.l1.okIds.length;
+    Sound.play('zipper');
+    setHint('「' + it.name + '」放進書包了！', 'good');
+    renderL1();
+    if(state.l1.got >= 4) completeLevel('l1');
+  } else {
+    Sound.play('wrong');
+    btn.classList.add('shake');
+    setTimeout(function(){ btn.classList.remove('shake'); }, 460);
+    setHint(it.why, 'bad');
+  }
+}
+
+/* =========================================================
+   11. 第2關：上學路上（紅綠燈）
+   ========================================================= */
+var l2Timer = null, l2WalkTimer = null;
+
+function stopL2(){
+  state.l2.running = false;
+  if(l2Timer){ clearTimeout(l2Timer); l2Timer = null; }
+  if(l2WalkTimer){ clearTimeout(l2WalkTimer); l2WalkTimer = null; }
+  el.l2Kid.classList.remove('walking');
+}
+
+function startL2(){
+  stopL2();
+  state.l2 = {phase:'red', running:true, crossing:false, done:false};
+  el.l2School.innerHTML = schoolSvg();
+  el.l2Kid.innerHTML = kidSvg({label:'背書包的小朋友'});
+  el.l2Kid.classList.remove('walking','shake');
+  el.l2Kid.style.setProperty('--dx','0px');
+  el.l2Cross.disabled = false;
+  renderL2Light();
+  scheduleLight();
+}
+
+function scheduleLight(){
+  if(!state.l2.running) return;
+  var wait = 2200 + Math.random()*1200;
+  l2Timer = setTimeout(function(){
+    if(!state.l2.running || state.screen !== 'l2' || state.l2.crossing || state.l2.done) return;
+    state.l2.phase = (state.l2.phase === 'red') ? 'green' : 'red';
+    renderL2Light();
+    if(state.l2.phase === 'green'){
+      Sound.play('go');
+      setHint('綠燈了，可以過馬路！', 'good');
+    } else {
+      Sound.play('stop');
+      setHint('紅燈了，要停下來等一等。', 'bad');
+    }
+    scheduleLight();
+  }, wait);
+}
+
+function renderL2Light(){
+  var green = state.l2.phase === 'green';
+  el.l2Light.innerHTML = lightSvg(state.l2.phase);
+  el.l2State.textContent = green ? '綠燈，可以過馬路。' : '紅燈，要停下來。';
+  el.l2State.className = 'light-state ' + (green ? 'go' : 'stop');
+}
+
+function onL2Cross(){
+  if(state.l2.crossing || state.l2.done || state.screen !== 'l2') return;
+  Sound.init(); Sound.resume();
+  if(state.l2.phase === 'green'){
+    state.l2.crossing = true;
+    el.l2Cross.disabled = true;
+    if(l2Timer){ clearTimeout(l2Timer); l2Timer = null; }
+    var scene = el.l2Scene, kid = el.l2Kid;
+    var dx = Math.max(40, scene.clientWidth - kid.offsetWidth - scene.clientWidth*0.12);
+    kid.style.setProperty('--dx', dx + 'px');
+    // 腳步聲
+    for(var i=0;i<5;i++){
+      (function(k){ setTimeout(function(){ Sound.play('step'); }, 120 + k*300); })(i);
+    }
+    void kid.offsetWidth;
+    kid.classList.add('walking');
+    var finished = false;
+    function finishCross(){
+      if(finished) return;
+      finished = true;
+      if(l2WalkTimer){ clearTimeout(l2WalkTimer); l2WalkTimer = null; }
+      state.l2.crossing = false;
+      state.l2.running = false;
+      setHint('安全過馬路了，學校就在前面！', 'good');
+      completeLevel('l2');
+    }
+    kid.addEventListener('transitionend', function te(){
+      kid.removeEventListener('transitionend', te);
+      finishCross();
+    });
+    l2WalkTimer = setTimeout(finishCross, 2600);
+  } else {
+    Sound.play('wrong');
+    el.l2Kid.classList.add('shake');
+    setTimeout(function(){ el.l2Kid.classList.remove('shake'); }, 520);
+    setHint('現在是紅燈，過馬路很危險！等綠燈再走。', 'bad');
+  }
+}
+
+/* =========================================================
+   12. 第3關：進教室問好
+   ========================================================= */
+function startL3(){
+  state.l3 = {round:0, done:false};
+  renderL3();
+}
+
+function renderL3(){
+  var q = QUIZ[state.l3.round];
+  if(!q) return;
+  if(q.speaker === 'teacher'){
+    el.l3Speaker.innerHTML = kidSvg({bun:true, glasses:true, skirt:'#b9a2f5', shirt:'#c9b8ff', label:'老師'});
+  } else {
+    el.l3Speaker.innerHTML = kidSvg({pigtails:true, shirt:'#ffb3c9', shoe:'#8fd3f4', label:'同學'});
+  }
+  el.l3Line.textContent = q.line;
+  var html = '';
+  for(var i=0;i<q.options.length;i++){
+    html += '<button type="button" class="opt" data-i="'+i+'"><span class="bullet">'+(i+1)+'</span><span>'+q.options[i].t+'</span></button>';
+  }
+  el.l3Options.innerHTML = html;
+}
+
+function onL3Click(ev){
+  var btn = ev.target.closest ? ev.target.closest('.opt') : null;
+  if(!btn || btn.disabled) return;
+  var q = QUIZ[state.l3.round];
+  if(!q) return;
+  var opt = q.options[parseInt(btn.getAttribute('data-i'),10)];
+  if(!opt) return;
+  if(opt.ok){
+    Sound.play('correct');
+    btn.classList.add('right');
+    var all = el.l3Options.querySelectorAll('.opt');
+    for(var i=0;i<all.length;i++) all[i].disabled = true;
+    setHint(opt.why, 'good');
+    setTimeout(function(){
+      if(state.screen !== 'l3') return;
+      state.l3.round++;
+      if(state.l3.round >= QUIZ.length){
+        Sound.play('clap');
+        setHint('行個禮，問聲好——你真有禮貌！', 'good');
+        completeLevel('l3');
+      } else {
+        renderL3();
+        setHint('還有一次，聽聽看同學說什麼。');
+      }
+    }, 1100);
+  } else {
+    Sound.play('wrong');
+    btn.classList.add('shake');
+    setTimeout(function(){ btn.classList.remove('shake'); }, 460);
+    setHint(opt.why, 'bad');
+  }
+}
+
+/* =========================================================
+   13. 第4關：課文排排隊
+   ========================================================= */
+function startL4(){
+  state.l4 = {placed:0, order:LESSON.map(function(x){ return x.id; }), blocks:[]};
+  var ids = LESSON.map(function(x){ return x.id; });
+  var shuffled = shuffle(ids);
+  // 保證不會一開始就是正確順序
+  var same = true;
+  for(var i=0;i<shuffled.length;i++){ if(shuffled[i] !== ids[i]){ same = false; break; } }
+  if(same) shuffled = shuffled.slice(1).concat(shuffled.slice(0,1));
+  state.l4.blocks = shuffled;
+  renderL4();
+}
+
+function lessonById(id){
+  for(var i=0;i<LESSON.length;i++){ if(LESSON[i].id === id) return LESSON[i]; }
+  return null;
+}
+
+function renderL4(){
+  var slots = '';
+  for(var i=0;i<LESSON.length;i++){
+    var filled = state.l4.order[i] && i < state.l4.placed ? state.l4.order[i] : null;
+    var txt = filled ? lessonById(filled).text : '？';
+    slots += '<div class="slot'+(filled?' filled':'')+'"><span class="no">'+(i+1)+'</span><span>'+txt+'</span></div>';
+  }
+  el.l4Slots.innerHTML = slots;
+  var html = '';
+  for(var b=0;b<state.l4.blocks.length;b++){
+    var id = state.l4.blocks[b];
+    var used = state.l4.order.slice(0, state.l4.placed).indexOf(id) >= 0;
+    html += '<button type="button" class="block" data-id="'+id+'"'+(used?' disabled':'')+'>'+lessonById(id).text+'</button>';
+  }
+  el.l4Blocks.innerHTML = html;
+}
+
+function onL4Click(ev){
+  var btn = ev.target.closest ? ev.target.closest('.block') : null;
+  if(!btn || btn.disabled) return;
+  var id = btn.getAttribute('data-id');
+  var expect = state.l4.order[state.l4.placed];
+  if(id === expect){
+    state.l4.placed++;
+    Sound.play('correct');
+    renderL4();
+    if(state.l4.placed >= LESSON.length){
+      setHint('五句話都排好了，課文完整了！', 'good');
+      completeLevel('l4');
+    } else {
+      setHint('對了！接著排下一句。', 'good');
+    }
+  } else {
+    Sound.play('wrong');
+    btn.classList.add('shake');
+    setTimeout(function(){ btn.classList.remove('shake'); }, 460);
+    setHint('這句還不是下一句。想一想，課文是從「' + lessonById(state.l4.order[0]).text.charAt(0) + '」開始的。', 'bad');
+  }
+}
+
+/* =========================================================
+   14. 關卡通關
+   ========================================================= */
+function completeLevel(key){
+  if(state.levelsDone[key]) return;
+  state.levelsDone[key] = true;
+  state.badges[key] = true;
+  state.stars = Math.min(5, state.stars + 1);
+  Sound.play('star');
+  setTimeout(function(){ Sound.play('clap'); }, 260);
+  renderHud();
+  var badgeName = '';
+  for(var i=0;i<BADGES.length;i++){ if(BADGES[i].id === key) badgeName = BADGES[i].name; }
+  var isLast = (key === 'l4');
+  openOverlay({
+    art: badgeSvg(true),
+    title:'太棒了！',
+    text:'你得到「' + badgeName + '」徽章，還有一顆星星。',
+    btn: isLast ? '去讀課文' : '下一關',
+    action: function(){ showScreen(NEXT_SCREEN[key] || 'book'); }
+  });
+}
+
+/* =========================================================
+   15. 課文繪本 + 全文朗讀
+   ========================================================= */
+function renderBook(){
+  var html = '';
+  for(var i=0;i<LESSON.length;i++){
+    html += '<button type="button" class="line-row" data-i="'+i+'" aria-label="朗讀第 '+(i+1)+' 句：'+LESSON[i].text+'">'
+      + '<span class="line-body"><span class="line-pinyin">'+LESSON[i].pinyin+'</span>'
+      + '<span class="line-text">'+LESSON[i].text+'</span></span>'
+      + '<span class="line-icon">'+speakerIcon(false)+'</span></button>';
+  }
+  el.bookList.innerHTML = html;
+  renderReadControls();
+  renderSpeechNote();
+}
+
+function highlight(i){
+  var rows = el.bookList.querySelectorAll('.line-row');
+  for(var k=0;k<rows.length;k++){
+    var on = (parseInt(rows[k].getAttribute('data-i'),10) === i);
+    rows[k].classList.toggle('active', on);
+    rows[k].setAttribute('aria-current', on ? 'true' : 'false');
+    var ic = rows[k].querySelector('.line-icon');
+    if(ic) ic.innerHTML = speakerIcon(on);
+  }
+}
+function clearHighlight(){
+  var rows = el.bookList.querySelectorAll('.line-row');
+  for(var k=0;k<rows.length;k++){
+    rows[k].classList.remove('active');
+    rows[k].removeAttribute('aria-current');
+    var ic = rows[k].querySelector('.line-icon');
+    if(ic) ic.innerHTML = speakerIcon(false);
+  }
+}
+
+function renderReadControls(){
+  var playing = (state.read.mode === 'full');
+  el.readAll.disabled = playing;
+  el.readStop.disabled = (state.read.mode === 'idle');
+  el.readAll.textContent = playing ? '正在朗讀…' : '聽全文朗讀';
+  el.readRate.textContent = '速度：' + (state.read.rate < 0.8 ? '慢速' : '正常');
+  el.readRate.setAttribute('aria-pressed', state.read.rate < 0.8 ? 'true' : 'false');
+}
+
+function renderSpeechNote(){
+  if(Speech.isBeat()){
+    el.speechNote.hidden = false;
+    el.speechNote.textContent = '這台裝置沒有可用的普通話語音，已改用「節拍朗讀」：每一句會逐句亮起並配上節拍聲。';
+  } else {
+    el.speechNote.hidden = true;
+    el.speechNote.textContent = '';
+  }
+}
+
+function readOne(i){
+  if(state.screen !== 'book') return;
+  Speech.stop();
+  state.read.mode = 'single';
+  state.read.idx = i;
+  renderReadControls();
+  Sound.play('page');
+  Speech.speakOne(i, function(){
+    if(state.read.mode !== 'single') return;
+    state.read.mode = 'idle';
+    state.read.idx = -1;
+    clearHighlight();
+    renderReadControls();
+  });
+}
+
+function readAll(){
+  if(state.screen !== 'book') return;
+  Speech.stop();
+  state.read.mode = 'full';
+  state.read.idx = 0;
+  renderReadControls();
+  step();
+  function step(){
+    if(state.read.mode !== 'full') return;
+    var i = state.read.idx;
+    if(i >= LESSON.length){ finishFull(); return; }
+    Speech.speakOne(i, function(){
+      if(state.read.mode !== 'full') return;
+      state.read.idx++;
+      setTimeout(step, 240);
+    });
+  }
+  function finishFull(){
+    state.read.mode = 'idle';
+    state.read.idx = -1;
+    clearHighlight();
+    renderSpeechNote();
+    renderReadControls();
+    if(!state.levelsDone.read){
+      state.levelsDone.read = true;
+      state.badges.read = true;
+      state.read.fullDone = true;
+      state.stars = Math.min(5, state.stars + 1);
+      Sound.play('star');
+      renderHud();
+    }
+    setHint('全文朗讀完了，你已經聽完整篇課文！', 'good');
+  }
+}
+
+/* =========================================================
+   16. 成果頁
+   ========================================================= */
+function renderReward(){
+  var isAll = true;
+  for(var i=0;i<BADGES.length;i++){ if(!state.badges[BADGES[i].id]) isAll = false; }
+  el.rewardArt.innerHTML = isAll ? trophySvg() : badgeSvg(true);
+  var s = '';
+  for(var k=0;k<5;k++) s += starSvg(k < state.stars);
+  el.rewardStars.innerHTML = s;
+  el.rewardNote.textContent = isAll
+    ? '五枚徽章都拿到了，天天上學真快樂！'
+    : '你已經收集到 ' + state.stars + ' 顆星，還沒拿到的徽章可以回去再玩一次。';
+  var html = '';
+  for(var b=0;b<BADGES.length;b++){
+    var on = !!state.badges[BADGES[b].id];
+    html += '<div class="badge'+(on?'':' off')+'"><span class="art" aria-hidden="true">'+badgeSvg(on)+'</span>'
+      + '<b>'+BADGES[b].name+'</b><span class="state">'+(on?'已獲得':'未獲得')+'</span></div>';
+  }
+  el.rewardBadges.innerHTML = html;
+}
+
+/* =========================================================
+   17. 重置
+   ========================================================= */
+function resetAll(){
+  Speech.stop();
+  stopL2();
+  clearHighlight();
+  state.stars = 0;
+  state.levelsDone = {l1:false, l2:false, l3:false, l4:false};
+  state.badges = {};
+  state.l1 = {items:[], got:0, okIds:[], slotIds:[]};
+  state.l3 = {round:0, done:false};
+  state.l4 = {placed:0, order:[], blocks:[]};
+  state.read = {mode:'idle', idx:-1, rate:state.read.rate, fullDone:false};
+  el.readStop.disabled = true;
+  el.readAll.disabled = false;
+  renderHome();
+  showScreen('home');
+}
+
+/* =========================================================
+   18. 各畫面進入
+   ========================================================= */
+var ENTER = {
+  home: function(){ renderHome(); },
+  l1: startL1,
+  l2: startL2,
+  l3: startL3,
+  l4: startL4,
+  book: renderBook,
+  reward: renderReward
+};
+
+/* =========================================================
+   19. 事件綁定
+   ========================================================= */
+el.startBtn.addEventListener('click', function(){ Sound.play('click'); showScreen('l1'); });
+el.l1Items.addEventListener('click', onL1Click);
+el.l2Cross.addEventListener('click', onL2Cross);
+el.l3Options.addEventListener('click', onL3Click);
+el.l4Blocks.addEventListener('click', onL4Click);
+el.bookList.addEventListener('click', function(ev){
+  var row = ev.target.closest ? ev.target.closest('.line-row') : null;
+  if(!row) return;
+  readOne(parseInt(row.getAttribute('data-i'),10));
+});
+el.readAll.addEventListener('click', function(){ readAll(); });
+el.readStop.addEventListener('click', function(){ Speech.stop(); Sound.play('click'); setHint('已停止朗讀。'); });
+el.readRate.addEventListener('click', function(){
+  state.read.rate = (state.read.rate < 0.8) ? 0.9 : 0.6;
+  renderReadControls();
+  Sound.play('click');
+  setHint(state.read.rate < 0.8 ? '改成慢速朗讀，聽得更清楚。' : '改回正常速度。');
+});
+el.toReward.addEventListener('click', function(){ Sound.play('click'); showScreen('reward'); });
+el.readAgain.addEventListener('click', function(){ Sound.play('click'); showScreen('book'); });
+el.playAgain.addEventListener('click', function(){ Sound.play('click'); resetAll(); });
+el.soundBtn.addEventListener('click', function(){
+  state.sound = !state.sound;
+  renderHud();
+  if(state.sound){ Sound.init(); Sound.resume(); Sound.play('click'); setHint('音效已開啟。'); }
+  else { setHint('音效已關閉。'); }
+});
+
+/* 首次互動解鎖音訊 */
+function unlockAudio(){
+  Sound.init(); Sound.resume(); Speech.refresh();
+  document.removeEventListener('pointerdown', unlockAudio);
+  document.removeEventListener('keydown', unlockAudio);
+  renderHud();
+}
+document.addEventListener('pointerdown', unlockAudio);
+document.addEventListener('keydown', unlockAudio);
+
+window.addEventListener('resize', function(){
+  if(state.screen === 'l2' && !state.l2.crossing && !state.l2.done){
+    el.l2Kid.classList.remove('walking');
+    el.l2Kid.style.setProperty('--dx','0px');
+  }
+});
+
+/* =========================================================
+   20. 啟動
+   ========================================================= */
+document.querySelector('.brand-art').innerHTML = schoolSvg();
+renderHome();
+renderHud();
+renderBook();
+showScreen('home');
+
+/* 語音清單可能延後載入，載入後更新提示 */
+setTimeout(function(){ Speech.refresh(); renderSpeechNote(); }, 900);
+if(typeof window !== 'undefined' && window.speechSynthesis && window.speechSynthesis.addEventListener){
+  try{ window.speechSynthesis.addEventListener('voiceschanged', function(){ Speech.refresh(); renderSpeechNote(); }); }catch(e){}
+}
+
+})();
+</script>
+</body>
+</html>

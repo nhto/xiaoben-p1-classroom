@@ -1,0 +1,2184 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>孝順的小烏鴉｜情景遊戲</title>
+<meta name="description" content="配合一年級課文《孝順的小烏鴉》的情景遊戲：先體驗爸爸媽媽辛苦餵養，再做出孝順的選擇，接著飛遍東西南北找食物，最後叼回家餵爸爸媽媽。全程搭配劇情音效，結尾可用普通話逐句朗讀課文。">
+<style>
+  :root{
+    --ink:#3a3346;
+    --ink-soft:#6b6478;
+    --crow:#2e2e3c;
+    --crow-d:#20202b;
+    --crow-l:#45455c;
+    --beak:#f7a83a;
+    --beak-d:#d98a20;
+    --pink:#ff9fb2;
+    --gold:#ffce4d;
+    --good:#5fbf7a;
+    --good-bg:#e7f8ec;
+    --warn:#e2798a;
+    --warn-bg:#fdeef1;
+    --paper:#fffdf7;
+    --line:rgba(58,51,70,.12);
+  }
+  *{box-sizing:border-box;}
+  [hidden]{display:none !important;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:"Yuanti TC","YuanTi TC","PingFang TC","Noto Sans TC","Microsoft JhengHei","Heiti TC",system-ui,-apple-system,"Segoe UI",sans-serif;
+    color:var(--ink);
+    background:radial-gradient(circle at 50% 0%,#33517a,#152134 72%);
+    display:flex;align-items:center;justify-content:center;
+    min-height:100vh;min-height:100dvh;
+    overflow:hidden;
+    -webkit-tap-highlight-color:transparent;
+    -webkit-font-smoothing:antialiased;
+  }
+  .frame{width:100%;height:100%;display:flex;align-items:center;justify-content:center;}
+  .stage{
+    position:relative;width:100%;max-width:432px;height:100vh;height:100dvh;
+    display:flex;flex-direction:column;overflow:hidden;background:#dff4ff;
+  }
+  @media (min-width:520px){
+    .stage{height:min(94vh,900px);height:min(94dvh,900px);border-radius:28px;border:5px solid #fff;
+      box-shadow:0 26px 60px rgba(0,0,0,.5);}
+  }
+
+  /* ---------- 幕簾 ---------- */
+  .curtain{position:absolute;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;
+    background:rgba(30,44,66,.86);opacity:0;pointer-events:none;transition:opacity .34s ease;}
+  .curtain.show{opacity:1;}
+  .curtain-in{text-align:center;color:#fff;transform:translateY(10px);transition:transform .34s ease;}
+  .curtain.show .curtain-in{transform:translateY(0);}
+  .curtain-eyebrow{font-size:14px;letter-spacing:3px;opacity:.78;margin-bottom:8px;}
+  .curtain-title{font-size:26px;font-weight:800;letter-spacing:1px;}
+
+  /* ---------- HUD ---------- */
+  .hud{display:flex;align-items:center;gap:8px;padding:10px 54px 6px 12px;position:relative;z-index:20;}
+  .hud-back{flex:0 0 auto;font:inherit;font-size:13px;font-weight:700;color:var(--ink);
+    background:#ffffff;border:0;border-radius:999px;padding:8px 14px;min-height:34px;cursor:pointer;
+    box-shadow:0 2px 0 rgba(58,51,70,.14);}
+  .hud-back:active{transform:translateY(1px);box-shadow:none;}
+  .hud-label{font-size:13px;font-weight:700;color:#5c5a70;background:rgba(255,255,255,.7);
+    border-radius:999px;padding:7px 12px;}
+  .hud-stars{margin-left:auto;display:flex;gap:4px;align-items:center;}
+  .hud-stars svg{width:20px;height:20px;display:block;}
+
+  /* ---------- 場景容器 ---------- */
+  .viewport{position:relative;flex:1;min-height:0;}
+  .scene{position:absolute;inset:0;display:flex;flex-direction:column;opacity:0;
+    transition:opacity .3s ease;}
+  .scene.is-active{opacity:1;}
+  .scene[hidden]{display:none;}
+
+  /* ---------- 背景 ---------- */
+  .bg-day{background:linear-gradient(#a8e6ff 0%,#d8f6ff 52%,#cdeeb4 100%);}
+  .bg-dusk{background:linear-gradient(#ffd9a8 0%,#ffb9a8 46%,#ec9aa0 100%);}
+  .bg-sky{background:linear-gradient(#7fd0f5 0%,#c8ecff 58%,#eefaff 100%);}
+  .bg-warm{background:linear-gradient(#ffe7b6 0%,#ffd3a3 50%,#f7c691 100%);}
+  .bg-night{background:linear-gradient(#243057 0%,#3d4d84 56%,#66759f 100%);}
+
+  /* ---------- 通用元件 ---------- */
+  .goal-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;
+    background:rgba(255,255,255,.9);border-radius:999px;padding:8px 14px;font-size:14px;font-weight:700;
+    box-shadow:0 3px 0 rgba(58,51,70,.09);}
+  .goal-bar .goal-text{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .goal-bar b{color:#e2703a;font-size:16px;}
+  .goal-lives{display:flex;gap:3px;}
+  .goal-lives svg{width:19px;height:18px;display:block;}
+  .goal-lives svg .hb{fill:#ffd5dd;stroke:#dfa6b2;}
+  .goal-lives svg .hb.on{fill:#ff7b93;stroke:#e0576f;}
+
+  .timebar{height:8px;border-radius:999px;background:rgba(255,255,255,.72);overflow:hidden;
+    box-shadow:inset 0 1px 2px rgba(58,51,70,.12);}
+  .timebar i{display:block;height:100%;width:100%;border-radius:999px;
+    background:linear-gradient(90deg,#7fd6a1,#ffd166);transition:background .3s;}
+  .timebar i.low{background:linear-gradient(90deg,#ffb36b,#ff8a94);}
+
+  .btn{font:inherit;font-weight:800;border:0;border-radius:999px;padding:15px 26px;min-height:52px;
+    cursor:pointer;width:100%;letter-spacing:.5px;transition:transform .12s ease;}
+  .btn:active{transform:translateY(2px);}
+  .btn-primary{background:linear-gradient(#ffc65c,#f5a02a);color:#4a3210;
+    box-shadow:0 5px 0 #cf7f14;}
+  .btn-primary:active{box-shadow:0 3px 0 #cf7f14;}
+  .btn-ghost{background:rgba(255,255,255,.92);color:#4a4458;box-shadow:0 4px 0 rgba(58,51,70,.14);font-size:15px;}
+
+  .hint{position:absolute;left:50%;bottom:9px;transform:translateX(-50%);
+    background:rgba(255,255,255,.86);color:#57506a;font-size:12.5px;font-weight:700;
+    padding:7px 14px;border-radius:999px;white-space:nowrap;max-width:94%;overflow:hidden;
+    text-overflow:ellipsis;pointer-events:none;box-shadow:0 2px 6px rgba(58,51,70,.13);
+    z-index:2;transition:opacity .6s ease;}
+  .hint.fade{opacity:0;}
+  .hint.upper{top:54%;bottom:auto;}
+
+  /* ---------- 首頁 ---------- */
+  .sc-title{padding:0;justify-content:space-between;background:linear-gradient(#bfeaff,#eafaff 62%,#d8f4c4);}
+  .title-art{flex:1 1 auto;min-height:0;display:flex;align-items:flex-end;justify-content:center;padding:6px 0 0;}
+  .title-art svg{width:100%;height:100%;max-height:100%;display:block;}
+  .title-panel{padding:0 22px 26px;text-align:center;}
+  .eyebrow{margin:0 0 4px;font-size:12.5px;font-weight:800;letter-spacing:2.4px;color:#7c88a6;}
+  .title-panel h1{margin:0 0 6px;font-size:34px;line-height:1.16;letter-spacing:2px;
+    color:#2f3b58;text-shadow:0 3px 0 rgba(255,255,255,.85);}
+  .title-panel .sub{margin:0 0 16px;font-size:13.5px;line-height:1.65;color:#5d6980;font-weight:600;}
+  .chapter-pick{display:flex;gap:7px;margin-top:12px;}
+  .chip{flex:1 1 0;min-width:0;font:inherit;font-size:12px;font-weight:800;color:#4d586e;
+    background:rgba(255,255,255,.86);border:0;border-radius:12px;padding:10px 2px;min-height:42px;
+    cursor:pointer;box-shadow:0 3px 0 rgba(58,51,70,.12);}
+  .chip:active{transform:translateY(2px);box-shadow:none;}
+  .pick-label{margin:0;font-size:11.5px;font-weight:700;color:#8b93a8;letter-spacing:1px;}
+
+  /* ---------- 遊戲場景 ---------- */
+  .scene-play{padding:0 12px 12px;gap:9px;}
+  .playfield{position:relative;flex:1 1 auto;min-height:0;border-radius:22px;overflow:hidden;
+    touch-action:none;}
+
+  /* 第一幕 */
+  .parent{position:absolute;width:30%;max-width:130px;top:1%;}
+  .parent.dad{left:2%;}
+  .parent.mom{right:2%;}
+  .parent svg{width:100%;height:auto;display:block;}
+  .parent.bob .bv{animation:bob 2.1s ease-in-out infinite;}
+  .parent.bob .bv2{animation:bob 2.1s ease-in-out infinite .45s;}
+  @keyframes bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+  .branch{position:absolute;left:0;right:0;top:12%;height:5%;}
+  .branch svg{width:100%;height:100%;display:block;}
+  .nest-unit{position:absolute;bottom:4%;width:47%;max-width:210px;left:50%;
+    transform:translateX(-50%);will-change:transform;}
+  .nest-unit svg{width:100%;height:auto;display:block;overflow:visible;}
+  .nest-unit .babyshake{animation:bob 1.5s ease-in-out infinite;}
+  .drop{position:absolute;width:11%;max-width:48px;transform:translate(-50%,-50%);
+    will-change:transform;}
+  .drop svg{width:100%;height:auto;display:block;}
+  .spark{position:absolute;font-size:14px;font-weight:800;color:#ff8a3d;pointer-events:none;
+    animation:pop .7s ease-out forwards;z-index:8;}
+  @keyframes pop{0%{opacity:1;transform:translate(-50%,-50%) scale(.6);}
+    100%{opacity:0;transform:translate(-50%,-190%) scale(1.25);}}
+  .pulse-ring{position:absolute;width:14%;padding-bottom:14%;border-radius:50%;
+    border:3px solid rgba(255,255,255,.9);pointer-events:none;animation:ring .5s ease-out forwards;}
+  @keyframes ring{0%{opacity:.9;transform:translate(-50%,-50%) scale(.4);}
+    100%{opacity:0;transform:translate(-50%,-50%) scale(1.8);}}
+
+  /* 第二幕 */
+  .s2-stage{flex:1 1 auto;min-height:0;position:relative;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;padding:4px 0;}
+  .s2-tree{position:absolute;inset:0;pointer-events:none;}
+  .s2-tree svg{width:100%;height:100%;display:block;}
+  .s2-crows{position:relative;width:74%;max-width:270px;margin-top:6%;z-index:2;}
+  .s2-crows svg{width:100%;height:auto;display:block;overflow:visible;}
+  .tired .tired-wing{animation:tired 1.6s ease-in-out infinite;}
+  @keyframes tired{0%,100%{transform:rotate(0deg);}50%{transform:rotate(7deg);}}
+  .speech{position:relative;z-index:3;margin:6px auto 0;max-width:88%;background:#fff;
+    border-radius:18px;padding:11px 16px;font-size:14.5px;font-weight:700;color:#4d4459;
+    line-height:1.55;text-align:center;box-shadow:0 4px 0 rgba(58,51,70,.12);}
+  .speech::after{content:"";position:absolute;left:50%;top:-8px;transform:translateX(-50%);
+    border:9px solid transparent;border-bottom-color:#fff;border-top:0;}
+  .choices{display:flex;flex-direction:column;gap:8px;padding:0 4px 4px;}
+  .choice{font:inherit;text-align:left;font-size:14.5px;font-weight:700;line-height:1.45;color:#413a4f;
+    background:#fffdf7;border:2.5px solid rgba(58,51,70,.1);border-radius:16px;padding:13px 15px;
+    min-height:56px;cursor:pointer;display:flex;align-items:center;gap:10px;
+    box-shadow:0 3px 0 rgba(58,51,70,.1);transition:transform .12s,border-color .15s;}
+  .choice:active{transform:translateY(2px);}
+  .choice .mk{flex:0 0 auto;width:26px;height:26px;border-radius:50%;background:#f0edf6;
+    color:#7c748e;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;}
+  .choice.ok{border-color:var(--good);background:var(--good-bg);}
+  .choice.ok .mk{background:var(--good);color:#fff;}
+  .choice.no{border-color:var(--warn);background:var(--warn-bg);animation:shake .38s;}
+  .choice.no .mk{background:var(--warn);color:#fff;}
+  @keyframes shake{0%,100%{transform:translateX(0);}22%{transform:translateX(-6px);}
+    55%{transform:translateX(6px);}78%{transform:translateX(-3px);}}
+  .feedback{margin:0 4px;border-radius:16px;padding:12px 15px;font-size:13.5px;font-weight:700;
+    line-height:1.6;background:rgba(255,255,255,.94);color:#574f66;
+    box-shadow:0 3px 0 rgba(58,51,70,.1);}
+  .feedback.good{background:var(--good-bg);color:#2f6a44;}
+  .feedback.bad{background:var(--warn-bg);color:#8a4d5a;}
+
+  /* 第三幕 */
+  .obj{position:absolute;transform:translate(-50%,-50%);will-change:transform;}
+  .obj svg{width:100%;height:auto;display:block;}
+  .obj.sign{width:auto;}
+  .sign-chip{background:rgba(255,255,255,.82);border-radius:999px;padding:5px 12px;font-size:12px;
+    font-weight:800;color:#5b6a86;white-space:nowrap;box-shadow:0 2px 5px rgba(58,51,70,.12);}
+  .bird{position:absolute;width:19%;max-width:96px;transform:translate(-50%,-50%);
+    will-change:transform;z-index:4;}
+  .bird svg{width:100%;height:auto;display:block;overflow:visible;}
+  .bird .flap{animation:flap .34s ease-in-out infinite;}
+  @keyframes flap{0%,100%{transform:rotate(-9deg);}50%{transform:rotate(13deg);}}
+  .bird.hit{animation:hitflash .42s linear 3;}
+  @keyframes hitflash{0%,100%{opacity:1;}50%{opacity:.32;}}
+  .shake{animation:scr .32s ease-out;}
+  @keyframes scr{0%{transform:translate(0,0);}25%{transform:translate(-4px,3px);}
+    50%{transform:translate(4px,-3px);}75%{transform:translate(-3px,-2px);}100%{transform:translate(0,0);}}
+  .s3-deco{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+  .s3-deco svg{position:absolute;display:block;}
+
+  /* 第四幕 */
+  .nest-home{position:absolute;left:50%;transform:translateX(-50%);bottom:26%;width:64%;max-width:280px;}
+  .nest-home svg{width:100%;height:auto;display:block;overflow:visible;}
+  .seat{position:absolute;width:36%;max-width:150px;top:9%;cursor:pointer;}
+  .seat.dad{left:2%;}
+  .seat.mom{right:2%;}
+  .seat .in{position:relative;}
+  .seat svg{width:100%;height:auto;display:block;overflow:visible;}
+  .seat .zone{position:absolute;left:50%;top:34%;width:58%;padding-bottom:44%;transform:translate(-50%,-50%);
+    border-radius:50%;border:3px dashed rgba(226,140,60,.9);background:rgba(255,255,255,.28);
+    opacity:0;transition:opacity .18s;}
+  .seat.live .zone{opacity:1;}
+  .seat.over .zone{border-color:#e2703a;border-style:solid;background:rgba(255,214,150,.55);}
+  .seat .fed{position:absolute;right:2%;top:-2%;background:#fff;border-radius:999px;
+    min-width:30px;height:30px;display:flex;align-items:center;justify-content:center;
+    font-size:13px;font-weight:800;color:#e2703a;box-shadow:0 3px 0 rgba(58,51,70,.14);}
+  .seat.full .fed{background:#5fbf7a;color:#fff;}
+  .seat.happy svg{animation:hop .46s ease-out 2;}
+  @keyframes hop{0%,100%{transform:translateY(0);}40%{transform:translateY(-9px);}}
+  .mood{position:absolute;left:50%;top:-6%;transform:translateX(-50%);opacity:0;}
+  .mood svg{width:26px;height:24px;display:block;}
+  .seat.full .mood{animation:floatup 1.5s ease-in forwards;}
+  @keyframes floatup{0%{opacity:0;transform:translate(-50%,4px);}30%{opacity:1;}
+    100%{opacity:0;transform:translate(-50%,-26px);}}
+  .tray{position:absolute;left:0;right:0;bottom:0;padding:10px 12px 14px;
+    display:flex;justify-content:center;gap:8px;background:linear-gradient(rgba(255,255,255,0),
+      rgba(255,255,255,.72) 42%,rgba(255,255,255,.9));}
+  .tray .slot{width:15%;max-width:64px;cursor:grab;touch-action:none;transition:transform .15s;}
+  .tray .slot svg{width:100%;height:auto;display:block;pointer-events:none;}
+  .tray .slot.taken{opacity:.25;pointer-events:none;}
+  .tray .slot.picked{transform:translateY(-10px) scale(1.08);}
+  .ghost{position:fixed;z-index:70;width:64px;transform:translate(-50%,-50%) scale(1.1);
+    pointer-events:none;filter:drop-shadow(0 8px 10px rgba(0,0,0,.25));}
+  .ghost svg{width:100%;height:auto;display:block;}
+
+  /* ---------- 結算 ---------- */
+  .sc-ending{overflow-y:auto;padding:22px 18px 28px;align-items:center;text-align:center;}
+  .ending-emo-art{width:58%;max-width:210px;margin:4px auto 2px;}
+  .ending-emo-art svg{width:100%;height:auto;display:block;overflow:visible;}
+  .stars-row{display:flex;gap:8px;justify-content:center;margin:8px 0 4px;}
+  .star-slot{width:42px;height:42px;}
+  .star-slot svg{width:100%;height:100%;display:block;}
+  .star-slot .sp{fill:rgba(255,255,255,.2);stroke:rgba(255,255,255,.5);stroke-width:2;}
+  .star-slot.on .sp{fill:#ffd15c;stroke:#f0a92e;animation:popin .45s cubic-bezier(.2,1.5,.4,1) both;
+    transform-box:fill-box;transform-origin:center;}
+  @keyframes popin{0%{transform:scale(.4);}100%{transform:scale(1);}}
+  .badge{margin:6px auto 0;display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.16);
+    border:2px solid rgba(255,255,255,.4);color:#fff;font-size:12.5px;font-weight:800;
+    border-radius:999px;padding:6px 14px;}
+  .badge.locked{opacity:.45;}
+  .sc-ending h2{margin:12px 0 6px;color:#fff;font-size:24px;letter-spacing:1.5px;
+    text-shadow:0 3px 10px rgba(0,0,0,.3);}
+  .quote{margin:0 0 14px;color:#dbe4ff;font-size:14px;font-weight:700;line-height:1.7;}
+  .sfx-btn{position:absolute;top:9px;right:9px;z-index:50;width:40px;height:40px;padding:0;border:0;
+    border-radius:50%;background:rgba(255,255,255,.92);cursor:pointer;display:flex;
+    align-items:center;justify-content:center;box-shadow:0 2px 0 rgba(58,51,70,.16);}
+  .sfx-btn:active{transform:translateY(1px);box-shadow:none;}
+  .sfx-btn svg{width:21px;height:21px;display:block;}
+  .sfx-btn.mute{background:rgba(255,255,255,.7);}
+  .sfx-btn .slash{display:none;}
+  .sfx-btn.mute .slash{display:block;}
+  .sfx-btn.mute .wave{display:none;}
+
+  /* ---------- 課文朗讀 ---------- */
+  .read-card{background:var(--paper);border-radius:20px;padding:14px 15px 15px;text-align:left;
+    box-shadow:0 8px 20px rgba(0,0,0,.22);width:100%;max-width:360px;}
+  .read-head{display:flex;align-items:center;gap:8px;margin-bottom:11px;}
+  .read-head .rd-ic{flex:0 0 auto;width:28px;height:28px;border-radius:50%;background:#ffe9c7;
+    display:flex;align-items:center;justify-content:center;}
+  .read-head .rd-ic svg{width:16px;height:16px;display:block;}
+  .read-head h3{margin:0;min-width:0;font-size:13px;letter-spacing:1.6px;color:#33304a;font-weight:800;}
+  .read-head .rd-tag{margin-left:auto;flex:0 0 auto;font-size:11px;font-weight:800;color:#7c88a6;
+    background:#f1f0f7;border-radius:999px;padding:4px 9px;letter-spacing:.4px;}
+  .read-ctl{display:flex;align-items:center;gap:8px;margin-bottom:9px;}
+  .read-btn{font:inherit;font-size:14.5px;font-weight:800;border:0;border-radius:999px;min-height:46px;
+    padding:11px 16px;cursor:pointer;flex:1 1 auto;background:linear-gradient(#ffc65c,#f5a02a);
+    color:#4a3210;box-shadow:0 4px 0 #cf7f14;transition:transform .12s ease;}
+  .read-btn:active{transform:translateY(2px);box-shadow:none;}
+  .read-btn.alt{flex:0 0 auto;font-size:13px;padding:11px 14px;background:#fff;color:#4a4458;
+    box-shadow:0 3px 0 rgba(58,51,70,.14);}
+  .read-rate{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+  .read-rate .rate-lb{font-size:12px;font-weight:800;color:#8b93a8;}
+  .read-rate button{font:inherit;font-size:12.5px;font-weight:800;color:#7c748e;background:#f1f0f7;
+    border:0;border-radius:999px;padding:8px 13px;min-height:36px;cursor:pointer;}
+  .read-rate button.on{background:#ffe9c7;color:#a95f18;}
+  .read-lines{display:flex;flex-direction:column;gap:5px;}
+  .read-line{position:relative;margin:0;padding:8px 10px 8px 28px;border-radius:12px;font-size:15px;
+    line-height:1.72;letter-spacing:.4px;color:#45415a;cursor:pointer;
+    transition:background .18s ease,color .18s ease;}
+  .read-line .idx{position:absolute;left:8px;top:9px;font-size:11px;font-weight:800;color:#b3bacd;}
+  .read-line.on{background:#fff2d4;color:#2f2a44;font-weight:700;}
+  .read-line.on .idx{color:#e2703a;}
+  .read-line.on::after{content:"";position:absolute;left:9px;right:9px;bottom:4px;height:2px;
+    border-radius:2px;background:rgba(226,112,58,.32);}
+  .read-note{margin:10px 0 0;font-size:12px;font-weight:700;line-height:1.6;color:#8b93a8;}
+  .read-note.warn{color:#a8734f;}
+  .ending-actions{display:flex;flex-direction:column;gap:9px;width:100%;max-width:360px;margin-top:16px;}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.001ms !important;animation-iteration-count:1 !important;
+      transition-duration:.001ms !important;}
+  }
+  @media (max-height:640px){
+    .title-panel h1{font-size:27px;}
+    .title-panel .sub{font-size:12.5px;margin-bottom:12px;}
+    .btn{padding:13px 22px;min-height:48px;}
+    .speech{font-size:13.5px;padding:9px 13px;}
+    .choice{font-size:13.5px;padding:11px 13px;min-height:50px;}
+  }
+</style>
+</head>
+<body>
+<main data-generated-by="aurora-frontend-design" data-pipeline="vibe-coding-frontend-design" class="frame">
+  <div class="stage" id="stage">
+
+    <button type="button" class="sfx-btn" id="btn-sfx" aria-label="關閉音效" aria-pressed="true" title="音效開關">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M4 9.6h3.3L12 5.5v13L7.3 14.4H4z" fill="#4a4458"/>
+        <g class="wave" stroke="#4a4458" stroke-width="1.9" fill="none" stroke-linecap="round">
+          <path d="M15.3 9.3a4.3 4.3 0 0 1 0 5.4"/>
+          <path d="M18.1 6.8a7.8 7.8 0 0 1 0 10.4"/>
+        </g>
+        <path class="slash" d="M4 20.4 20.4 4" stroke="#e2703a" stroke-width="2.4" stroke-linecap="round"/>
+      </svg>
+    </button>
+
+    <div class="curtain" id="curtain" hidden aria-hidden="true">
+      <div class="curtain-in">
+        <div class="curtain-eyebrow" id="curtain-eyebrow"></div>
+        <div class="curtain-title" id="curtain-title"></div>
+      </div>
+    </div>
+
+    <header class="hud" id="hud" hidden>
+      <button type="button" class="hud-back" id="btn-home">首頁</button>
+      <div class="hud-label" id="hud-label">第一幕</div>
+      <div class="hud-stars" id="hud-stars" aria-label="已獲得的孝心星"></div>
+    </header>
+
+    <div class="viewport" id="viewport">
+
+      <!-- ================= 首頁 ================= -->
+      <section class="scene sc-title is-active" id="sc-title">
+        <div class="title-art" id="title-art"></div>
+        <div class="title-panel">
+          <p class="eyebrow">一年級課文・情景遊戲</p>
+          <h1>孝順的小烏鴉</h1>
+          <p class="sub">跟著小烏鴉飛過東西南北，把食物叼回家餵爸爸媽媽。</p>
+          <button type="button" class="btn btn-primary" id="btn-start">開始故事</button>
+          <p class="pick-label" style="margin-top:14px;">選一幕來玩</p>
+          <div class="chapter-pick">
+            <button type="button" class="chip" data-go="s1">一・餵養</button>
+            <button type="button" class="chip" data-go="s2">二・抉擇</button>
+            <button type="button" class="chip" data-go="s3">三・尋食</button>
+            <button type="button" class="chip" data-go="s4">四・回報</button>
+          </div>
+          <button type="button" class="btn btn-ghost" id="btn-read" style="margin-top:12px" hidden>聽課文（普通話）</button>
+        </div>
+      </section>
+
+      <!-- ================= 第一幕 ================= -->
+      <section class="scene scene-play bg-day" id="sc-s1" hidden>
+        <div class="goal-bar">
+          <span class="goal-text">幫寶寶接住爸媽叼來的蟲子</span>
+          <span class="goal-count"><b id="s1-got">0</b> / 6</span>
+        </div>
+        <div class="playfield" id="pf1">
+          <div class="branch" id="s1-branch"></div>
+          <div class="parent dad bob" id="s1-dad"></div>
+          <div class="parent mom bob" id="s1-mom"></div>
+          <div class="nest-unit" id="s1-nest"></div>
+          <div class="hint upper" id="s1-hint">拖動或點一下，讓寶寶接住蟲子</div>
+        </div>
+      </section>
+
+      <!-- ================= 第二幕 ================= -->
+      <section class="scene scene-play bg-dusk" id="sc-s2" hidden>
+        <div class="goal-bar">
+          <span class="goal-text">小烏鴉該怎麼做呢？</span>
+        </div>
+        <div class="s2-stage">
+          <div class="s2-tree" id="s2-tree"></div>
+          <div class="s2-crows" id="s2-crows"></div>
+          <div class="speech" id="s2-speech">爸爸媽媽老了，飛不動了……</div>
+        </div>
+        <p class="feedback" id="s2-feedback" hidden></p>
+        <div class="choices" id="s2-choices"></div>
+      </section>
+
+      <!-- ================= 第三幕 ================= -->
+      <section class="scene scene-play bg-sky" id="sc-s3" hidden>
+        <div class="goal-bar">
+          <span class="goal-text">食物 <b id="s3-food">0</b> / 6</span>
+          <span class="goal-lives" id="s3-life" aria-label="勇氣值"></span>
+        </div>
+        <div class="timebar"><i id="s3-time"></i></div>
+        <div class="playfield" id="pf3">
+          <div class="s3-deco" id="s3-deco"></div>
+          <div class="bird" id="s3-bird"></div>
+          <div class="hint">拖動小烏鴉：收集食物、避開風雨</div>
+        </div>
+      </section>
+
+      <!-- ================= 第四幕 ================= -->
+      <section class="scene scene-play bg-warm" id="sc-s4" hidden>
+        <div class="goal-bar">
+          <span class="goal-text">把食物叼到爸媽嘴邊</span>
+          <span class="goal-count"><b id="s4-done">0</b> / 6</span>
+        </div>
+        <div class="playfield" id="pf4">
+          <div class="nest-home" id="s4-nest"></div>
+          <div class="seat dad" id="s4-dad"><div class="in"></div></div>
+          <div class="seat mom" id="s4-mom"><div class="in"></div></div>
+          <div class="tray" id="s4-tray"></div>
+        </div>
+      </section>
+
+      <!-- ================= 結算 ================= -->
+      <section class="scene sc-ending bg-night" id="sc-ending" hidden>
+        <div class="ending-emo-art" id="e-art"></div>
+        <div class="stars-row" id="e-stars"></div>
+        <div class="badge locked" id="e-badge">勇敢徽章</div>
+        <h2>多孝順的小烏鴉啊！</h2>
+        <p class="quote" id="e-quote"></p>
+        <div class="read-card">
+          <div class="read-head">
+            <span class="rd-ic" aria-hidden="true">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 9.6h3.3L12 5.5v13L7.3 14.4H4z" fill="#c07a20"/>
+                <g stroke="#c07a20" stroke-width="1.9" fill="none" stroke-linecap="round">
+                  <path d="M15.3 9.3a4.3 4.3 0 0 1 0 5.4"/>
+                  <path d="M18.1 6.8a7.8 7.8 0 0 1 0 10.4"/>
+                </g>
+              </svg>
+            </span>
+            <h3>課文・孝順的小烏鴉</h3>
+            <span class="rd-tag">普通話朗讀</span>
+          </div>
+          <div class="read-ctl" id="narr-ctl">
+            <button type="button" class="read-btn" id="btn-narr">播放全文朗讀</button>
+            <button type="button" class="read-btn alt" id="btn-narr-stop" hidden>停止</button>
+          </div>
+          <div class="read-rate" id="narr-rate">
+            <span class="rate-lb">朗讀速度</span>
+            <button type="button" data-rate="0.78">慢慢讀</button>
+            <button type="button" data-rate="0.95" class="on">正常</button>
+          </div>
+          <div class="read-lines" id="read-lines"></div>
+          <p class="read-note" id="read-note">點句子上可單獨再聽一次，念到的句子會亮起來。</p>
+        </div>
+        <div class="ending-actions">
+          <button type="button" class="btn btn-primary" id="btn-read-end">聽課文朗讀（普通話）</button>
+          <button type="button" class="btn btn-ghost" id="btn-again">再玩一次</button>
+          <button type="button" class="btn btn-ghost" id="btn-home2">回到首頁</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</main>
+
+<script>
+(function(){
+  'use strict';
+
+  /* =========================================================
+     美術素材（全部為內嵌 SVG，無任何外部資源）
+     ========================================================= */
+  var ART = {};
+
+  function crowSit(o){
+    o = o || {};
+    var lash = o.lash
+      ? '<path d="M86 30 l7 -5" stroke="#15151d" stroke-width="2.4" stroke-linecap="round"/>' +
+        '<path d="M93 34 l8 -2" stroke="#15151d" stroke-width="2.4" stroke-linecap="round"/>'
+      : '';
+    var acc = o.acc || '';
+    return '<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">' +
+      '<path d="M24 76 L2 66 L9 80 L4 94 L28 86 Z" fill="#20202b"/>' +
+      '<ellipse cx="62" cy="72" rx="33" ry="28" fill="#2e2e3c"/>' +
+      '<ellipse cx="66" cy="80" rx="21" ry="17" fill="#45455c"/>' +
+      '<circle cx="77" cy="44" r="24" fill="#2e2e3c"/>' +
+      '<ellipse cx="49" cy="72" rx="14" ry="18" fill="#23232f" transform="rotate(-10 49 72)"/>' +
+      '<circle cx="84" cy="40" r="8" fill="#ffffff"/>' +
+      '<circle cx="86.5" cy="41" r="4.9" fill="#15151d"/>' +
+      '<circle cx="88.2" cy="38.8" r="1.9" fill="#ffffff"/>' +
+      lash +
+      '<ellipse cx="74" cy="55" rx="6.6" ry="4.4" fill="#ff9fb2" opacity=".85"/>' +
+      '<path d="M97 36 L117 43 L97 50 Z" fill="#f7a83a" stroke="#d98a20" stroke-width="2" ' +
+        'stroke-linejoin="round"/>' +
+      '<path d="M58 98 l0 9" stroke="#f7a83a" stroke-width="3.6" stroke-linecap="round"/>' +
+      '<path d="M66 98 l0 9" stroke="#f7a83a" stroke-width="3.6" stroke-linecap="round"/>' +
+      acc +
+      '</svg>';
+  }
+
+  ART.dad = function(){
+    return crowSit({
+      acc:
+        '<circle cx="84" cy="40" r="10.5" fill="none" stroke="#5b7fb0" stroke-width="2.4"/>' +
+        '<path d="M74 38 l-9 -1" stroke="#5b7fb0" stroke-width="2.4" stroke-linecap="round"/>' +
+        '<path d="M48 84 q16 12 34 2 q-3 12 -17 12 q-14 0 -17 -14 Z" fill="#6fa8dc"/>' +
+        '<path d="M52 86 q14 9 28 3" stroke="#4c86ba" stroke-width="2" fill="none"/>'
+    });
+  };
+  ART.mom = function(){
+    return crowSit({
+      lash: true,
+      acc:
+        '<circle cx="62" cy="19" r="6" fill="#ff9fb2"/>' +
+        '<circle cx="62" cy="19" r="2.6" fill="#ffe28a"/>' +
+        '<circle cx="55" cy="23" r="5" fill="#ffb6c6"/>' +
+        '<circle cx="69" cy="23" r="5" fill="#ffb6c6"/>' +
+        '<path d="M48 84 q16 12 34 2 q-3 12 -17 12 q-14 0 -17 -14 Z" fill="#f2b8cd"/>'
+    });
+  };
+  ART.baby = function(open){
+    var beak = open
+      ? '<path d="M96 30 L118 22 L116 40 Z" fill="#f7a83a" stroke="#d98a20" stroke-width="2" ' +
+        'stroke-linejoin="round"/>' +
+        '<path d="M96 46 L116 40 L112 56 Z" fill="#e89828" stroke="#d98a20" stroke-width="2" ' +
+        'stroke-linejoin="round"/>'
+      : '<path d="M97 36 L117 43 L97 50 Z" fill="#f7a83a" stroke="#d98a20" stroke-width="2" ' +
+        'stroke-linejoin="round"/>';
+    return '<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">' +
+      '<path d="M26 78 L6 70 L13 82 L8 94 L30 88 Z" fill="#20202b"/>' +
+      '<ellipse cx="64" cy="74" rx="30" ry="25" fill="#2e2e3c"/>' +
+      '<ellipse cx="68" cy="82" rx="18" ry="14" fill="#45455c"/>' +
+      '<circle cx="78" cy="48" r="23" fill="#2e2e3c"/>' +
+      '<circle cx="85" cy="44" r="8.4" fill="#ffffff"/>' +
+      '<circle cx="87.4" cy="45" r="5.1" fill="#15151d"/>' +
+      '<circle cx="89.1" cy="42.8" r="2" fill="#ffffff"/>' +
+      '<ellipse cx="74" cy="58" rx="6.4" ry="4.3" fill="#ff9fb2" opacity=".85"/>' +
+      beak +
+      '<path d="M60 98 l0 8" stroke="#f7a83a" stroke-width="3.4" stroke-linecap="round"/>' +
+      '<path d="M68 98 l0 8" stroke="#f7a83a" stroke-width="3.4" stroke-linecap="round"/>' +
+      '</svg>';
+  };
+  ART.crowFly = function(){
+    return '<svg viewBox="0 0 150 132" xmlns="http://www.w3.org/2000/svg">' +
+      '<g class="flap" style="transform-origin:60px 66px">' +
+        '<path d="M58 62 C50 18 20 4 12 22 C5 38 34 62 58 66 Z" fill="#23232f"/>' +
+        '<path d="M56 76 C46 108 20 122 14 104 C9 88 36 76 56 72 Z" fill="#1b1b25"/>' +
+      '</g>' +
+      '<path d="M30 74 L2 62 L10 78 L4 92 L32 86 Z" fill="#20202b"/>' +
+      '<ellipse cx="80" cy="72" rx="34" ry="25" fill="#2e2e3c"/>' +
+      '<ellipse cx="86" cy="80" rx="20" ry="13" fill="#45455c"/>' +
+      '<circle cx="101" cy="52" r="23" fill="#2e2e3c"/>' +
+      '<circle cx="108" cy="48" r="8.2" fill="#ffffff"/>' +
+      '<circle cx="110.4" cy="49" r="5" fill="#15151d"/>' +
+      '<circle cx="112" cy="46.8" r="1.9" fill="#ffffff"/>' +
+      '<ellipse cx="96" cy="62" rx="6.4" ry="4.2" fill="#ff9fb2" opacity=".85"/>' +
+      '<path d="M122 44 L142 51 L122 58 Z" fill="#f7a83a" stroke="#d98a20" stroke-width="2" ' +
+        'stroke-linejoin="round"/>' +
+      '</svg>';
+  };
+  ART.nestWith = function(inner){
+    return '<svg viewBox="0 0 220 200" xmlns="http://www.w3.org/2000/svg">' +
+      '<ellipse cx="110" cy="124" rx="100" ry="48" fill="#8b5e34"/>' +
+      '<ellipse cx="110" cy="114" rx="88" ry="40" fill="#6f4826"/>' +
+      '<path d="M22 118 q28 -16 52 -8 q26 -14 52 -2 q26 -12 50 6" stroke="#a97b4f" ' +
+        'stroke-width="8" fill="none" stroke-linecap="round"/>' +
+      '<svg x="52" y="16" width="118" height="118" viewBox="0 0 120 120">' + inner + '</svg>' +
+      '<path d="M14 118 q34 46 96 46 q62 0 96 -46" stroke="#b98a58" stroke-width="28" ' +
+        'fill="none" stroke-linecap="round"/>' +
+      '<path d="M24 134 q36 32 86 32 q50 0 86 -32" stroke="#d3ab7c" stroke-width="9" ' +
+        'fill="none" stroke-linecap="round"/>' +
+      '<path d="M14 120 q34 42 96 42 q62 0 96 -42" stroke="#a97b4f" stroke-width="4" ' +
+        'fill="none" stroke-linecap="round" stroke-dasharray="10 8"/>' +
+      '<path d="M34 156 q16 -6 26 2 M160 152 q18 -8 30 0" stroke="#c99a6b" ' +
+        'stroke-width="5" fill="none" stroke-linecap="round"/>' +
+      '</svg>';
+  };
+  ART.worm = '<svg viewBox="0 0 100 74" xmlns="http://www.w3.org/2000/svg">' +
+    '<path d="M12 50 q14 -22 30 -6 q16 16 30 -6" stroke="#7ec850" stroke-width="13" fill="none" ' +
+      'stroke-linecap="round"/>' +
+    '<circle cx="86" cy="30" r="13" fill="#8ed55c"/>' +
+    '<circle cx="90" cy="27" r="3.4" fill="#20202b"/>' +
+    '<circle cx="90.6" cy="26" r="1.2" fill="#ffffff"/>' +
+    '<path d="M78 18 q5 -9 12 -9" stroke="#5aa832" stroke-width="3" fill="none" ' +
+      'stroke-linecap="round"/>' +
+    '</svg>';
+  ART.berry = '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
+    '<circle cx="50" cy="62" r="31" fill="#ff6b6b"/>' +
+    '<circle cx="40" cy="52" r="10" fill="#ffa8a8" opacity=".85"/>' +
+    '<path d="M50 32 q8 -16 24 -18 q-3 16 -18 20 Z" fill="#5cb85c"/>' +
+    '<path d="M50 34 l0 -16" stroke="#3f7f3f" stroke-width="4" stroke-linecap="round"/>' +
+    '</svg>';
+  ART.grain = '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' +
+    '<ellipse cx="50" cy="60" rx="23" ry="33" fill="#f5c542"/>' +
+    '<ellipse cx="42" cy="50" rx="8" ry="13" fill="#ffe38a" opacity=".85"/>' +
+    '<path d="M50 28 q4 -14 0 -22" stroke="#c9a227" stroke-width="4" fill="none" ' +
+      'stroke-linecap="round"/>' +
+    '</svg>';
+  ART.wind = '<svg viewBox="0 0 130 96" xmlns="http://www.w3.org/2000/svg">' +
+    '<g stroke="#5aa8d8" stroke-width="12" fill="none" stroke-linecap="round" opacity=".5">' +
+      '<path d="M8 28 h68 a13 13 0 1 0 -13 -13"/>' +
+      '<path d="M8 52 h86 a13 13 0 1 1 -13 13"/>' +
+      '<path d="M8 76 h58"/>' +
+    '</g>' +
+    '<g stroke="#eaf7ff" stroke-width="7" fill="none" stroke-linecap="round">' +
+      '<path d="M8 28 h68 a13 13 0 1 0 -13 -13"/>' +
+      '<path d="M8 52 h86 a13 13 0 1 1 -13 13"/>' +
+      '<path d="M8 76 h58"/>' +
+    '</g>' +
+    '</svg>';
+  ART.rain = '<svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">' +
+    '<ellipse cx="70" cy="46" rx="46" ry="27" fill="#b9d6e8"/>' +
+    '<ellipse cx="112" cy="40" rx="34" ry="23" fill="#d6ebf7"/>' +
+    '<ellipse cx="44" cy="52" rx="28" ry="17" fill="#a8c9de"/>' +
+    '<path d="M56 84 l-7 20 M92 84 l-7 20 M128 84 l-7 20 M74 108 l-7 20 M110 108 l-7 20" ' +
+      'stroke="#7cc7f0" stroke-width="7" stroke-linecap="round"/>' +
+    '</svg>';
+  ART.cloud = '<svg viewBox="0 0 170 90" xmlns="http://www.w3.org/2000/svg">' +
+    '<ellipse cx="62" cy="58" rx="46" ry="26" fill="#ffffff" opacity=".88"/>' +
+    '<ellipse cx="104" cy="50" rx="34" ry="24" fill="#ffffff" opacity=".95"/>' +
+    '<ellipse cx="36" cy="64" rx="28" ry="18" fill="#ffffff" opacity=".8"/>' +
+    '</svg>';
+
+  function starSvg(on){
+    return '<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">' +
+      '<path class="sp" d="M20 3 l5.2 10.9 11.8 1.6 -8.6 8.3 2.1 11.8 -10.5 -5.7 -10.5 5.7 ' +
+        '2.1 -11.8 -8.6 -8.3 11.8 -1.6 Z" ' +
+        (on ? '' : 'fill="#ffffff" stroke="#ffd15c" stroke-width="2.6" opacity=".45" ') +
+        '/></svg>';
+  }
+  function heartSvg(on){
+    return '<svg viewBox="0 0 40 36" xmlns="http://www.w3.org/2000/svg">' +
+      '<path class="hb' + (on ? ' on' : '') + '" d="M20 33 C6 22 2 14 8 8 C13 3 20 7 20 13 ' +
+        'C20 7 27 3 32 8 C38 14 34 22 20 33 Z" stroke-width="2.5" stroke-linejoin="round"/>' +
+      '</svg>';
+  }
+
+  /* 首頁主視覺：樹枝上的一家 */
+  function titleHero(){
+    return '<svg viewBox="0 0 440 348" preserveAspectRatio="xMidYMax meet" ' +
+      'xmlns="http://www.w3.org/2000/svg">' +
+      '<defs>' +
+        '<linearGradient id="tg1" x1="0" y1="0" x2="0" y2="1">' +
+          '<stop offset="0" stop-color="#c9924f"/><stop offset="1" stop-color="#9d6c37"/>' +
+        '</linearGradient>' +
+        '<linearGradient id="tg2" x1="0" y1="0" x2="0" y2="1">' +
+          '<stop offset="0" stop-color="#a7e181"/><stop offset="1" stop-color="#79c45a"/>' +
+        '</linearGradient>' +
+      '</defs>' +
+      '<ellipse cx="70" cy="46" rx="48" ry="22" fill="#ffffff" opacity=".72"/>' +
+      '<ellipse cx="116" cy="38" rx="30" ry="17" fill="#ffffff" opacity=".58"/>' +
+      '<ellipse cx="356" cy="64" rx="42" ry="20" fill="#ffffff" opacity=".5"/>' +
+      '<circle cx="390" cy="38" r="24" fill="#ffe08a" opacity=".9"/>' +
+      '<ellipse cx="220" cy="120" rx="168" ry="76" fill="url(#tg2)"/>' +
+      '<ellipse cx="124" cy="148" rx="92" ry="56" fill="#a6e07f"/>' +
+      '<ellipse cx="314" cy="144" rx="88" ry="54" fill="#7cc75c"/>' +
+      '<ellipse cx="220" cy="94" rx="106" ry="54" fill="#9bda76"/>' +
+      '<path d="M194 158 q10 100 -18 190 l108 0 q-28 -90 -18 -190 Z" fill="url(#tg1)"/>' +
+      '<path d="M214 176 q-4 74 -12 168" stroke="#8f6234" stroke-width="5" fill="none" ' +
+        'opacity=".5" stroke-linecap="round"/>' +
+      '<path d="M204 212 q-98 14 -216 44 l6 26 q116 -34 214 -46 Z" fill="url(#tg1)"/>' +
+      '<path d="M236 210 q98 12 216 40 l-6 26 q-116 -32 -214 -42 Z" fill="url(#tg1)"/>' +
+      '<ellipse cx="220" cy="268" rx="118" ry="48" fill="#8b5e34"/>' +
+      '<ellipse cx="220" cy="258" rx="106" ry="40" fill="#6f4826"/>' +
+      '<path d="M126 262 q30 -16 56 -6 q28 -14 56 -2 q28 -12 54 4" stroke="#a97b4f" ' +
+        'stroke-width="9" fill="none" stroke-linecap="round"/>' +
+      '<svg x="14" y="152" width="100" height="100" viewBox="0 0 120 120">' + ART.dad() + '</svg>' +
+      '<svg x="330" y="152" width="100" height="100" viewBox="0 0 120 120">' + ART.mom() + '</svg>' +
+      '<svg x="164" y="178" width="112" height="112" viewBox="0 0 120 120">' +
+        ART.baby(true) + '</svg>' +
+      '<path d="M110 262 q38 48 110 48 q72 0 110 -48" stroke="#b98a58" stroke-width="30" ' +
+        'fill="none" stroke-linecap="round"/>' +
+      '<path d="M120 278 q38 34 100 34 q62 0 100 -34" stroke="#d3ab7c" stroke-width="10" ' +
+        'fill="none" stroke-linecap="round"/>' +
+      '<path d="M110 264 q38 44 110 44 q72 0 110 -44" stroke="#a97b4f" stroke-width="4.5" ' +
+        'fill="none" stroke-linecap="round" stroke-dasharray="11 9"/>' +
+      '<path d="M56 128 C50 108 64 100 72 112 C80 100 94 108 88 128 C82 146 62 146 56 128 Z" ' +
+        'fill="#ff9fb2" opacity=".85"/>' +
+      '<path d="M368 116 C363 100 374 94 380 103 C386 94 397 100 392 116 ' +
+        'C387 130 373 130 368 116 Z" fill="#ff9fb2" opacity=".7"/>' +
+      '</svg>';
+  }
+
+  /* =========================================================
+     課文文字
+     ========================================================= */
+  /* =========================================================
+     音效引擎：以 Web Audio 即時合成，不載入任何外部音檔
+     ========================================================= */
+  var SFX = (function(){
+    var ctx = null, master = null, on = true;
+    var amb = { name:null, nodes:[], timers:[] };
+
+    function Ctor(){ return window.AudioContext || window.webkitAudioContext; }
+    function ensure(){
+      var C = Ctor();
+      if (!C) return null;
+      if (!ctx){
+        try { ctx = new C(); } catch (e) { ctx = null; return null; }
+        master = ctx.createGain();
+        master.gain.value = 0.55;
+        master.connect(ctx.destination);
+      }
+      if (ctx.state === 'suspended'){ try { ctx.resume(); } catch (e) {} }
+      return ctx;
+    }
+    function live(){ if (!on) return null; return ensure(); }
+    function t0(){ return ctx ? ctx.currentTime : 0; }
+
+    /* 單音：可指定起音、滑音，兩端做淡入淡出避免爆音 */
+    function blip(freq, dur, type, vol, at, glide){
+      if (!live()) return;
+      var t = at || t0();
+      var o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = type || 'sine';
+      try { o.frequency.setValueAtTime(freq, t); } catch (e) {}
+      if (glide){
+        try { o.frequency.exponentialRampToValueAtTime(Math.max(40, glide), t + dur); } catch (e) {}
+      }
+      var a = Math.min(0.03, dur * 0.3);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(Math.max(0.0004, vol), t + a);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g); g.connect(master);
+      o.start(t); o.stop(t + dur + 0.03);
+    }
+    /* 噪音：風、翅膀、雨，用低通掃頻塑形 */
+    function noise(dur, f1, f2, vol, at){
+      if (!live()) return;
+      var t = at || t0();
+      var len = Math.max(2, Math.floor(ctx.sampleRate * dur));
+      var buf = ctx.createBuffer(1, len, ctx.sampleRate);
+      var d = buf.getChannelData(0);
+      for (var i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+      var src = ctx.createBufferSource(); src.buffer = buf;
+      var flt = ctx.createBiquadFilter(); flt.type = 'lowpass'; flt.Q.value = 0.9;
+      flt.frequency.setValueAtTime(f1, t);
+      try { flt.frequency.exponentialRampToValueAtTime(Math.max(80, f2), t + dur); } catch (e) {}
+      var g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(Math.max(0.0004, vol), t + 0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      src.connect(flt); flt.connect(g); g.connect(master);
+      src.start(t); src.stop(t + dur + 0.03);
+    }
+    function chord(freqs, at, dur, vol){
+      for (var i = 0; i < freqs.length; i++){
+        blip(freqs[i], dur, 'triangle', vol, (at || t0()) + i * 0.012);
+      }
+    }
+    function arp(freqs, gap, dur, vol, at){
+      var t = at || t0();
+      for (var i = 0; i < freqs.length; i++) blip(freqs[i], dur, 'triangle', vol, t + i * gap);
+    }
+
+    /* 環境音：第三幕高空風聲（循環噪音 + 慢速濾波擺動） */
+    function startWind(){
+      if (!live() || amb.name === 'wind') return;
+      stopAmbient();
+      var len = Math.floor(ctx.sampleRate * 2);
+      var buf = ctx.createBuffer(1, len, ctx.sampleRate);
+      var d = buf.getChannelData(0);
+      for (var i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+      var src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+      var flt = ctx.createBiquadFilter();
+      flt.type = 'lowpass'; flt.frequency.value = 460; flt.Q.value = 0.6;
+      var g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, t0());
+      g.gain.linearRampToValueAtTime(0.075, t0() + 1.4);
+      var lfo = ctx.createOscillator(); lfo.frequency.value = 0.13;
+      var lg = ctx.createGain(); lg.gain.value = 170;
+      lfo.connect(lg); lg.connect(flt.frequency);
+      src.connect(flt); flt.connect(g); g.connect(master);
+      src.start(); lfo.start();
+      amb.nodes = [src, flt, g, lfo, lg];
+      amb.name = 'wind';
+    }
+    /* 環境音：第一幕樹梢鳥鳴（不定時輕啾兩聲） */
+    function startBirds(){
+      if (!live() || amb.name === 'birds') return;
+      stopAmbient();
+      amb.name = 'birds';
+      var tick = function(){
+        if (amb.name !== 'birds') return;
+        if (on){
+          var base = rand(1800, 2500);
+          blip(base, 0.07, 'sine', 0.045, t0(), base * 1.22);
+          blip(base * 1.06, 0.06, 'sine', 0.038, t0() + 0.1, base * 0.92);
+        }
+        amb.timers.push(setTimeout(tick, 1500 + Math.random() * 2400));
+      };
+      amb.timers.push(setTimeout(tick, 700));
+    }
+    function stopAmbient(){
+      amb.timers.forEach(function(id){ clearTimeout(id); });
+      amb.timers = [];
+      amb.nodes.forEach(function(n){
+        try { if (n.stop) n.stop(); } catch (e) {}
+        try { n.disconnect(); } catch (e) {}
+      });
+      amb.nodes = [];
+      amb.name = null;
+    }
+
+    var API = {
+      unlock:function(){ ensure(); },
+      isOn:function(){ return on; },
+      setOn:function(v){
+        on = !!v;
+        if (!on) stopAmbient(); else { ensure(); API.tick(); }
+      },
+      stopAmbient:stopAmbient,
+      wind:startWind,
+      birds:startBirds,
+      tick:function(){ blip(760, 0.06, 'triangle', 0.1, t0(), 1010); },
+      flap:function(){ noise(0.2, 1100, 380, 0.045, t0()); },
+      drop:function(){ blip(300, 0.13, 'sine', 0.065, t0(), 205); },
+      catchFood:function(){
+        var t = t0();
+        blip(880, 0.09, 'triangle', 0.15, t);
+        blip(1320, 0.12, 'triangle', 0.12, t + 0.07);
+        blip(1840, 0.09, 'sine', 0.07, t + 0.15, 2100);
+      },
+      food:function(){
+        var t = t0();
+        blip(1046, 0.07, 'triangle', 0.13, t);
+        blip(1568, 0.1, 'triangle', 0.1, t + 0.05);
+      },
+      right:function(){ arp([523, 659, 784, 1046], 0.085, 0.16, 0.125, t0()); },
+      soft:function(){
+        var t = t0();
+        blip(392, 0.15, 'sine', 0.1, t, 370);
+        blip(311, 0.2, 'sine', 0.085, t + 0.14, 294);
+      },
+      hit:function(){
+        var t = t0();
+        noise(0.3, 900, 160, 0.15, t);
+        blip(233, 0.24, 'sine', 0.1, t + 0.02, 150);
+      },
+      feed:function(){
+        var t = t0();
+        blip(587, 0.08, 'triangle', 0.12, t);
+        noise(0.12, 700, 240, 0.05, t + 0.04);
+        blip(880, 0.12, 'triangle', 0.1, t + 0.1);
+      },
+      warm:function(){
+        chord([523, 659, 784, 1046], t0(), 0.85, 0.07);
+        arp([1046, 1318, 1568], 0.07, 0.14, 0.07, t0() + 0.12);
+      },
+      star:function(){ arp([880, 1109, 1318, 1760], 0.06, 0.14, 0.085, t0()); },
+      win:function(){
+        var t = t0() + 0.05;
+        arp([523, 659, 784, 1046, 1318], 0.11, 0.22, 0.115, t);
+        chord([523, 659, 784], t + 0.62, 0.9, 0.07);
+      },
+      lose:function(){ arp([523, 466, 392, 311], 0.15, 0.24, 0.095, t0()); },
+      whoosh:function(){ noise(0.55, 260, 1250, 0.085, t0()); },
+      endingTune:function(n){
+        var t = t0() + 0.2;
+        for (var i = 0; i < n; i++){
+          blip(880 * Math.pow(1.1892, i), 0.24, 'sine', 0.095, t + i * 0.16);
+        }
+        if (n >= 4) chord([523, 659, 784, 1046], t + 0.72, 1.0, 0.065);
+      }
+    };
+    return API;
+  })();
+
+  var ARTICLE_TITLE = '孝順的小烏鴉';
+  var ARTICLE_TEXT =
+    '小烏鴉的爸爸和媽媽，辛辛苦苦地把小烏鴉養大了，自己卻老了，飛不動了。' +
+    '小烏鴉就天天飛出去，到處給爸爸媽媽找食物。牠飛到東，飛到西，飛到南，飛到北，' +
+    '不怕風吹，不怕雨打。牠一找到食物，就馬上叼回家，餵爸爸媽媽。多孝順的小烏鴉啊！';
+
+  /* 依句號切成朗讀用的句子（最後一句是驚嘆號，不補句號） */
+  var ARTICLE_SENTENCES = (function(){
+    var out = [];
+    ARTICLE_TEXT.split('。').forEach(function(part){
+      part = part.trim();
+      if (!part) return;
+      out.push(/[。！？!?]$/.test(part) ? part : part + '。');
+    });
+    return out;
+  })();
+
+  var CHAPTER = {
+    s1:{ n:1, name:'溫暖的巢', label:'第一幕・餵養' },
+    s2:{ n:2, name:'爸媽老了', label:'第二幕・抉擇' },
+    s3:{ n:3, name:'飛遍四方', label:'第三幕・尋食' },
+    s4:{ n:4, name:'叼回家餵爸媽', label:'第四幕・回報' }
+  };
+
+  /* =========================================================
+     工具
+     ========================================================= */
+  function $(sel, root){ return (root || document).querySelector(sel); }
+  function el(tag, cls, html){
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (html != null) n.innerHTML = html;
+    return n;
+  }
+  function clamp(v, a, b){ return v < a ? a : (v > b ? b : v); }
+  function lerp(a, b, t){ return a + (b - a) * t; }
+  function rand(a, b){ return a + Math.random() * (b - a); }
+
+  var _sizes = new Map();
+  function sizeOf(node){
+    var s = _sizes.get(node);
+    if (!s){
+      var r = node.getBoundingClientRect();
+      s = { w:r.width, h:r.height };
+      _sizes.set(node, s);
+    }
+    return s;
+  }
+  function clearSizes(){ _sizes.clear(); }
+
+  /* =========================================================
+     狀態
+     ========================================================= */
+  var state = {
+    scene: 'title',
+    stars: { s1:false, s2:false, s3:false, s4:false },
+    brave: false
+  };
+
+  /* =========================================================
+     迴圈管理
+     ========================================================= */
+  var loop = { id:null, last:0, fns:[] };
+  function addUpdater(fn){ loop.fns.push(fn); }
+  function clearUpdaters(){ loop.fns = []; }
+  function frame(t){
+    if (loop.id == null) return;
+    var dt = (t - loop.last) / 1000;
+    loop.last = t;
+    if (!isFinite(dt) || dt < 0) dt = 0;
+    dt = Math.min(dt, 0.05);
+    for (var i = 0; i < loop.fns.length; i++){
+      try { loop.fns[i](dt, t / 1000); }
+      catch (e) { if (window.console && console.error) console.error('[loop]', e); }
+    }
+    loop.id = requestAnimationFrame(frame);
+  }
+  function startLoop(){
+    if (loop.id != null) return;
+    loop.last = performance.now();
+    loop.id = requestAnimationFrame(frame);
+  }
+  function stopLoop(){
+    if (loop.id != null){ cancelAnimationFrame(loop.id); loop.id = null; }
+  }
+
+  /* =========================================================
+     場景切換
+     ========================================================= */
+  var hud = $('#hud');
+  var curtain = $('#curtain');
+  var sceneEls = {};
+  ['title','s1','s2','s3','s4','ending'].forEach(function(k){
+    sceneEls[k] = document.getElementById('sc-' + k);
+  });
+  var sceneEnter = {};
+  var sceneExit = {};
+  var isJumping = false;
+
+  function goto(name, opts){
+    opts = opts || {};
+    if (state.scene === name && !opts.force) return;
+    var prev = state.scene;
+    stopLoop();
+    clearUpdaters();
+    if (sceneExit[prev]) { try { sceneExit[prev](); } catch (e) {} }
+    SFX.stopAmbient();
+    NARR.stop();
+
+    Object.keys(sceneEls).forEach(function(k){
+      var node = sceneEls[k];
+      node.hidden = true;
+      node.classList.remove('is-active');
+    });
+    state.scene = name;
+    var cur = sceneEls[name];
+    cur.hidden = false;
+    // 先渲染再淡入
+    void cur.offsetHeight;
+    cur.classList.add('is-active');
+    hud.hidden = !(name === 's1' || name === 's2' || name === 's3' || name === 's4');
+    if (!hud.hidden) $('#hud-label').textContent = CHAPTER[name] ? CHAPTER[name].label : '';
+    renderHudStars();
+    clearSizes();
+
+    var activate = function(){
+      clearSizes();
+      cueScene(name);
+      if (sceneEnter[name]) { try { sceneEnter[name](); } catch (e) {} }
+    };
+    if (opts.curtain){
+      showCurtain(opts.curtain.eyebrow, opts.curtain.title, activate);
+    } else {
+      activate();
+    }
+  }
+
+  function armHint(sel){
+    var node = $(sel);
+    if (!node) return;
+    node.classList.remove('fade');
+    clearTimeout(node._t);
+    node._t = setTimeout(function(){ node.classList.add('fade'); }, 4200);
+  }
+
+  function showCurtain(eyebrow, title, done){
+    $('#curtain-eyebrow').textContent = eyebrow || '';
+    $('#curtain-title').textContent = title || '';
+    curtain.hidden = false;
+    void curtain.offsetHeight;
+    curtain.classList.add('show');
+    SFX.whoosh();
+    setTimeout(function(){
+      if (done) done();
+      setTimeout(function(){
+        curtain.classList.remove('show');
+      }, 260);
+      setTimeout(function(){ curtain.hidden = true; }, 700);
+    }, 780);
+  }
+
+  /* 每一幕的環境音：第一幕鳥鳴、第三幕高空風聲 */
+  function cueScene(name){
+    if (name === 's1') SFX.birds();
+    else if (name === 's3') SFX.wind();
+  }
+
+  function renderHudStars(){
+    var box = $('#hud-stars');
+    box.innerHTML = '';
+    ['s1','s2','s3','s4'].forEach(function(k){
+      box.insertAdjacentHTML('beforeend', starSvg(state.stars[k]));
+    });
+  }
+
+  /* =========================================================
+     第一幕：接住爸媽叼來的蟲子
+     ========================================================= */
+  var S1 = { on:false, got:0, need:6, drops:[], spawnT:0.7, dragging:false, x:0.5 };
+
+  sceneEnter.s1 = function(){
+    S1.on = true; S1.got = 0; S1.spawnT = 0.7; S1.x = 0.5; S1.dragging = false;
+    S1.drops.forEach(function(d){ if (d.el.parentNode) d.el.parentNode.removeChild(d.el); });
+    S1.drops = [];
+    $('#s1-got').textContent = '0';
+
+    $('#s1-branch').innerHTML =
+      '<svg viewBox="0 0 400 40" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">' +
+      '<path d="M0 22 q100 -14 200 2 q100 16 200 -4 l0 14 q-100 20 -200 4 q-100 -16 -200 -2 Z" ' +
+        'fill="#b1865c"/></svg>';
+    var dad = $('#s1-dad');
+    var mom = $('#s1-mom');
+    dad.innerHTML = '<div class="bv">' + ART.dad() + '</div>';
+    mom.innerHTML = '<div class="bv2">' + ART.mom() + '</div>';
+    $('#s1-nest').innerHTML = ART.nestWith('<g class="babyshake">' + ART.baby(true) + '</g>');
+
+    var pf = $('#pf1');
+    pf.style.touchAction = 'none';
+    clearSizes();
+    placeNest();
+    armHint('#s1-hint');
+
+    addUpdater(loopS1);
+    startLoop();
+  };
+  sceneExit.s1 = function(){
+    S1.on = false;
+    S1.drops.forEach(function(d){ if (d.el.parentNode) d.el.parentNode.removeChild(d.el); });
+    S1.drops = [];
+  };
+
+  function placeNest(){
+    var pf = $('#pf1');
+    var g = sizeOf(pf);
+    if (!g.w) return;
+    var unit = $('#s1-nest');
+    var uw = unit.getBoundingClientRect().width || g.w * 0.47;
+    var x = 6 + S1.x * (g.w - 12);
+    x = clamp(x, uw / 2 + 2, g.w - uw / 2 - 2);
+    unit.style.left = x + 'px';
+    unit.style.transform = 'translateX(-50%)';
+  }
+
+  function spawnDrop(){
+    var pf = $('#pf1');
+    var g = sizeOf(pf);
+    if (!g.w || !g.h) return;
+    var fromDad = Math.random() < 0.5;
+    var src = fromDad ? $('#s1-dad') : $('#s1-mom');
+    var sr = src.getBoundingClientRect();
+    var pr = pf.getBoundingClientRect();
+    var kind = Math.random();
+    var art = kind < 0.6 ? ART.worm : (kind < 0.85 ? ART.berry : ART.grain);
+    var size = Math.max(30, Math.min(g.w * 0.115, 46));
+    if (Math.random() < 0.4) SFX.flap();
+    var node = el('div', 'drop', art);
+    node.style.width = size + 'px';
+    pf.appendChild(node);
+    var o = {
+      el:node,
+      x:(sr.left - pr.left) + sr.width * 0.62 + rand(-6, 6),
+      y:(sr.top - pr.top) + sr.height * 0.85,
+      vy:g.h * rand(0.4, 0.48),
+      size:size,
+      spin:rand(-1.6, 1.6)
+    };
+    o.x = clamp(o.x, size / 2, g.w - size / 2);
+    S1.drops.push(o);
+  }
+
+  function loopS1(dt, now){
+    if (!S1.on) return;
+    var pf = $('#pf1');
+    var unit = $('#s1-nest');
+    // 先量測，再寫入樣式，避免同一幀反覆強制同步佈局
+    var g = sizeOf(pf);
+    if (!g.w || !g.h) return;
+    var ur = unit.getBoundingClientRect();
+    var pr = pf.getBoundingClientRect();
+    var mouth = {
+      x:(ur.left - pr.left) + ur.width * 0.71,
+      y:(ur.top - pr.top) + ur.height * 0.31,
+      r:Math.max(20, ur.width * 0.24)
+    };
+
+    S1.spawnT -= dt;
+    if (S1.spawnT <= 0){
+      spawnDrop();
+      S1.spawnT = rand(1.15, 1.75);
+    }
+
+    for (var i = S1.drops.length - 1; i >= 0; i--){
+      var d = S1.drops[i];
+      d.y += d.vy * dt;
+      var rot = Math.sin(now * 2 + d.spin) * 12;
+      d.el.style.left = d.x + 'px';
+      d.el.style.top = d.y + 'px';
+      d.el.style.transform = 'translate(-50%,-50%) rotate(' + rot.toFixed(1) + 'deg)';
+
+      var hit = Math.hypot(d.x - mouth.x, d.y - mouth.y) < mouth.r + d.size * 0.42;
+      if (hit){
+        catchDrop(d, mouth, pf);
+        continue;
+      }
+      if (d.y > g.h + d.size){
+        SFX.drop();
+        d.el.remove();
+        S1.drops.splice(i, 1);
+      }
+    }
+  }
+
+  function catchDrop(d, mouth, pf){
+    var idx = S1.drops.indexOf(d);
+    if (idx >= 0) S1.drops.splice(idx, 1);
+    d.el.remove();
+    SFX.catchFood();
+    var sp = el('div', 'spark', '+1');
+    sp.style.left = mouth.x + 'px';
+    sp.style.top = (mouth.y - 6) + 'px';
+    pf.appendChild(sp);
+    setTimeout(function(){ sp.remove(); }, 720);
+    S1.got += 1;
+    $('#s1-got').textContent = String(S1.got);
+    if (S1.got >= S1.need){
+      S1.on = false;
+      state.stars.s1 = true;
+      renderHudStars();
+      SFX.star();
+      setTimeout(function(){
+        goto('s2', { curtain:{ eyebrow:'第二幕', title:'爸爸媽媽老了' } });
+      }, 620);
+    }
+  }
+
+  function bindPlayfieldDrag(){
+    var pf = $('#pf1');
+    var active = false;
+    function toX(e){
+      var g = sizeOf(pf);
+      if (!g.w) return;
+      var r = pf.getBoundingClientRect();
+      S1.x = clamp((e.clientX - r.left) / g.w, 0, 1);
+      placeNest();
+    }
+    pf.addEventListener('pointerdown', function(e){
+      if (!S1.on) return;
+      active = true;
+      try { pf.setPointerCapture(e.pointerId); } catch (err) {}
+      toX(e);
+      e.preventDefault();
+    });
+    pf.addEventListener('pointermove', function(e){
+      if (!active || !S1.on) return;
+      toX(e);
+      e.preventDefault();
+    });
+    function release(){ active = false; }
+    pf.addEventListener('pointerup', release);
+    pf.addEventListener('pointercancel', release);
+    pf.addEventListener('lostpointercapture', release);
+  }
+
+  /* =========================================================
+     第二幕：抉擇
+     ========================================================= */
+  var S2 = { locked:false };
+
+  sceneEnter.s2 = function(){
+    S2.locked = false;
+    $('#s2-feedback').hidden = true;
+    $('#s2-feedback').className = 'feedback';
+    $('#s2-speech').textContent = '爸爸媽媽老了，飛不動了……';
+
+    $('#s2-tree').innerHTML =
+      '<svg viewBox="0 0 400 460" preserveAspectRatio="xMidYMid slice" ' +
+        'xmlns="http://www.w3.org/2000/svg">' +
+      '<circle cx="200" cy="292" r="120" fill="#ffcf80" opacity=".9"/>' +
+      '<circle cx="200" cy="292" r="88" fill="#ffe0a3" opacity=".85"/>' +
+      '<ellipse cx="70" cy="356" rx="186" ry="72" fill="#e0935e" opacity=".55"/>' +
+      '<ellipse cx="342" cy="368" rx="182" ry="68" fill="#d98a58" opacity=".5"/>' +
+      '<ellipse cx="200" cy="440" rx="292" ry="84" fill="#c3774a" opacity=".5"/>' +
+      '</svg>';
+    $('#s2-crows').innerHTML =
+      '<svg viewBox="0 0 300 220" xmlns="http://www.w3.org/2000/svg">' +
+      '<ellipse cx="150" cy="158" rx="122" ry="38" fill="#a97b4f"/>' +
+      '<ellipse cx="150" cy="150" rx="110" ry="30" fill="#8b5e34"/>' +
+      '<path d="M40 148 q30 -14 58 -4 q30 -14 56 -2 q28 -12 56 4" stroke="#c9a06d" ' +
+        'stroke-width="8" fill="none" stroke-linecap="round"/>' +
+      '<g class="tired tired-wing">' +
+        '<svg x="14" y="68" width="122" height="122" viewBox="0 0 120 120">' + ART.dad() + '</svg>' +
+      '</g>' +
+      '<g class="tired tired-wing" style="animation-delay:.5s">' +
+        '<svg x="164" y="68" width="122" height="122" viewBox="0 0 120 120">' + ART.mom() + '</svg>' +
+      '</g>' +
+      '<path d="M36 152 q30 42 114 42 q84 0 114 -42" stroke="#b98a58" stroke-width="26" ' +
+        'fill="none" stroke-linecap="round"/>' +
+      '<path d="M46 166 q30 30 104 30 q74 0 104 -30" stroke="#d3ab7c" stroke-width="8" ' +
+        'fill="none" stroke-linecap="round"/>' +
+      '<path d="M36 154 q30 38 114 38 q84 0 114 -38" stroke="#a97b4f" stroke-width="4" ' +
+        'fill="none" stroke-linecap="round" stroke-dasharray="10 8"/>' +
+      '</svg>';
+
+    var list = $('#s2-choices');
+    list.innerHTML = '';
+    var options = [
+      { ok:true,  text:'換我去找食物，照顧爸爸媽媽' },
+      { ok:false, text:'自己飛出去玩，不管爸爸媽媽' },
+      { ok:false, text:'請爸爸媽媽再飛一次看看' }
+    ];
+    options.forEach(function(opt, i){
+      var b = el('button', 'choice');
+      b.type = 'button';
+      b.innerHTML = '<span class="mk">' + 'ABC'.charAt(i) + '</span><span>' + opt.text + '</span>';
+      b.addEventListener('click', function(){ answer(opt, b); });
+      list.appendChild(b);
+    });
+  };
+
+  function answer(opt, btn){
+    if (S2.locked) return;
+    var fb = $('#s2-feedback');
+    if (opt.ok){
+      S2.locked = true;
+      btn.classList.add('ok');
+      fb.hidden = false;
+      fb.className = 'feedback good';
+      fb.textContent = '說得好！爸爸媽媽辛苦把你養大，現在換你照顧他們了。';
+      $('#s2-speech').textContent = '小烏鴉：換我來照顧你們！';
+      SFX.right();
+      sayCharacter('換我來照顧你們！', 1.5);
+      state.stars.s2 = true;
+      renderHudStars();
+      SFX.star();
+      setTimeout(function(){
+        goto('s3', { curtain:{ eyebrow:'第三幕', title:'飛遍東西南北' } });
+      }, 1250);
+    } else {
+      SFX.soft();
+      btn.classList.add('no');
+      setTimeout(function(){ btn.classList.remove('no'); }, 420);
+      fb.hidden = false;
+      fb.className = 'feedback bad';
+      fb.textContent = opt.text.charAt(0) === '自'
+        ? '再想一想：爸爸媽媽飛不動了，他們正等著你呢。'
+        : '再想一想：爸爸媽媽真的飛不動了，他們需要你的幫忙。';
+    }
+  }
+
+  /* =========================================================
+     第三幕：飛遍四方找食物
+     ========================================================= */
+  var S3 = {
+    on:false, food:0, need:6, life:3, maxLife:3, time:45, total:45,
+    objs:[], spawnFood:0.7, spawnWind:2.0, spawnRain:2.6, spawnSign:1.2,
+    bird:{ x:0, y:0, tx:0, ty:0 }, inv:0, damaged:false, locked:false, over:false
+  };
+
+  sceneEnter.s3 = function(){
+    $('#s3-deco').innerHTML =
+      '<svg style="left:-4%;bottom:-2%;width:52%;height:30%" viewBox="0 0 200 100" ' +
+        'preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">' +
+        '<path d="M0 100 L54 34 L108 100 Z" fill="#8fd08a" opacity=".95"/>' +
+        '<path d="M76 100 L136 22 L200 100 Z" fill="#7cc47c" opacity=".95"/>' +
+        '<path d="M136 22 L152 44 L120 44 Z" fill="#ffffff" opacity=".95"/></svg>' +
+      '<svg style="right:4%;top:6%;width:34%;height:16%" viewBox="0 0 170 90" ' +
+        'xmlns="http://www.w3.org/2000/svg">' + ART.cloud + '</svg>' +
+      '<svg style="left:6%;top:16%;width:24%;height:12%" viewBox="0 0 170 90" ' +
+        'xmlns="http://www.w3.org/2000/svg">' + ART.cloud + '</svg>' +
+      '<svg style="left:30%;top:38%;width:28%;height:14%" viewBox="0 0 170 90" ' +
+        'xmlns="http://www.w3.org/2000/svg">' + ART.cloud + '</svg>' +
+      '<svg style="right:8%;bottom:26%;width:30%;height:15%" viewBox="0 0 170 90" ' +
+        'xmlns="http://www.w3.org/2000/svg">' + ART.cloud + '</svg>';
+
+    $('#s3-bird').innerHTML = ART.crowFly();
+    armHint('#sc-s3 .hint');
+
+    var pf = $('#pf3');
+    pf.style.touchAction = 'none';
+    S3.objs.forEach(function(o){ o.el.remove(); });
+    S3.objs = [];
+    S3.food = 0; S3.life = S3.maxLife; S3.time = S3.total;
+    S3.inv = 0; S3.damaged = false; S3.over = false; S3.locked = false;
+    S3.on = true;
+    S3.spawnFood = 0.6; S3.spawnWind = 1.8; S3.spawnRain = 2.6; S3.spawnSign = 1.0;
+
+    var g = sizeOf(pf);
+    if (!g.w){ clearSizes(); g = sizeOf(pf); }
+    S3.bird.x = g.w * 0.22; S3.bird.y = g.h * 0.5;
+    S3.bird.tx = S3.bird.x; S3.bird.ty = S3.bird.y;
+
+    renderS3Hud();
+    addUpdater(loopS3);
+    startLoop();
+  };
+  sceneExit.s3 = function(){
+    S3.on = false;
+    S3.objs.forEach(function(o){ o.el.remove(); });
+    S3.objs = [];
+  };
+
+  function renderS3Hud(){
+    $('#s3-food').textContent = String(S3.food);
+    var box = $('#s3-life');
+    box.innerHTML = '';
+    for (var i = 0; i < S3.maxLife; i++) box.insertAdjacentHTML('beforeend', heartSvg(i < S3.life));
+    var bar = $('#s3-time');
+    var pct = clamp(S3.time / S3.total, 0, 1) * 100;
+    bar.style.width = pct.toFixed(1) + '%';
+    bar.classList.toggle('low', pct < 34);
+  }
+
+  function s3Add(type, fromRight, g){
+    var o = { type:type, el:null, x:0, y:0, vx:0, vy:0, r:14, size:34, phase:rand(0, 6.28) };
+    var node = el('div', 'obj');
+    if (type === 'food'){
+      var k = Math.random();
+      var art = k < 0.5 ? ART.worm : (k < 0.8 ? ART.berry : ART.grain);
+      o.size = Math.max(30, Math.min(g.w * 0.11, 44));
+      node.innerHTML = art;
+      o.r = o.size * 0.34;
+      o.x = g.w + o.size;
+      o.y = rand(g.h * 0.2, g.h * 0.8);
+      o.vx = -g.w * rand(0.28, 0.34);
+      o.baseY = o.y;
+      o.amp = g.h * rand(0.02, 0.05);
+    } else if (type === 'wind'){
+      o.size = Math.max(56, Math.min(g.w * 0.26, 108));
+      node.innerHTML = ART.wind;
+      o.r = o.size * 0.28;
+      o.x = g.w + o.size;
+      o.y = rand(g.h * 0.16, g.h * 0.84);
+      o.vx = -g.w * rand(0.4, 0.5);
+      o.baseY = o.y;
+      o.amp = g.h * 0.03;
+    } else if (type === 'rain'){
+      o.size = Math.max(70, Math.min(g.w * 0.34, 150));
+      node.innerHTML = ART.rain;
+      o.r = o.size * 0.2;
+      o.x = rand(g.w * 0.12, g.w * 0.88);
+      o.y = -o.size * 0.6;
+      o.vy = g.h * rand(0.42, 0.52);
+    } else {
+      o.size = 0;
+      node.className = 'obj sign';
+      var words = ['飛到東', '飛到西', '飛到南', '飛到北', '不怕風吹', '不怕雨打'];
+      node.innerHTML = '<div class="sign-chip">' + words[Math.floor(Math.random() * words.length)] +
+        '</div>';
+      o.r = 0;
+      o.x = g.w + 70;
+      o.y = rand(g.h * 0.08, g.h * 0.2);
+      o.vx = -g.w * 0.22;
+      o.deco = true;
+    }
+    node.dataset.kind = type;
+    node.style.width = o.size ? (o.size + 'px') : 'auto';
+    $('#pf3').appendChild(node);
+    o.el = node;
+    S3.objs.push(o);
+    return o;
+  }
+
+  function loopS3(dt, now){
+    if (!S3.on && !S3.over) return;
+    var pf = $('#pf3');
+    var g = sizeOf(pf);
+    if (!g.w || !g.h) return;
+
+    if (S3.on && !S3.locked){
+      S3.time -= dt;
+      if (S3.time <= 0){
+        S3.time = 0;
+        failS3('天黑了，小烏鴉還沒找到足夠的食物……');
+      }
+      S3.spawnFood -= dt; S3.spawnWind -= dt; S3.spawnRain -= dt; S3.spawnSign -= dt;
+      if (S3.spawnFood <= 0){ s3Add('food', true, g); S3.spawnFood = rand(1.05, 1.5); }
+      if (S3.spawnWind <= 0){ s3Add('wind', true, g); S3.spawnWind = rand(2.3, 3.1); }
+      if (S3.spawnRain <= 0){ s3Add('rain', false, g); S3.spawnRain = rand(1.9, 2.6); }
+      if (S3.spawnSign <= 0){ s3Add('sign', true, g); S3.spawnSign = rand(2.4, 3.6); }
+    }
+
+    // 小鳥位置
+    var bw = $('#s3-bird').getBoundingClientRect().width || g.w * 0.19;
+    var br = bw * 0.26;
+    S3.bird.x = lerp(S3.bird.x, S3.bird.tx, 1 - Math.exp(-dt * 11));
+    S3.bird.y = lerp(S3.bird.y, S3.bird.ty, 1 - Math.exp(-dt * 11));
+    S3.bird.x = clamp(S3.bird.x, br + 4, g.w - br - 4);
+    S3.bird.y = clamp(S3.bird.y, br + 4, g.h - br - 4);
+    var bnode = $('#s3-bird');
+    bnode.style.left = S3.bird.x + 'px';
+    bnode.style.top = S3.bird.y + 'px';
+
+    if (S3.inv > 0) S3.inv -= dt;
+
+    for (var i = S3.objs.length - 1; i >= 0; i--){
+      var o = S3.objs[i];
+      o.x += o.vx * dt;
+      o.y += o.vy * dt;
+      if (o.amp) o.y = o.baseY + Math.sin(now * 1.6 + o.phase) * o.amp;
+      o.el.style.left = o.x + 'px';
+      o.el.style.top = o.y + 'px';
+      if (o.type === 'wind' || o.type === 'sign'){
+        o.el.style.transform = 'translate(-50%,-50%) rotate(' +
+          (Math.sin(now * 2 + o.phase) * 5).toFixed(1) + 'deg)';
+      }
+
+      if (!o.deco && S3.on && !S3.locked && !o.hit){
+        var dist = Math.hypot(o.x - S3.bird.x, o.y - S3.bird.y);
+        if (o.type === 'food'){
+          if (dist < br + o.r * 1.15){ o.hit = true; collectFood(o, g); }
+        } else if (S3.inv <= 0 && dist < br * 0.86 + o.r * 0.8){
+          o.hit = true;
+          takeHit(g);
+        }
+      }
+
+      var gone = o.x < -o.size - 90 || o.y > g.h + o.size + 70 || o.y < -o.size - 200;
+      if (gone){
+        o.el.remove();
+        S3.objs.splice(i, 1);
+      }
+    }
+  }
+
+  function collectFood(o, g){
+    SFX.food();
+    o.el.remove();
+    var idx = S3.objs.indexOf(o);
+    if (idx >= 0) S3.objs.splice(idx, 1);
+    S3.food += 1;
+    var pf = $('#pf3');
+    var sp = el('div', 'spark', '+' + 1);
+    sp.style.left = o.x + 'px';
+    sp.style.top = o.y + 'px';
+    pf.appendChild(sp);
+    setTimeout(function(){ sp.remove(); }, 720);
+    renderS3Hud();
+    if (S3.food >= S3.need){
+      state.stars.s3 = true;
+      if (!S3.damaged) state.brave = true;
+      renderHudStars();
+      SFX.win();
+      winS3();
+    }
+  }
+
+  function takeHit(g){
+    SFX.hit();
+    S3.life -= 1;
+    S3.damaged = true;
+    S3.inv = 1.6;
+    renderS3Hud();
+    var bnode = $('#s3-bird');
+    bnode.classList.remove('hit');
+    void bnode.offsetWidth;
+    bnode.classList.add('hit');
+    var pf = $('#pf3');
+    pf.classList.remove('shake');
+    void pf.offsetWidth;
+    pf.classList.add('shake');
+    if (S3.life <= 0){
+      failS3('小烏鴉累了，先休息一下吧……');
+    }
+  }
+
+  function winS3(){
+    S3.locked = true;
+    S3.on = false;
+    overlay('找到 6 份食物了！', '小烏鴉飛過東南西北，不怕風吹雨打。', '叼回家餵爸媽', function(){
+      goto('s4', { curtain:{ eyebrow:'第四幕', title:'叼回家餵爸媽' } });
+    });
+  }
+  function failS3(msg){
+    SFX.lose();
+    S3.locked = true;
+    S3.on = false;
+    overlay('再飛一次', msg, '重新出發', function(){ restartS3(); });
+  }
+  function restartS3(){
+    hideOverlay();
+    var pf = $('#pf3');
+    S3.objs.forEach(function(o){ o.el.remove(); });
+    S3.objs = [];
+    S3.food = 0; S3.life = S3.maxLife; S3.time = S3.total;
+    S3.inv = 0; S3.damaged = false; S3.over = false;
+    S3.spawnFood = 0.5; S3.spawnWind = 1.6; S3.spawnRain = 2.4; S3.spawnSign = 0.8;
+    var g = sizeOf(pf);
+    S3.bird.x = g.w * 0.22; S3.bird.y = g.h * 0.5;
+    S3.bird.tx = S3.bird.x; S3.bird.ty = S3.bird.y;
+    S3.on = true; S3.locked = false;
+    renderS3Hud();
+    startLoop();
+  }
+
+  /* 通用彈窗 */
+  function overlay(title, text, btnText, cb){
+    var old = $('#s3-overlay');
+    if (old) old.remove();
+    var box = el('div');
+    box.id = 's3-overlay';
+    box.style.cssText = 'position:absolute;inset:0;z-index:40;display:flex;align-items:center;' +
+      'justify-content:center;padding:20px;background:rgba(28,40,60,.55);opacity:0;' +
+      'transition:opacity .25s ease;';
+    box.innerHTML =
+      '<div style="width:100%;max-width:320px;background:#fffdf7;border-radius:22px;padding:20px 18px;' +
+        'text-align:center;box-shadow:0 16px 36px rgba(0,0,0,.3)">' +
+        '<p style="margin:0 0 8px;font-size:19px;font-weight:800;color:#33304a">' + title + '</p>' +
+        '<p style="margin:0 0 16px;font-size:13.5px;line-height:1.6;font-weight:700;color:#6b6478">' +
+          text + '</p>' +
+        '<button type="button" id="ov-btn" style="font:inherit;font-weight:800;border:0;' +
+          'border-radius:999px;padding:14px 20px;min-height:50px;width:100%;cursor:pointer;' +
+          'background:linear-gradient(#ffc65c,#f5a02a);color:#4a3210;box-shadow:0 5px 0 #cf7f14">' +
+          btnText + '</button>' +
+      '</div>';
+    sceneEls.s3.appendChild(box);
+    requestAnimationFrame(function(){ box.style.opacity = '1'; });
+    $('#ov-btn', box).addEventListener('click', function(){
+      box.style.opacity = '0';
+      setTimeout(function(){ box.remove(); }, 240);
+      if (cb) cb();
+    });
+  }
+  function hideOverlay(){
+    var old = $('#s3-overlay');
+    if (old) old.remove();
+  }
+
+  function bindS3Input(){
+    var pf = $('#pf3');
+    var active = false;
+    var keys = {};
+    function move(e){
+      var g = sizeOf(pf);
+      if (!g.w) return;
+      var r = pf.getBoundingClientRect();
+      S3.bird.tx = clamp(e.clientX - r.left, 0, g.w);
+      S3.bird.ty = clamp(e.clientY - r.top, 0, g.h);
+    }
+    pf.addEventListener('pointerdown', function(e){
+      if (!S3.on) return;
+      active = true;
+      try { pf.setPointerCapture(e.pointerId); } catch (err) {}
+      move(e);
+      e.preventDefault();
+    });
+    pf.addEventListener('pointermove', function(e){
+      if (!active || !S3.on) return;
+      move(e);
+      e.preventDefault();
+    });
+    function release(){ active = false; }
+    pf.addEventListener('pointerup', release);
+    pf.addEventListener('pointercancel', release);
+    pf.addEventListener('lostpointercapture', release);
+
+    window.addEventListener('keydown', function(e){
+      if (state.scene !== 's3' || !S3.on) return;
+      var k = e.key;
+      if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','w','a','s','d','W','A','S','D']
+        .indexOf(k) >= 0){
+        keys[k] = true;
+        e.preventDefault();
+        var g = sizeOf(pf);
+        var dx = (k === 'ArrowLeft' || k === 'a' || k === 'A') ? -g.w * 0.12
+               : (k === 'ArrowRight' || k === 'd' || k === 'D') ? g.w * 0.12 : 0;
+        var dy = (k === 'ArrowUp' || k === 'w' || k === 'W') ? -g.h * 0.12
+               : (k === 'ArrowDown' || k === 's' || k === 'S') ? g.h * 0.12 : 0;
+        S3.bird.tx = clamp(S3.bird.tx + dx, 0, g.w);
+        S3.bird.ty = clamp(S3.bird.ty + dy, 0, g.h);
+      }
+    }, { passive:false });
+  }
+
+  /* =========================================================
+     第四幕：叼回家餵爸媽
+     ========================================================= */
+  var S4 = { on:false, foods:[], fed:{ dad:0, mom:0 }, need:3, total:0, dragging:null };
+
+  sceneEnter.s4 = function(){
+    S4.on = true;
+    S4.fed = { dad:0, mom:0 };
+    S4.dragging = null;
+    $('#s4-done').textContent = '0';
+
+    $('#s4-nest').innerHTML = ART.nestWith('<g class="babyshake">' + ART.baby(false) + '</g>');
+    $('#s4-dad .in').innerHTML = '<div class="mood"></div>' + ART.dad() +
+      '<div class="zone"></div><div class="fed">0/3</div>';
+    $('#s4-mom .in').innerHTML = '<div class="mood"></div>' + ART.mom() +
+      '<div class="zone"></div><div class="fed">0/3</div>';
+    $('#s4-dad .mood').innerHTML = heartSvg(true);
+    $('#s4-mom .mood').innerHTML = heartSvg(true);
+
+    var tray = $('#s4-tray');
+    tray.innerHTML = '';
+    S4.foods = [];
+    var arts = [ART.worm, ART.berry, ART.grain, ART.worm, ART.berry, ART.grain];
+    arts.forEach(function(art, i){
+      var slot = el('div', 'slot', art);
+      slot.dataset.idx = String(i);
+      slot.setAttribute('role', 'button');
+      slot.setAttribute('tabindex', '0');
+      slot.setAttribute('aria-label', '食物 ' + (i + 1));
+      tray.appendChild(slot);
+      S4.foods.push({ idx:i, art:art, el:slot, used:false });
+    });
+    S4.total = S4.foods.length;
+    clearSizes();
+    addUpdater(loopS4);
+    startLoop();
+  };
+  sceneExit.s4 = function(){
+    S4.on = false;
+    releaseDrag(false);
+    updateSeatState();
+  };
+
+  function updateSeatState(){
+    ['dad','mom'].forEach(function(who){
+      var seat = $(who === 'dad' ? '#s4-dad' : '#s4-mom');
+      var n = S4.fed[who];
+      $('.fed', seat).textContent = n + '/3';
+      seat.classList.toggle('full', n >= S4.need);
+      // 拖曳時才亮起放置提示圈，平時保持畫面乾淨
+      seat.classList.toggle('live', S4.on && n < S4.need && !!S4.dragging);
+    });
+  }
+
+  function loopS4(dt, now){
+    if (!S4.on) return;
+    updateSeatState();
+  }
+
+  function pickFood(slotEl, ev){
+    if (!S4.on) return;
+    var idx = Number(slotEl.dataset.idx);
+    var food = S4.foods[idx];
+    if (!food || food.used) return;
+    var r = slotEl.getBoundingClientRect();
+    var ghost = el('div', 'ghost', food.art);
+    ghost.style.left = (ev.clientX || r.left + r.width / 2) + 'px';
+    ghost.style.top = (ev.clientY || r.top + r.height / 2) + 'px';
+    document.body.appendChild(ghost);
+    slotEl.classList.add('picked');
+    S4.dragging = { food:food, ghost:ghost, slotEl:slotEl };
+    updateSeatState();
+  }
+
+  function moveDrag(clientX, clientY){
+    if (!S4.dragging) return;
+    S4.dragging.ghost.style.left = clientX + 'px';
+    S4.dragging.ghost.style.top = clientY + 'px';
+    var hit = seatAt(clientX, clientY);
+    ['dad','mom'].forEach(function(who){
+      var seat = $(who === 'dad' ? '#s4-dad' : '#s4-mom');
+      seat.classList.toggle('over', !!hit && hit === who);
+    });
+  }
+
+  function seatAt(x, y){
+    var res = null;
+    ['dad','mom'].forEach(function(who){
+      if (res) return;
+      if (S4.fed[who] >= S4.need) return;
+      var seat = $(who === 'dad' ? '#s4-dad' : '#s4-mom');
+      var r = seat.getBoundingClientRect();
+      if (x >= r.left - 8 && x <= r.right + 8 && y >= r.top - 8 && y <= r.bottom + 8) res = who;
+    });
+    return res;
+  }
+
+  function releaseDrag(commit, x, y){
+    if (!S4.dragging) return;
+    var d = S4.dragging;
+    var who = commit ? seatAt(x, y) : null;
+    d.ghost.remove();
+    d.slotEl.classList.remove('picked');
+    S4.dragging = null;
+    ['#s4-dad','#s4-mom'].forEach(function(s){ $(s).classList.remove('over'); });
+    if (!who){ updateSeatState(); return; }
+
+    SFX.feed();
+    d.food.used = true;
+    d.slotEl.classList.add('taken');
+    S4.fed[who] += 1;
+    var seat = $(who === 'dad' ? '#s4-dad' : '#s4-mom');
+    seat.classList.remove('happy');
+    void seat.offsetWidth;
+    seat.classList.add('happy');
+    updateSeatState();
+
+    if (S4.fed[who] >= S4.need) SFX.warm();
+    var done = S4.fed.dad + S4.fed.mom;
+    $('#s4-done').textContent = String(done);
+    if (done >= S4.total){
+      S4.on = false;
+      state.stars.s4 = true;
+      renderHudStars();
+      SFX.star();
+      setTimeout(function(){ goto('ending'); }, 900);
+    }
+  }
+
+  function bindS4Input(){
+    var tray = $('#s4-tray');
+    tray.style.touchAction = 'none';
+    var pointerId = null;
+
+    tray.addEventListener('pointerdown', function(e){
+      if (!S4.on || S4.dragging) return;
+      var slot = e.target.closest ? e.target.closest('.slot') : null;
+      if (!slot) return;
+      pointerId = e.pointerId;
+      try { tray.setPointerCapture(e.pointerId); } catch (err) {}
+      pickFood(slot, e);
+      e.preventDefault();
+    });
+    tray.addEventListener('pointermove', function(e){
+      if (!S4.dragging) return;
+      moveDrag(e.clientX, e.clientY);
+      e.preventDefault();
+    });
+    function up(e){
+      if (!S4.dragging) return;
+      releaseDrag(true, e.clientX, e.clientY);
+    }
+    tray.addEventListener('pointerup', up);
+    tray.addEventListener('pointercancel', function(){ releaseDrag(false); });
+    tray.addEventListener('lostpointercapture', function(){ if (S4.dragging) releaseDrag(false); });
+    // 鍵盤操作（無障礙）：聚焦食物後按 Enter，再按 1／2 選爸爸媽媽
+    tray.addEventListener('keydown', function(e){
+      if (e.key === 'Enter' || e.key === ' '){
+        var slot = e.target.closest ? e.target.closest('.slot') : null;
+        if (!slot) return;
+        e.preventDefault();
+        var r = slot.getBoundingClientRect();
+        pickFood(slot, { clientX:r.left + r.width / 2, clientY:r.top + r.height / 2 });
+      } else if (e.key === '1' || e.key === '2'){
+        if (!S4.dragging) return;
+        var who = e.key === '1' ? 'dad' : 'mom';
+        var seat = $(who === 'dad' ? '#s4-dad' : '#s4-mom');
+        var sr = seat.getBoundingClientRect();
+        releaseDrag(true, sr.left + sr.width / 2, sr.top + sr.height * 0.42);
+      }
+    });
+  }
+
+  /* =========================================================
+     結算
+     ========================================================= */
+  function enterEnding(){
+    var earned = ['s1','s2','s3','s4'].filter(function(k){ return state.stars[k]; }).length;
+    SFX.endingTune(earned);
+
+    $('#e-art').innerHTML =
+      '<svg viewBox="0 0 300 210" xmlns="http://www.w3.org/2000/svg">' +
+      '<ellipse cx="150" cy="182" rx="120" ry="26" fill="#8b5e34"/>' +
+      '<svg x="18" y="34" width="112" height="112" viewBox="0 0 120 120">' + ART.dad() + '</svg>' +
+      '<svg x="170" y="34" width="112" height="112" viewBox="0 0 120 120">' + ART.mom() + '</svg>' +
+      '<svg x="92" y="80" width="116" height="116" viewBox="0 0 120 120">' + ART.baby(true) + '</svg>' +
+      '<path d="M26 188 q62 26 124 0" stroke="#b98a58" stroke-width="18" fill="none" ' +
+        'stroke-linecap="round"/>' +
+      '</svg>';
+
+    var box = $('#e-stars');
+    box.innerHTML = '';
+    ['s1','s2','s3','s4'].forEach(function(k, i){
+      var wrap = el('div', 'star-slot' + (state.stars[k] ? ' on' : ''));
+      wrap.innerHTML = starSvg(state.stars[k]);
+      if (state.stars[k]) wrap.firstChild.style.animationDelay = (i * 0.16) + 's';
+      box.appendChild(wrap);
+    });
+
+    var badge = $('#e-badge');
+    badge.textContent = state.brave ? '勇敢徽章・全程沒被風雨打倒' : '勇敢徽章（全程沒受傷就拿到）';
+    badge.classList.toggle('locked', !state.brave);
+
+    $('#e-quote').textContent = earned >= 4
+      ? '你完成全部四幕，共拿到 ' + earned + ' 顆孝心星！'
+      : '這一輪完成 ' + earned + ' 幕，拿到 ' + earned + ' 顆孝心星。再玩一次，把四幕都完成吧！';
+  }
+
+  /* =========================================================
+     課文朗讀：普通話（zh-CN）逐句朗讀，唸到哪句就亮哪句
+     ========================================================= */
+  var NARR = (function(){
+    var supported = ('speechSynthesis' in window) && (typeof SpeechSynthesisUtterance !== 'undefined');
+    var lines = ARTICLE_SENTENCES.slice();
+    var els = [], listeners = [];
+    var voiceMain = null, voiceAny = null;
+    var playing = false, paused = false, cur = -1, rate = 0.95, queue = [];
+
+    function loadVoices(){
+      if (!supported) return;
+      var list = [];
+      try { list = window.speechSynthesis.getVoices() || []; } catch (e) { list = []; }
+      voiceMain = null; voiceAny = null;
+      for (var i = 0; i < list.length; i++){
+        var lg = String(list[i].lang || '').replace(/_/g, '-').toLowerCase();
+        if (lg.indexOf('zh') !== 0) continue;
+        if (!voiceAny) voiceAny = list[i];
+        if (!voiceMain && /^zh-(cn|sg|hans)/.test(lg)) voiceMain = list[i];
+      }
+      if (!voiceMain){
+        for (var j = 0; j < list.length; j++){
+          var nm = String(list[j].name || '');
+          if (/chinese|mandarin|putonghua|普通話|普通话|國語|中文/i.test(nm) &&
+              !/cantonese|粵|粤/i.test(nm)){ voiceMain = list[j]; break; }
+        }
+      }
+    }
+    function emit(){
+      var st = { playing:playing, paused:paused, index:cur, total:lines.length };
+      for (var i = 0; i < listeners.length; i++){ try { listeners[i](st); } catch (e) {} }
+    }
+    function paint(){
+      for (var i = 0; i < els.length; i++){
+        if (els[i]) els[i].classList.toggle('on', i === cur);
+      }
+      if (cur >= 0 && els[cur] && els[cur].scrollIntoView){
+        try { els[cur].scrollIntoView({ block:'nearest' }); } catch (e) {}
+      }
+      emit();
+    }
+    function cancel(){
+      if (!supported) return;
+      try { window.speechSynthesis.cancel(); } catch (e) {}
+    }
+    function utter(text){
+      var u = new SpeechSynthesisUtterance(text);
+      var v = voiceMain || voiceAny;
+      u.lang = (v && v.lang) ? v.lang : 'zh-CN';
+      if (v) u.voice = v;
+      u.rate = rate; u.pitch = 1.02; u.volume = 1;
+      return u;
+    }
+    /* 逐句接續：一句唸完自動換下一句；另設保險計時器防裝置不回應而卡住 */
+    function pump(){
+      if (!playing) return;
+      var i = queue.shift();
+      if (i === undefined){
+        playing = false; paused = false; cur = -1; cancel(); paint(); return;
+      }
+      cur = i; paint();
+      var u = utter(lines[i]);
+      var done = false;
+      function next(fromGuard){
+        if (done) return;
+        done = true;
+        clearTimeout(guard);
+        if (fromGuard){ cancel(); }
+        if (playing) pump();
+      }
+      var guard = setTimeout(function(){ next(true); }, 3500 + lines[i].length * 350);
+      u.onend = function(){ next(false); };
+      u.onerror = function(){ next(false); };
+      try {
+        window.speechSynthesis.resume();
+        window.speechSynthesis.speak(u);
+      } catch (e){
+        playing = false; cur = -1; cancel(); paint();
+      }
+    }
+
+    var API = {
+      supported:function(){ return supported; },
+      bind:function(list){ els = list || []; },
+      onChange:function(fn){ listeners.push(fn); },
+      isSpeaking:function(){ return playing; },
+      isPaused:function(){ return paused; },
+      index:function(){ return cur; },
+      setRate:function(r){ rate = r; },
+      voice:function(){ return voiceMain || voiceAny; },
+      playAll:function(from){
+        if (!supported) return;
+        cancel();
+        queue = [];
+        var start = from || 0;
+        for (var i = start; i < lines.length; i++) queue.push(i);
+        playing = true; paused = false; cur = -1;
+        paint(); pump();
+      },
+      speakOne:function(i){
+        if (!supported || i < 0 || i >= lines.length) return;
+        cancel();
+        queue = [i]; playing = true; paused = false;
+        pump();
+      },
+      pause:function(){
+        if (!supported || !playing) return;
+        var keep = cur;
+        playing = false; paused = true; queue = [];
+        cancel(); cur = keep; paint();
+      },
+      resume:function(){
+        if (!supported || !paused) return;
+        var from = cur < 0 ? 0 : cur;
+        queue = [];
+        for (var i = from; i < lines.length; i++) queue.push(i);
+        playing = true; paused = false;
+        pump();
+      },
+      stop:function(){
+        if (!supported) return;
+        playing = false; paused = false; cur = -1; queue = [];
+        cancel(); paint();
+      }
+    };
+    if (supported){
+      loadVoices();
+      if (window.speechSynthesis.addEventListener){
+        window.speechSynthesis.addEventListener('voiceschanged', loadVoices);
+      }
+      setTimeout(loadVoices, 600);
+    }
+    return API;
+  })();
+
+  /* 小烏鴉的台詞用較高音調唸出來，和旁白朗讀區分 */
+  function sayCharacter(text, pitch){
+    if (!SFX.isOn() || !NARR.supported()) return;
+    try {
+      window.speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(text);
+      var v = NARR.voice();
+      u.lang = (v && v.lang) ? v.lang : 'zh-CN';
+      if (v) u.voice = v;
+      u.rate = 1; u.pitch = pitch || 1.45; u.volume = 0.95;
+      window.speechSynthesis.speak(u);
+    } catch (e) {}
+  }
+
+  function initNarration(){
+    var btn = $('#btn-read');
+    var box = $('#read-lines');
+    var playBtn = $('#btn-narr');
+    var stopBtn = $('#btn-narr-stop');
+    var ctl = $('#narr-ctl');
+    var rateBox = $('#narr-rate');
+    var note = $('#read-note');
+    var endBtn = $('#btn-read-end');
+    var IDLE = '點句子上可單獨再聽一次，念到的句子會亮起來。';
+
+    var lineEls = [];
+    if (box){
+      box.innerHTML = '';
+      ARTICLE_SENTENCES.forEach(function(s, i){
+        var p = el('p', 'read-line');
+        p.setAttribute('role', 'button');
+        p.setAttribute('tabindex', '0');
+        p.innerHTML = '<span class="idx">' + (i + 1) + '</span>' + s;
+        p.addEventListener('click', function(){ NARR.speakOne(i); });
+        p.addEventListener('keydown', function(e){
+          if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); NARR.speakOne(i); }
+        });
+        box.appendChild(p);
+        lineEls.push(p);
+      });
+      NARR.bind(lineEls);
+    }
+
+    if (!NARR.supported()){
+      if (ctl) ctl.hidden = true;
+      if (rateBox) rateBox.hidden = true;
+      if (btn) btn.hidden = true;
+      if (endBtn) endBtn.hidden = true;
+      if (note){
+        note.className = 'read-note warn';
+        note.textContent = '這台裝置不支援語音朗讀，請爸爸媽媽或老師念給孩子聽。';
+      }
+      return;
+    }
+
+    NARR.onChange(function(st){
+      if (playBtn){
+        playBtn.textContent = st.playing ? '暫停朗讀' : (st.paused ? '繼續朗讀' : '播放全文朗讀');
+      }
+      if (stopBtn) stopBtn.hidden = !(st.playing || st.paused);
+      if (endBtn) endBtn.textContent = (st.playing || st.paused) ? '停止朗讀' : '聽課文朗讀（普通話）';
+      if (btn) btn.textContent = (st.playing || st.paused) ? '停止朗讀' : '聽課文（普通話）';
+      if (note){
+        note.className = 'read-note';
+        note.textContent = st.playing
+          ? ('正在念第 ' + (st.index + 1) + ' 句，共 ' + st.total + ' 句…')
+          : IDLE;
+      }
+    });
+
+    if (playBtn) playBtn.addEventListener('click', function(){
+      if (NARR.isSpeaking()) NARR.pause();
+      else if (NARR.isPaused()) NARR.resume();
+      else NARR.playAll(0);
+    });
+    if (stopBtn) stopBtn.addEventListener('click', function(){ NARR.stop(); });
+    if (rateBox) rateBox.addEventListener('click', function(e){
+      var b = (e.target && e.target.closest) ? e.target.closest('button[data-rate]') : null;
+      if (!b) return;
+      Array.prototype.forEach.call(rateBox.querySelectorAll('button[data-rate]'), function(x){
+        x.classList.toggle('on', x === b);
+      });
+      NARR.setRate(Number(b.getAttribute('data-rate')));
+      if (NARR.isSpeaking() || NARR.isPaused()) NARR.playAll(Math.max(0, NARR.index()));
+    });
+    if (btn) btn.addEventListener('click', function(){
+      if (NARR.isSpeaking() || NARR.isPaused()) NARR.stop();
+      else NARR.playAll(0);
+    });
+    if (endBtn) endBtn.addEventListener('click', function(){
+      if (NARR.isSpeaking() || NARR.isPaused()){ NARR.stop(); return; }
+      var card = $('.read-card');
+      if (card && card.scrollIntoView){
+        try { card.scrollIntoView({ block:'center', behavior:'smooth' }); } catch (e) {}
+      }
+      NARR.playAll(0);
+    });
+  }
+
+  /* =========================================================
+     啟動
+     ========================================================= */
+  function resetRun(){
+    Object.keys(state.stars).forEach(function(k){ state.stars[k] = false; });
+    state.brave = false;
+  }
+
+  function init(){
+    $('#title-art').innerHTML = titleHero();
+    $('#sc-ending').hidden = true;
+
+    // 首頁
+    $('#btn-start').addEventListener('click', function(){
+      resetRun();
+      goto('s1', { curtain:{ eyebrow:'第一幕', title:'溫暖的巢' } });
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('.chip[data-go]'), function(c){
+      c.addEventListener('click', function(){
+        var t = c.dataset.go;
+        if (t === 's1') resetRun();
+        goto(t, { curtain:{ eyebrow:'第' + CHAPTER[t].n + '幕', title:CHAPTER[t].name } });
+      });
+    });
+    $('#btn-home').addEventListener('click', function(){ goto('title'); });
+    $('#btn-home2').addEventListener('click', function(){ goto('title'); });
+    $('#btn-again').addEventListener('click', function(){
+      resetRun();
+      goto('s1', { curtain:{ eyebrow:'第一幕', title:'溫暖的巢' } });
+    });
+
+    // 場景進入
+    sceneEnter.ending = enterEnding;
+    sceneEnter.title = function(){
+      renderHudStars();
+      $('#title-art').innerHTML = titleHero();
+    };
+
+    // 綁定輸入
+    bindPlayfieldDrag();
+    bindS3Input();
+    bindS4Input();
+    initNarration();
+
+    // 音效：第一次互動時解鎖音訊（瀏覽器自動播放政策）
+    var unlock = function(){ SFX.unlock(); };
+    window.addEventListener('pointerdown', unlock, { once:true, passive:true });
+    window.addEventListener('keydown', unlock, { once:true });
+
+    // 音效鈕（右上角）
+    var sfxBtn = $('#btn-sfx');
+    if (!(window.AudioContext || window.webkitAudioContext)){
+      sfxBtn.hidden = true;
+    } else {
+      sfxBtn.classList.toggle('mute', !SFX.isOn());
+      sfxBtn.addEventListener('click', function(){
+        var next = !SFX.isOn();
+        SFX.setOn(next);
+        sfxBtn.classList.toggle('mute', !next);
+        sfxBtn.setAttribute('aria-pressed', next ? 'true' : 'false');
+        sfxBtn.setAttribute('aria-label', next ? '關閉音效' : '開啟音效');
+        if (next) cueScene(state.scene);
+      });
+    }
+
+    // 所有按鈕與食物格都有輕點回饋音
+    $('#stage').addEventListener('pointerdown', function(e){
+      var t = e.target;
+      if (!t || !t.closest || t.closest('#btn-sfx')) return;
+      if (t.closest('button') || t.closest('.slot')) SFX.tick();
+    }, { passive:true });
+
+    // 尺寸變化時重新量測
+    window.addEventListener('resize', clearSizes);
+    window.addEventListener('orientationchange', function(){
+      clearSizes();
+      setTimeout(clearSizes, 350);
+    });
+    if (window.visualViewport && window.visualViewport.addEventListener){
+      window.visualViewport.addEventListener('resize', clearSizes);
+    }
+
+    // 頁面隱藏時暫停
+    document.addEventListener('visibilitychange', function(){
+      if (document.hidden){
+        stopLoop();
+        SFX.stopAmbient();
+        if (NARR.isSpeaking()) NARR.pause();
+      } else {
+        cueScene(state.scene);
+        if (state.scene === 's1' || state.scene === 's3' || state.scene === 's4'){
+          if (!(state.scene === 's3' && (S3.locked || !S3.on))) startLoop();
+        }
+      }
+      clearSizes();
+    });
+
+    renderHudStars();
+  }
+
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>

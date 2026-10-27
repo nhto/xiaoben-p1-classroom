@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>夏夜多美 · 荷塘夜話 — 課文互動遊戲</title>
+<meta name="description" content="《夏夜多美》課文互動遊戲：五個點擊小關卡，陪小蟋蟀爬上岸，附繁體課文、音效與全文普通話朗讀。" />
+<style>
+  :root{
+    --night-1:#101534; --night-2:#212a5c; --night-3:#3b3a76;
+    --cream:#FFF6E2; --cream-2:#FFFCF2; --ink:#2A2350; --ink-soft:#5B5484;
+    --moon:#FFE9A8; --glow:#FFD866; --sky:#8FD9FF; --leaf:#68C79B; --leaf-deep:#2F8A66;
+    --lotus:#F9A8C8; --lotus-deep:#C95C8C; --cricket:#D89A63; --cricket-deep:#8C5A31;
+    --firefly:#D6F56B;
+    --spot:min(19vw, 96px);
+  }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ height:100%; }
+  body{
+    margin:0;
+    font-family:'Noto Sans TC','PingFang TC','Heiti TC','Microsoft JhengHei','Microsoft YaHei',system-ui,-apple-system,sans-serif;
+    color:var(--cream);
+    background:
+      radial-gradient(1100px 520px at 82% -8%, rgba(255,216,102,.16), transparent 62%),
+      radial-gradient(720px 520px at 2% 102%, rgba(143,217,255,.14), transparent 66%),
+      linear-gradient(180deg, var(--night-1) 0%, var(--night-2) 50%, #2b2a5e 100%);
+    background-attachment:fixed;
+    -webkit-text-size-adjust:100%;
+  }
+  .sky-decor{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      radial-gradient(2px 2px at 8% 10%, rgba(255,255,255,.9), transparent 60%),
+      radial-gradient(1.6px 1.6px at 22% 26%, rgba(255,255,255,.7), transparent 60%),
+      radial-gradient(2.2px 2.2px at 39% 8%, rgba(255,233,168,.85), transparent 60%),
+      radial-gradient(1.5px 1.5px at 54% 22%, rgba(255,255,255,.65), transparent 60%),
+      radial-gradient(1.8px 1.8px at 68% 6%, rgba(255,255,255,.8), transparent 60%),
+      radial-gradient(1.5px 1.5px at 80% 30%, rgba(255,233,168,.7), transparent 60%),
+      radial-gradient(2px 2px at 92% 14%, rgba(255,255,255,.85), transparent 60%),
+      radial-gradient(1.4px 1.4px at 14% 44%, rgba(255,255,255,.55), transparent 60%),
+      radial-gradient(1.6px 1.6px at 62% 46%, rgba(255,255,255,.5), transparent 60%),
+      radial-gradient(1.4px 1.4px at 32% 62%, rgba(255,255,255,.45), transparent 60%);
+    animation:twinkle 6s ease-in-out infinite;
+  }
+  @keyframes twinkle{ 0%,100%{opacity:.5} 50%{opacity:.95} }
+  .page-wrap{ position:relative; z-index:1; min-height:100%; }
+
+  /* ---- 卡片 / 面板 ---- */
+  .panel{
+    background:linear-gradient(180deg, var(--cream-2) 0%, #FFF0D6 100%);
+    border:3px solid var(--ink);
+    border-radius:24px;
+    box-shadow:0 5px 0 rgba(9,13,36,.6);
+    color:var(--ink);
+  }
+  .panel-dark, .board{
+    background:linear-gradient(180deg, rgba(255,246,226,.12), rgba(255,246,226,.06));
+    border:3px solid rgba(255,246,226,.5);
+    border-radius:24px; color:var(--cream);
+  }
+  .sec-title{ font-size:15px; font-weight:900; letter-spacing:.02em; margin:0 0 8px; }
+  .tc-line{ font-size:19px; font-weight:800; line-height:1.6; margin:0; letter-spacing:.01em; }
+  .py-line{ font-size:12.5px; font-weight:600; color:var(--ink-soft); margin:2px 0 0; letter-spacing:.02em; }
+  .body-text{ font-size:16px; line-height:1.65; font-weight:600; }
+  .small-text{ font-size:12.5px; line-height:1.55; font-weight:600; color:var(--ink-soft); }
+
+  /* ---- 按鈕 ---- */
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:7px;
+    padding:11px 16px; border-radius:999px; border:3px solid var(--ink);
+    background:var(--cream); color:var(--ink); font-weight:900; font-size:15px;
+    box-shadow:0 4px 0 var(--ink); cursor:pointer; transition:transform .1s ease, box-shadow .1s ease, background .15s ease;
+    font-family:inherit; text-align:center;
+  }
+  .btn:active{ transform:translateY(3px); box-shadow:0 1px 0 var(--ink); }
+  .btn:focus-visible{ outline:3px solid var(--sky); outline-offset:2px; }
+  .btn-glow{ background:var(--glow); }
+  .btn-sky{ background:var(--sky); }
+  .btn-leaf{ background:#9BE7C2; }
+  .btn-lotus{ background:#FBC0D6; }
+  .btn.is-off{ opacity:.55; }
+  .icon-btn{
+    display:inline-flex; align-items:center; justify-content:center; width:42px; height:42px; border-radius:14px;
+    border:3px solid var(--ink); background:var(--cream); color:var(--ink); box-shadow:0 4px 0 var(--ink);
+    cursor:pointer; transition:transform .1s ease, box-shadow .1s ease;
+  }
+  .icon-btn:active{ transform:translateY(3px); box-shadow:0 1px 0 var(--ink); }
+  .icon-btn.is-off{ background:#E7DCC6; }
+  .icon-btn svg{ width:22px; height:22px; }
+
+  .chip{
+    display:inline-flex; align-items:center; gap:5px; white-space:nowrap; padding:5px 10px; border-radius:999px;
+    border:2.5px solid rgba(255,246,226,.55); background:rgba(255,246,226,.14);
+    font-size:13px; font-weight:900; color:var(--cream);
+  }
+  .hud-right{ margin-left:auto; display:flex; align-items:center; gap:8px; }
+  .star-chip{ display:inline-flex; align-items:center; gap:6px; padding:5px 10px; border-radius:999px;
+    border:2.5px solid var(--ink); background:var(--glow); color:var(--ink); font-size:13px; font-weight:900; }
+  .star-chip svg{ width:16px; height:16px; }
+  .star-chip span, #starText{ white-space:nowrap; }
+
+  /* ---- 場景 ---- */
+  .scene{
+    position:relative; width:100%; aspect-ratio:4/3; overflow:hidden;
+    border:3px solid var(--ink); border-radius:24px; background:#141a3c;
+    box-shadow:0 5px 0 rgba(9,13,36,.6);
+  }
+  .scene-bg{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+  .scene svg:not(.scene-bg){ width:100%; height:auto; display:block; }
+  .btn svg{ width:18px; height:18px; flex:0 0 auto; }
+  #doneStars svg{ width:100%; height:100%; display:block; }
+  .spot{
+    position:absolute; transform:translate(-50%,-50%); padding:0; border:0; background:transparent;
+    display:flex; flex-direction:column; align-items:center; cursor:pointer; font-family:inherit;
+  }
+  .spot:focus-visible{ outline:3px dashed var(--glow); outline-offset:4px; border-radius:16px; }
+  .spot > svg, .spot .art{ width:var(--spot); height:var(--spot); display:block; filter:brightness(.72) saturate(.7); transition:filter .25s ease, transform .25s ease; }
+  .spot.found > svg, .spot.found .art{ filter:none; }
+  .spot.dim > svg, .spot.dim .art{ filter:brightness(.45) saturate(.35) blur(.6px); }
+  .spot .tag{
+    position:absolute; top:-10px; left:50%; transform:translate(-50%,-100%) scale(1);
+    background:var(--cream); color:var(--ink); border:2.5px solid var(--ink); border-radius:999px;
+    padding:3px 9px; font-size:12.5px; font-weight:900; white-space:nowrap; opacity:0; transition:opacity .2s ease;
+  }
+  .spot.found .tag{ opacity:1; }
+  .halo{
+    position:absolute; left:50%; top:50%; width:var(--spot); height:var(--spot); margin-left:calc(var(--spot) / -2); margin-top:calc(var(--spot) / -2);
+    border-radius:999px; background:radial-gradient(circle, rgba(255,216,102,.55) 0%, rgba(255,216,102,0) 70%);
+    animation:halo 1.8s ease-out infinite; pointer-events:none;
+  }
+  @keyframes halo{ 0%{transform:scale(.7); opacity:.9} 100%{transform:scale(1.45); opacity:0} }
+  .cricket-pop{ position:absolute; left:50%; top:50%; transform:translate(-30%,-88%); width:calc(var(--spot) * 1.05); display:block; animation:pop .5s cubic-bezier(.2,.8,.2,1); }
+  .cricket-pop svg{ width:100%; height:auto; display:block; }
+  .hop{ animation:hop .6s ease; }
+  @keyframes hop{ 0%{transform:translate(-50%,-50%)} 45%{transform:translate(-50%,-98%)} 100%{transform:translate(-50%,-50%)} }
+  .walker{ position:absolute; width:calc(var(--spot) * .95); transform:translate(-50%,-50%); transition:left .55s cubic-bezier(.2,.8,.2,1), top .55s cubic-bezier(.2,.8,.2,1); }
+  .lit{ animation:litpop .5s cubic-bezier(.2,.8,.2,1); }
+  @keyframes litpop{ 0%{transform:scale(.6)} 60%{transform:scale(1.18)} 100%{transform:scale(1)} }
+  .glow-ring{ position:absolute; inset:-22%; border-radius:999px; background:radial-gradient(circle, rgba(255,233,140,.5), transparent 68%); animation:halo 2.4s ease-out infinite; pointer-events:none; }
+
+  /* ---- 選項 / 句子 ---- */
+  .option{
+    display:flex; align-items:flex-start; gap:10px; width:100%; text-align:left;
+    padding:12px 13px; border-radius:18px; border:3px solid var(--ink); background:var(--cream);
+    color:var(--ink); font-family:inherit; font-size:16px; font-weight:800; line-height:1.5;
+    box-shadow:0 4px 0 var(--ink); cursor:pointer; transition:transform .1s ease, box-shadow .1s ease;
+  }
+  .option:active{ transform:translateY(3px); box-shadow:0 1px 0 var(--ink); }
+  .option .bullet{
+    flex:0 0 auto; width:26px; height:26px; border-radius:999px; border:2.5px solid var(--ink);
+    background:var(--sky); display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:900;
+  }
+  .option.wrong{ animation:shake .38s ease; background:#FFE0E0; }
+  .option.right{ background:#C6F2D9; }
+  @keyframes shake{ 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+
+  .feedback{
+    display:flex; align-items:flex-start; gap:8px; min-height:46px;
+    padding:10px 12px; border-radius:18px; border:3px dashed rgba(255,246,226,.45);
+    background:rgba(255,246,226,.08); font-size:15px; font-weight:800; line-height:1.5;
+  }
+  .feedback[data-kind="ok"]{ border-style:solid; border-color:rgba(155,231,194,.8); background:rgba(155,231,194,.16); }
+  .feedback[data-kind="hint"]{ border-style:solid; border-color:rgba(255,216,102,.7); background:rgba(255,216,102,.14); }
+  .feedback svg{ flex:0 0 auto; width:20px; height:20px; margin-top:1px; }
+
+  .dotted{ border:3px dashed rgba(255,120,120,0) }
+  .slot{
+    display:flex; align-items:center; justify-content:center; min-height:48px; padding:6px 10px;
+    border:3px dashed rgba(255,246,226,.45); border-radius:16px; font-size:14px; font-weight:800;
+    color:rgba(255,246,226,.6); text-align:center;
+  }
+  .slot.filled{ border-style:solid; border-color:rgba(155,231,194,.85); background:rgba(155,231,194,.16); color:var(--cream); }
+  .cardpick{
+    display:flex; align-items:center; gap:9px; width:100%; text-align:left; padding:11px 12px;
+    border-radius:16px; border:3px solid var(--ink); background:var(--cream); color:var(--ink);
+    font-family:inherit; font-size:15.5px; font-weight:800; line-height:1.45; box-shadow:0 4px 0 var(--ink);
+    cursor:pointer; transition:transform .1s ease, box-shadow .1s ease;
+  }
+  .cardpick:active{ transform:translateY(3px); box-shadow:0 1px 0 var(--ink); }
+
+  .num-badge{
+    flex:0 0 auto; width:30px; height:30px; border-radius:11px; border:2.5px solid var(--ink);
+    background:var(--glow); display:flex; align-items:center; justify-content:center; font-weight:900; font-size:14px;
+  }
+  .lv-item{ display:flex; gap:10px; align-items:flex-start; padding:9px 10px; border-radius:16px; background:rgba(42,35,80,.06); border:2.5px solid rgba(42,35,80,.18); }
+  .lv-item + .lv-item{ margin-top:8px; }
+  .lv-item .lv-name{ font-size:15.5px; font-weight:900; margin:0; }
+  .lv-item .lv-text{ font-size:13px; font-weight:700; color:var(--ink-soft); margin:2px 0 0; line-height:1.45; }
+
+  .read-row{
+    display:flex; gap:10px; align-items:flex-start; padding:11px 12px; border-radius:18px;
+    border:2.5px solid rgba(42,35,80,.16); background:rgba(255,255,255,.55); cursor:pointer;
+    transition:background .2s ease, border-color .2s ease, transform .12s ease;
+  }
+  .read-row + .read-row{ margin-top:9px; }
+  .read-row:active{ transform:scale(.995); }
+  .read-row.reading{ background:rgba(255,216,102,.42); border-color:var(--ink); }
+  .read-idx{ flex:0 0 auto; width:26px; height:26px; border-radius:999px; border:2.5px solid var(--ink); background:var(--cream); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:900; }
+  .read-tc{ font-size:17px; font-weight:800; line-height:1.55; margin:0; }
+  .read-py{ font-size:12.5px; font-weight:600; color:var(--ink-soft); margin:3px 0 0; }
+  .read-mini{ flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:12px; border:2.5px solid var(--ink); background:var(--sky); }
+  .read-mini svg{ width:17px; height:17px; }
+
+  .aside-list{ margin:0; padding-left:20px; list-style:none; }
+  .aside-list li{ font-size:14.5px; font-weight:700; line-height:1.55; color:var(--ink); }
+  .aside-list li + li{ margin-top:7px; }
+
+  .dots{ display:flex; gap:6px; align-items:center; }
+  .dot{ width:10px; height:10px; border-radius:999px; background:rgba(255,246,226,.28); border:2px solid rgba(255,246,226,.5); }
+  .dot.done{ background:var(--glow); border-color:var(--ink); }
+  .dot.cur{ background:var(--sky); border-color:var(--ink); transform:scale(1.15); }
+
+  .anim-pop{ animation:pop .45s cubic-bezier(.2,.8,.2,1); }
+  @keyframes pop{ 0%{transform:scale(.94) translateY(6px); opacity:.92} 100%{transform:scale(1) translateY(0); opacity:1} }
+  .float{ animation:floaty 3.4s ease-in-out infinite; }
+  @keyframes floaty{ 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+  .hidden{ display:none !important; }
+  @media (max-width:360px){ :root{ --spot:min(20vw,74px); } .tc-line{ font-size:17.5px } .read-tc{ font-size:16px } }
+
+  /* ---- 版面骨架（不依賴外部 CSS，任何環境都成立） ---- */
+  .wrap-max{ width:100%; max-width:920px; margin-left:auto; margin-right:auto; padding-left:12px; padding-right:12px; }
+  .main-grid{ padding-top:12px; padding-bottom:40px; }
+  .side-col{ display:none; }
+  @media (min-width:1024px){
+    .side-col{ display:block; }
+    .main-grid{ display:grid; grid-template-columns:300px minmax(0,1fr); gap:20px; align-items:start; }
+  }
+  .t-12{ font-size:12px; font-weight:700; line-height:1.55; margin:0; }
+  .h1-title{ font-size:18px; font-weight:900; line-height:1.2; margin:0; }
+  .sub-note{ font-size:12px; font-weight:700; margin:2px 0 0; }
+  .lv-title{ font-size:16px; font-weight:900; line-height:1.25; margin:0; }
+  .lv-sub{ font-size:12.5px; font-weight:700; margin:2px 0 0; }
+  .mini-title{ font-size:13px; font-weight:900; margin:0; }
+  /* ---- 常用工具類後備 ---- */
+  .flex{ display:flex } .flex-col{ flex-direction:column } .flex-wrap{ flex-wrap:wrap }
+  .items-center{ align-items:center } .justify-center{ justify-content:center }
+  .gap-2{ gap:8px } .gap-3{ gap:12px }
+  .ml-auto{ margin-left:auto } .mx-auto{ margin-left:auto; margin-right:auto }
+  .min-w-0{ min-width:0 } .shrink-0{ flex:0 0 auto } .w-full{ width:100% }
+  .mt-1{ margin-top:4px } .mt-2{ margin-top:8px } .mt-3{ margin-top:12px } .mt-4{ margin-top:16px }
+  .p-3{ padding:12px } .p-4{ padding:16px }
+  .px-3{ padding-left:12px; padding-right:12px } .py-2{ padding-top:8px; padding-bottom:8px }
+  .pt-3{ padding-top:12px } .pt-4{ padding-top:16px } .pb-8{ padding-bottom:32px } .pb-10{ padding-bottom:40px }
+  .font-black{ font-weight:900 } .font-bold{ font-weight:700 } .leading-tight{ line-height:1.2 }
+</style>
+</head>
+<body>
+<div class="sky-decor" aria-hidden="true"></div>
+
+<div data-generated-by="vibe-coding-frontend-design" class="page-wrap">
+
+  <!-- ================= 頁首 ================= -->
+  <header class="wrap-max" style="padding-top:16px">
+    <div class="panel flex items-center gap-3 px-3 py-2">
+      <span class="shrink-0" style="display:inline-flex;width:44px;height:44px;border:2.5px solid var(--ink);border-radius:14px;background:#CFE9FF;align-items:center;justify-content:center;">
+        <svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="true">
+          <circle cx="20" cy="17" r="9" fill="#FFE9A8" stroke="#2A2350" stroke-width="2.4"/>
+          <path d="M20 12c3 0 5 2.4 5 5" stroke="#2A2350" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M6 30c3-5 6-5 9 0" stroke="#68C79B" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <path d="M14 31c3-7 9-7 12 0" fill="#68C79B" stroke="#2F8A66" stroke-width="2.4"/>
+        </svg>
+      </span>
+      <div class="min-w-0">
+        <h1 class="h1-title">夏夜多美</h1>
+        <p class="sub-note" style="color:var(--ink-soft)">第三課 · 荷塘夜話</p>
+      </div>
+      <div class="hud-right">
+        <span class="star-chip" id="starChip">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.7 6.1 6.6.5-5 4.4 1.5 6.4L12 16.7 6.2 20l1.5-6.4-5-4.4 6.6-.5z" fill="#FFB800" stroke="#2A2350" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          <span id="starText">0 / 5</span>
+        </span>
+        <button id="btnSound" class="icon-btn" aria-pressed="true" aria-label="音效開關" title="音效開關">
+          <svg id="soundIcon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 9.5h3.6L13 5.2v13.6L7.6 14.5H4z" fill="#8FD9FF" stroke="#2A2350" stroke-width="1.9" stroke-linejoin="round"/>
+            <path d="M16.6 8.6c1.5 1.6 1.5 5.2 0 6.8M19.3 6.4c2.4 2.6 2.4 8.6 0 11.2" stroke="#2A2350" stroke-width="1.9" fill="none" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= 主體 ================= -->
+  <main class="wrap-max main-grid">
+
+    <!-- 桌面側欄：課文小書 -->
+    <aside class="side-col">
+      <div class="panel p-3" style="position:sticky; top:16px;">
+        <p class="sec-title">課文小書</p>
+        <ol class="aside-list">
+          <li>夏夜，公園裏靜悄悄的。</li>
+          <li>水池裏，睡蓮剛剛閉上眼睛，就被嗚嗚的哭聲驚醒了。</li>
+          <li>她睜開眼睛一看，是一隻蟋蟀趴在一根水草上。</li>
+          <li>睡蓮問：「小蟋蟀，你怎麼啦？」</li>
+          <li>小蟋蟀說：「我不小心掉進池塘，上不了岸。」</li>
+          <li>「快上來吧！」睡蓮彎下腰，讓他爬上來。</li>
+          <li>小蟋蟀非常感激，一邊爬，一邊說：「睡蓮姑姑，謝謝您！」</li>
+          <li>睡蓮說：「今晚你就在我這住下吧！你瞧，夏夜多美啊！」</li>
+        </ol>
+        <button class="btn btn-sky mt-3 w-full" data-goto="read">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" class="shrink-0"><path d="M4 9.5h3.6L13 5.2v13.6L7.6 14.5H4z" fill="#FFF6E2" stroke="#2A2350" stroke-width="1.9" stroke-linejoin="round"/><path d="M16.6 8.6c1.5 1.6 1.5 5.2 0 6.8" stroke="#2A2350" stroke-width="1.9" fill="none" stroke-linecap="round"/></svg>
+          全文普通話朗讀
+        </button>
+      </div>
+    </aside>
+
+    <div class="min-w-0">
+
+      <!-- ---------- 封面 ---------- -->
+      <section id="screen-cover" class="screen">
+        <div class="panel p-3">
+          <div class="flex items-center gap-2">
+            <span class="num-badge">夜</span>
+            <div class="min-w-0">
+              <p class="tc-line" style="font-size:22px">夏夜多美</p>
+              <p class="py-line">xià yè duō měi · 第三課</p>
+            </div>
+          </div>
+
+          <div class="mt-3" id="coverArt"></div>
+
+          <p class="body-text mt-3" style="color:var(--ink)">
+            池塘邊的夜晚靜悄悄的。睡蓮剛剛閉上眼睛，就被「嗚嗚」的哭聲吵醒了……
+            跟着課文走五個小關卡，你就會讀懂這個溫柔的夏夜故事。
+          </p>
+
+          <p class="sec-title mt-4">五個小關卡</p>
+          <div>
+            <div class="lv-item"><span class="num-badge">1</span><div class="min-w-0"><p class="lv-name">靜悄悄的夏夜</p><p class="lv-text">聽一聽，哪裏傳來哭聲？</p></div></div>
+            <div class="lv-item"><span class="num-badge">2</span><div class="min-w-0"><p class="lv-name">你怎麼啦？</p><p class="lv-text">幫小蟋蟀回答睡蓮。</p></div></div>
+            <div class="lv-item"><span class="num-badge">3</span><div class="min-w-0"><p class="lv-name">快上來吧！</p><p class="lv-text">點荷葉，讓小蟋蟀爬上岸。</p></div></div>
+            <div class="lv-item"><span class="num-badge">4</span><div class="min-w-0"><p class="lv-name">夏夜多美</p><p class="lv-text">把星星、月亮、螢火蟲點亮。</p></div></div>
+            <div class="lv-item"><span class="num-badge">5</span><div class="min-w-0"><p class="lv-name">課文排排隊</p><p class="lv-text">把四句話排回故事的順序。</p></div></div>
+          </div>
+
+          <div class="mt-4 flex flex-wrap gap-2">
+            <button class="btn btn-glow" id="btnStart">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" class="shrink-0"><path d="M8 5.5l10 6.5-10 6.5z" fill="#2A2350"/></svg>
+              開始遊戲
+            </button>
+            <button class="btn btn-sky" data-goto="read">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" class="shrink-0"><path d="M4 9.5h3.6L13 5.2v13.6L7.6 14.5H4z" fill="#FFF6E2" stroke="#2A2350" stroke-width="1.9" stroke-linejoin="round"/><path d="M16.6 8.6c1.5 1.6 1.5 5.2 0 6.8" stroke="#2A2350" stroke-width="1.9" fill="none" stroke-linecap="round"/></svg>
+              全文朗讀
+            </button>
+          </div>
+          <p class="small-text mt-3">畫面全部用繁體字；朗讀用標準普通話。點一點就能玩，看不懂的字可以按喇叭聽一聽。</p>
+        </div>
+      </section>
+
+      <!-- ---------- 關卡 ---------- -->
+      <section id="screen-play" class="screen hidden">
+        <div class="panel-dark p-3">
+          <div class="flex flex-wrap items-center gap-2">
+            <div class="min-w-0">
+              <p class="lv-title" id="lvTitle">第一關</p>
+              <p class="lv-sub" style="color:rgba(255,246,226,.75)" id="lvTask">任務說明</p>
+            </div>
+            <div class="ml-auto flex items-center gap-2">
+              <span class="chip" id="lvCount">1 / 5</span>
+              <span class="dots" id="lvDots"></span>
+            </div>
+          </div>
+
+          <div class="mt-3" id="stage"></div>
+
+          <div class="feedback mt-3" id="feedback" data-kind="idle" aria-live="polite"></div>
+
+          <div id="cardSlot" class="mt-1"></div>
+
+          <div class="mt-3 flex flex-wrap gap-2">
+            <button class="btn" id="btnHome" style="background:rgba(255,246,226,.9)">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" class="shrink-0"><path d="M4 11.5L12 5l8 6.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z" fill="#8FD9FF" stroke="#2A2350" stroke-width="1.9" stroke-linejoin="round"/></svg>
+              回封面
+            </button>
+            <button class="btn btn-lotus" id="btnRetry">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" class="shrink-0"><path d="M20 12a8 8 0 1 1-2.6-5.9M20 4.5V9h-4.5" stroke="#2A2350" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              重玩本關
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- 結算 ---------- -->
+      <section id="screen-done" class="screen hidden">
+        <div class="panel p-4">
+          <div class="flex items-center gap-2">
+            <span class="num-badge">完</span>
+            <div class="min-w-0">
+              <p class="tc-line" style="font-size:21px">五顆星，全部亮起來了！</p>
+              <p class="py-line">你已經讀懂了整個夏夜的故事</p>
+            </div>
+          </div>
+          <div class="mt-3 flex justify-center" id="doneArt"></div>
+          <div class="mt-3 flex justify-center gap-2" id="doneStars"></div>
+          <p class="body-text mt-3" style="color:var(--ink)">
+            小蟋蟀掉進了池塘，是睡蓮彎下腰拉他上來，還留他住了一晚。
+            原來夏夜不只有黑黑的夜色，還有悄悄幫助別人的溫暖。
+          </p>
+          <div class="mt-4 flex flex-wrap gap-2">
+            <button class="btn btn-sky" data-goto="read">全文朗讀</button>
+            <button class="btn btn-glow" id="btnAgain">再玩一次</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- 朗讀 ---------- -->
+      <section id="screen-read" class="screen hidden">
+        <div class="panel p-3">
+          <div class="flex items-center gap-2">
+            <span class="num-badge">讀</span>
+            <div class="min-w-0">
+              <p class="tc-line" style="font-size:20px">夏夜多美 · 全文朗讀</p>
+              <p class="py-line">點一句聽一句，也可以整篇連讀</p>
+            </div>
+          </div>
+
+          <div class="mt-3 flex flex-wrap gap-2">
+            <button class="btn btn-glow" id="btnReadAll">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" class="shrink-0"><path d="M8 5.5l10 6.5-10 6.5z" fill="#2A2350"/></svg>
+              全文連讀
+            </button>
+            <button class="btn" id="btnStopRead">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" class="shrink-0"><rect x="6.5" y="6.5" width="11" height="11" rx="2" fill="#2A2350"/></svg>
+              停止
+            </button>
+            <button class="btn btn-leaf" id="btnSpeed" aria-pressed="false">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" class="shrink-0"><path d="M12 4a8 8 0 1 1-7.4 5" stroke="#2A2350" stroke-width="2.2" fill="none" stroke-linecap="round"/><path d="M12 8v4.4l3 1.8" stroke="#2A2350" stroke-width="2.2" fill="none" stroke-linecap="round"/></svg>
+              <span id="speedText">速度：正常</span>
+            </button>
+          </div>
+
+          <div class="mt-3" id="readList"></div>
+
+          <p class="small-text mt-3" id="voiceNote">正在準備普通話語音……</p>
+          <p class="small-text mt-1">小提示：畫面用繁體字，朗讀用標準普通話發音，這樣每個字都聽得準。</p>
+          <div class="mt-3">
+            <button class="btn" id="btnBackHome" style="background:rgba(42,35,80,.1)">回封面</button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="wrap-max" style="padding-bottom:32px">
+    <p class="t-12" style="color:rgba(255,246,226,.55)">
+      課文：《夏夜多美》· 一年級語文 · 本頁為課文理解互動練習，音效由瀏覽器即時合成，朗讀使用裝置內建普通話語音。
+    </p>
+  </footer>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  /* =========================================================
+     1. 課文資料
+     ========================================================= */
+  var LINES = [
+    { tc:'夏夜，公園裏靜悄悄的。', py:'xià yè, gōng yuán lǐ jìng qiāo qiāo de.', zh:'夏夜，公园里静悄悄的。' },
+    { tc:'水池裏，睡蓮剛剛閉上眼睛，就被嗚嗚的哭聲驚醒了。', py:'shuǐ chí lǐ, shuì lián gāng gāng bì shàng yǎn jīng, jiù bèi wū wū de kū shēng jīng xǐng le.', zh:'水池里，睡莲刚刚闭上眼睛，就被呜呜的哭声惊醒了。' },
+    { tc:'她睜開眼睛一看，是一隻蟋蟀趴在一根水草上。', py:'tā zhēng kāi yǎn jīng yī kàn, shì yī zhī xī shuài pā zài yī gēn shuǐ cǎo shàng.', zh:'她睁开眼睛一看，是一只蟋蟀趴在一根水草上。' },
+    { tc:'睡蓮問：「小蟋蟀，你怎麼啦？」', py:'shuì lián wèn: xiǎo xī shuài, nǐ zěn me la?', zh:'睡莲问：小蟋蟀，你怎么啦？' },
+    { tc:'小蟋蟀說：「我不小心掉進池塘，上不了岸。」', py:'xiǎo xī shuài shuō: wǒ bù xiǎo xīn diào jìn chí táng, shàng bù liǎo àn.', zh:'小蟋蟀说：我不小心掉进池塘，上不了岸。' },
+    { tc:'「快上來吧！」睡蓮彎下腰，讓他爬上來。', py:'kuài shàng lái ba! shuì lián wān xià yāo, ràng tā pá shàng lái.', zh:'快上来吧！睡莲弯下腰，让他爬上来。' },
+    { tc:'小蟋蟀非常感激，一邊爬，一邊說：「睡蓮姑姑，謝謝您！」', py:'xiǎo xī shuài fēi cháng gǎn jī, yī biān pá, yī biān shuō: shuì lián gū gu, xiè xiè nín!', zh:'小蟋蟀非常感激，一边爬，一边说：睡莲姑姑，谢谢您！' },
+    { tc:'睡蓮說：「今晚你就在我這住下吧！你瞧，夏夜多美啊！」', py:'shuì lián shuō: jīn wǎn nǐ jiù zài wǒ zhè zhù xià ba! nǐ qiáo, xià yè duō měi a!', zh:'睡莲说：今晚你就在我这住下吧！你瞧，夏夜多美啊！' }
+  ];
+
+  /* =========================================================
+     2. 圖形素材（全部內聯 SVG，Q 版手繪風）
+     ========================================================= */
+  var ICON = {
+    play:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5l10 6.5-10 6.5z" fill="#2A2350"/></svg>',
+    star:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.7 6.1 6.6.5-5 4.4 1.5 6.4L12 16.7 6.2 20l1.5-6.4-5-4.4 6.6-.5z" fill="#FFD866" stroke="#2A2350" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+    ok:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="#9BE7C2" stroke="#2A2350" stroke-width="2"/><path d="M7.6 12.6l3 3 5.6-6" stroke="#2A2350" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    hint:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="#FFD866" stroke="#2A2350" stroke-width="2"/><path d="M12 7.6v5.2" stroke="#2A2350" stroke-width="2.4" stroke-linecap="round"/><circle cx="12" cy="16.4" r="1.5" fill="#2A2350"/></svg>',
+    ear:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.6L13 5.2v13.6L7.6 14.5H4z" fill="#FFD866" stroke="#2A2350" stroke-width="1.9" stroke-linejoin="round"/><path d="M16.6 8.6c1.5 1.6 1.5 5.2 0 6.8" stroke="#2A2350" stroke-width="1.9" fill="none" stroke-linecap="round"/></svg>'
+  };
+
+  function svgCricket(scale){
+    var s = scale || 1;
+    return '<svg viewBox="0 0 100 100" width="' + (100*s) + '" aria-hidden="true">' +
+      '<path d="M32 70C20 74 15 84 11 93" stroke="#8C5A31" stroke-width="4.6" fill="none" stroke-linecap="round"/>' +
+      '<path d="M68 70C80 74 85 84 89 93" stroke="#8C5A31" stroke-width="4.6" fill="none" stroke-linecap="round"/>' +
+      '<path d="M37 78C31 86 29 91 27 96" stroke="#8C5A31" stroke-width="4" fill="none" stroke-linecap="round"/>' +
+      '<path d="M63 78C69 86 71 91 73 96" stroke="#8C5A31" stroke-width="4" fill="none" stroke-linecap="round"/>' +
+      '<ellipse cx="50" cy="62" rx="27" ry="24" fill="#D89A63" stroke="#4A2E19" stroke-width="4.6"/>' +
+      '<path d="M50 42C62 50 62 74 50 84" stroke="#B87C46" stroke-width="3.4" fill="none" stroke-linecap="round"/>' +
+      '<circle cx="50" cy="34" r="20" fill="#E7B180" stroke="#4A2E19" stroke-width="4.6"/>' +
+      '<path d="M40 18C34 8 26 5 20 9" stroke="#4A2E19" stroke-width="4" fill="none" stroke-linecap="round"/>' +
+      '<path d="M60 18C66 8 74 5 80 9" stroke="#4A2E19" stroke-width="4" fill="none" stroke-linecap="round"/>' +
+      '<circle cx="20" cy="9" r="3.4" fill="#4A2E19"/><circle cx="80" cy="9" r="3.4" fill="#4A2E19"/>' +
+      '<circle cx="41" cy="33" r="8.6" fill="#FFFFFF" stroke="#4A2E19" stroke-width="3"/>' +
+      '<circle cx="59" cy="33" r="8.6" fill="#FFFFFF" stroke="#4A2E19" stroke-width="3"/>' +
+      '<circle cx="42.4" cy="34.4" r="4.2" fill="#2A2350"/><circle cx="60.4" cy="34.4" r="4.2" fill="#2A2350"/>' +
+      '<circle cx="44" cy="32" r="1.5" fill="#FFFFFF"/><circle cx="62" cy="32" r="1.5" fill="#FFFFFF"/>' +
+      '<ellipse cx="31" cy="44" rx="5" ry="3.4" fill="#F58BA8" opacity=".7"/>' +
+      '<ellipse cx="69" cy="44" rx="5" ry="3.4" fill="#F58BA8" opacity=".7"/>' +
+      '<path d="M45 45Q50 50 55 45" stroke="#4A2E19" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+    '</svg>';
+  }
+
+  function svgLotus(mood){
+    var eyes;
+    if(mood === 'sleep'){
+      eyes = '<path d="M43 54Q50 61 57 54" stroke="#2A2350" stroke-width="3.6" fill="none" stroke-linecap="round"/>' +
+             '<path d="M63 54Q70 61 77 54" stroke="#2A2350" stroke-width="3.6" fill="none" stroke-linecap="round"/>' +
+             '<path d="M50 40q4-5 8 0" stroke="#2A2350" stroke-width="2.6" fill="none" stroke-linecap="round" opacity=".7"/>';
+    } else if(mood === 'happy'){
+      eyes = '<path d="M42 52Q49 44 56 52" stroke="#2A2350" stroke-width="3.6" fill="none" stroke-linecap="round"/>' +
+             '<path d="M64 52Q71 44 78 52" stroke="#2A2350" stroke-width="3.6" fill="none" stroke-linecap="round"/>';
+    } else {
+      eyes = '<circle cx="49" cy="53" r="8.4" fill="#FFFFFF" stroke="#2A2350" stroke-width="3"/>' +
+             '<circle cx="71" cy="53" r="8.4" fill="#FFFFFF" stroke="#2A2350" stroke-width="3"/>' +
+             '<circle cx="50.6" cy="54.4" r="4.2" fill="#2A2350"/><circle cx="72.6" cy="54.4" r="4.2" fill="#2A2350"/>' +
+             '<circle cx="52.2" cy="52" r="1.5" fill="#FFFFFF"/><circle cx="74.2" cy="52" r="1.5" fill="#FFFFFF"/>';
+    }
+    var mouth = (mood === 'happy')
+      ? '<path d="M54 66Q60 74 66 66" stroke="#2A2350" stroke-width="3.2" fill="#FFB0C8" stroke-linecap="round"/>'
+      : '<path d="M55 66Q60 70 65 66" stroke="#2A2350" stroke-width="3.2" fill="none" stroke-linecap="round"/>';
+    return '<svg viewBox="0 0 120 118" aria-hidden="true">' +
+      '<g stroke="#B04E77" stroke-width="4" fill="#FBC0D6">' +
+        '<ellipse cx="60" cy="24" rx="13" ry="24" transform="rotate(-64 60 58)"/>' +
+        '<ellipse cx="60" cy="24" rx="13" ry="24" transform="rotate(-32 60 58)"/>' +
+        '<ellipse cx="60" cy="22" rx="13" ry="26"/>' +
+        '<ellipse cx="60" cy="24" rx="13" ry="24" transform="rotate(32 60 58)"/>' +
+        '<ellipse cx="60" cy="24" rx="13" ry="24" transform="rotate(64 60 58)"/>' +
+      '</g>' +
+      '<circle cx="60" cy="58" r="27" fill="#FFF6E2" stroke="#2A2350" stroke-width="4.6"/>' +
+      eyes +
+      '<ellipse cx="38" cy="64" rx="5.4" ry="3.6" fill="#F58BA8" opacity=".7"/>' +
+      '<ellipse cx="82" cy="64" rx="5.4" ry="3.6" fill="#F58BA8" opacity=".7"/>' +
+      mouth +
+      '<path d="M8 96Q60 74 112 96Q60 112 8 96Z" fill="#68C79B" stroke="#2F8A66" stroke-width="4.4"/>' +
+    '</svg>';
+  }
+
+  function svgPad(){
+    return '<svg viewBox="0 0 100 62" aria-hidden="true">' +
+      '<ellipse cx="50" cy="32" rx="46" ry="26" fill="#68C79B" stroke="#2F8A66" stroke-width="4.6"/>' +
+      '<path d="M50 32L90 13" stroke="#2F8A66" stroke-width="4.4" stroke-linecap="round"/>' +
+      '<path d="M50 32L28 12" stroke="#3E9E76" stroke-width="3" stroke-linecap="round" opacity=".8"/>' +
+      '<path d="M50 32L66 54" stroke="#3E9E76" stroke-width="3" stroke-linecap="round" opacity=".8"/>' +
+      '<ellipse cx="35" cy="24" rx="9" ry="4" fill="#A7E7C6" opacity=".85"/>' +
+    '</svg>';
+  }
+
+  function svgGrass(){
+    return '<svg viewBox="0 0 100 100" aria-hidden="true">' +
+      '<path d="M50 96C48 70 40 52 20 38" stroke="#3E9E76" stroke-width="7" fill="none" stroke-linecap="round"/>' +
+      '<path d="M50 96C52 68 62 48 78 34" stroke="#2F8A66" stroke-width="7" fill="none" stroke-linecap="round"/>' +
+      '<path d="M50 96C50 72 50 56 50 40" stroke="#68C79B" stroke-width="7" fill="none" stroke-linecap="round"/>' +
+      '<path d="M50 96C44 76 32 66 18 62" stroke="#68C79B" stroke-width="6" fill="none" stroke-linecap="round"/>' +
+      '<path d="M50 96C56 78 68 68 84 62" stroke="#3E9E76" stroke-width="6" fill="none" stroke-linecap="round"/>' +
+      '<ellipse cx="50" cy="96" rx="30" ry="6" fill="#1e2a55" opacity=".55"/>' +
+    '</svg>';
+  }
+
+  function svgRock(){
+    return '<svg viewBox="0 0 100 100" aria-hidden="true">' +
+      '<path d="M12 84Q6 58 30 44Q52 30 74 42Q96 54 90 84Z" fill="#8E93B8" stroke="#2A2350" stroke-width="4.6"/>' +
+      '<path d="M32 60Q44 50 60 56" stroke="#C7CBDD" stroke-width="4" fill="none" stroke-linecap="round"/>' +
+      '<path d="M28 78Q48 72 70 78" stroke="#6E7396" stroke-width="3.4" fill="none" stroke-linecap="round" opacity=".8"/>' +
+    '</svg>';
+  }
+
+  function svgStar(lit){
+    return '<svg viewBox="0 0 60 60" aria-hidden="true">' +
+      '<path d="M30 4L36 24L56 30L36 36L30 56L24 36L4 30L24 24Z" fill="' + (lit ? '#FFE9A8' : '#5A6088') + '" stroke="' + (lit ? '#2A2350' : '#7B82AE') + '" stroke-width="3" stroke-linejoin="round"/>' +
+      (lit ? '<circle cx="30" cy="30" r="7" fill="#FFFDF0"/>' : '') +
+    '</svg>';
+  }
+
+  function svgMoon(lit){
+    return '<svg viewBox="0 0 100 100" aria-hidden="true">' +
+      '<circle cx="50" cy="50" r="34" fill="' + (lit ? '#FFE9A8' : '#5A6088') + '" stroke="' + (lit ? '#2A2350' : '#7B82AE') + '" stroke-width="4.4"/>' +
+      '<circle cx="40" cy="42" r="7" fill="' + (lit ? '#F3D27E' : '#6B7298') + '"/>' +
+      '<circle cx="62" cy="60" r="5" fill="' + (lit ? '#F3D27E' : '#6B7298') + '"/>' +
+      '<circle cx="56" cy="34" r="4" fill="' + (lit ? '#F3D27E' : '#6B7298') + '"/>' +
+    '</svg>';
+  }
+
+  function svgFirefly(lit){
+    return '<svg viewBox="0 0 80 80" aria-hidden="true">' +
+      (lit ? '<circle cx="40" cy="46" r="30" fill="url(#ffGlow)" opacity=".85"/>' : '') +
+      '<ellipse cx="40" cy="48" rx="17" ry="16" fill="' + (lit ? '#D6F56B' : '#4E5670') + '" stroke="' + (lit ? '#4A2E19' : '#7B82AE') + '" stroke-width="3.4"/>' +
+      '<circle cx="40" cy="28" r="13" fill="' + (lit ? '#E7B180' : '#5A6088') + '" stroke="' + (lit ? '#4A2E19' : '#7B82AE') + '" stroke-width="3.4"/>' +
+      '<circle cx="35" cy="27" r="3.1" fill="#FFFFFF"/><circle cx="45" cy="27" r="3.1" fill="#FFFFFF"/>' +
+      '<circle cx="35.6" cy="27.6" r="1.5" fill="#2A2350"/><circle cx="45.6" cy="27.6" r="1.5" fill="#2A2350"/>' +
+      '<path d="M35 34Q40 37 45 34" stroke="#4A2E19" stroke-width="2.4" fill="none" stroke-linecap="round"/>' +
+      '<path d="M40 16C38 10 33 8 28 9" stroke="#4A2E19" stroke-width="2.6" fill="none" stroke-linecap="round"/>' +
+      '<path d="M40 16C42 10 47 8 52 9" stroke="#4A2E19" stroke-width="2.6" fill="none" stroke-linecap="round"/>' +
+    '</svg>';
+  }
+
+  function bgSVG(uid, opts){
+    opts = opts || {};
+    var brightMoon = opts.brightMoon === false ? false : true;
+    var d = '';
+    var pts = [[22,26],[58,18],[112,34],[150,20],[188,42],[236,24],[286,36],[330,58],[364,22],[96,68],[206,72],[306,86],[164,104],[248,118],[46,110],[350,132],[128,150]];
+    for(var i=0;i<pts.length;i++){
+      d += '<circle cx="' + pts[i][0] + '" cy="' + pts[i][1] + '" r="' + (i%3===0?2.6:1.8) + '" fill="#FFFDF0" opacity="' + (i%2? 0.5 : 0.85) + '"/>';
+    }
+    return '<svg class="scene-bg" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' +
+      '<defs>' +
+        '<linearGradient id="sky-' + uid + '" x1="0" y1="0" x2="0" y2="1">' +
+          '<stop offset="0" stop-color="#101636"/><stop offset="52%" stop-color="#243063"/><stop offset="100%" stop-color="#3b3a76"/>' +
+        '</linearGradient>' +
+        '<linearGradient id="water-' + uid + '" x1="0" y1="0" x2="0" y2="1">' +
+          '<stop offset="0" stop-color="#4a63b0"/><stop offset="100%" stop-color="#1b2551"/>' +
+        '</linearGradient>' +
+        '<radialGradient id="ffGlow"><stop offset="0" stop-color="rgba(214,245,107,.95)"/><stop offset="100%" stop-color="rgba(214,245,107,0)"/></radialGradient>' +
+        '<radialGradient id="moonHalo"><stop offset="0" stop-color="rgba(255,233,168,.6)"/><stop offset="100%" stop-color="rgba(255,233,168,0)"/></radialGradient>' +
+      '</defs>' +
+      '<rect width="400" height="300" fill="url(#sky-' + uid + ')"/>' +
+      '<g>' + d + '</g>' +
+      '<circle cx="326" cy="56" r="58" fill="url(#moonHalo)" opacity="' + (brightMoon ? 1 : .25) + '"/>' +
+      '<path d="M0 158Q40 128 78 152Q120 122 160 150L160 168L0 168Z" fill="#1a2450"/>' +
+      '<path d="M400 150Q356 124 316 148Q272 120 232 148L232 168L400 168Z" fill="#1a2450"/>' +
+      '<path d="M0 176Q110 156 200 172Q300 156 400 174L400 300L0 300Z" fill="url(#water-' + uid + ')"/>' +
+      '<path d="M0 178Q110 158 200 174Q300 158 400 176" stroke="#8FD9FF" stroke-width="2.4" fill="none" opacity=".55"/>' +
+      '<ellipse cx="120" cy="212" rx="42" ry="4" fill="#8FD9FF" opacity=".18"/>' +
+      '<ellipse cx="286" cy="248" rx="56" ry="5" fill="#8FD9FF" opacity=".14"/>' +
+      '<ellipse cx="60" cy="270" rx="48" ry="5" fill="#8FD9FF" opacity=".12"/>' +
+      '<ellipse cx="220" cy="286" rx="62" ry="5" fill="#8FD9FF" opacity=".12"/>' +
+    '</svg>';
+  }
+
+  /* =========================================================
+     3. 音效（Web Audio 即時合成，無外部音檔）
+     ========================================================= */
+  var Sound = (function(){
+    var ctx = null, master = null, muted = false, ambGain = null, ambSrc = null, chirpTimer = null;
+    function ac(){
+      if(!ctx){
+        var AC = window.AudioContext || window.webkitAudioContext;
+        if(!AC) return null;
+        ctx = new AC();
+        master = ctx.createGain();
+        master.gain.value = 0.9;
+        master.connect(ctx.destination);
+      }
+      if(ctx.state === 'suspended' && ctx.resume) ctx.resume();
+      return ctx;
+    }
+    function blip(o){
+      if(muted) return;
+      var c = ac(); if(!c) return;
+      o = o || {};
+      var t0 = c.currentTime + (o.delay || 0);
+      var osc = c.createOscillator();
+      var g = c.createGain();
+      osc.type = o.type || 'sine';
+      osc.frequency.setValueAtTime(o.freq || 440, t0);
+      if(o.freq2) osc.frequency.exponentialRampToValueAtTime(Math.max(40, o.freq2), t0 + (o.dur || .2));
+      var peak = o.gain === undefined ? .18 : o.gain;
+      g.gain.setValueAtTime(.0001, t0);
+      g.gain.linearRampToValueAtTime(peak, t0 + (o.attack || .012));
+      g.gain.exponentialRampToValueAtTime(.0001, t0 + (o.dur || .2));
+      osc.connect(g); g.connect(master);
+      osc.start(t0); osc.stop(t0 + (o.dur || .2) + .04);
+    }
+    function noiseHit(freq, dur, gain){
+      if(muted) return;
+      var c = ac(); if(!c) return;
+      var len = Math.floor(c.sampleRate * dur);
+      var buf = c.createBuffer(1, len, c.sampleRate);
+      var dd = buf.getChannelData(0);
+      for(var i=0;i<len;i++) dd[i] = (Math.random()*2-1) * (1 - i/len);
+      var src = c.createBufferSource(); src.buffer = buf;
+      var f = c.createBiquadFilter(); f.type='bandpass'; f.frequency.value = freq || 900; f.Q.value = 1.2;
+      var g = c.createGain(); g.gain.value = gain === undefined ? .12 : gain;
+      src.connect(f); f.connect(g); g.connect(master); src.start();
+    }
+    return {
+      unlock:function(){ ac(); },
+      toggle:function(){
+        muted = !muted;
+        if(master) master.gain.value = muted ? 0 : .9;
+        if(muted && ambGain) ambGain.gain.value = 0;
+        else if(ambGain) ambGain.gain.value = .05;
+        return muted;
+      },
+      isMuted:function(){ return muted; },
+      tap:function(){ blip({ freq:640, freq2:760, type:'triangle', dur:.08, gain:.13 }); },
+      pop:function(){ blip({ freq:420, freq2:900, type:'triangle', dur:.14, gain:.16 }); },
+      correct:function(){
+        blip({ freq:523.25, type:'triangle', dur:.16, gain:.16, delay:0 });
+        blip({ freq:659.25, type:'triangle', dur:.16, gain:.16, delay:.1 });
+        blip({ freq:783.99, type:'triangle', dur:.3, gain:.16, delay:.2 });
+      },
+      wrong:function(){ blip({ freq:300, freq2:170, type:'sawtooth', dur:.3, gain:.12 }); },
+      twinkle:function(){ blip({ freq:1500, freq2:2200, type:'sine', dur:.18, gain:.1 }); },
+      drop:function(){ blip({ freq:1100, freq2:320, type:'sine', dur:.26, gain:.13 }); },
+      croak:function(){
+        blip({ freq:210, freq2:150, type:'sawtooth', dur:.18, gain:.12, delay:0 });
+        blip({ freq:200, freq2:140, type:'sawtooth', dur:.2, gain:.12, delay:.22 });
+      },
+      /* 小嬰兒哭聲：三聲連哭，音高先升後降，帶顫音與哭腔共振峰 */
+      cry:function(){
+        if(muted) return;
+        var c = ac(); if(!c) return;
+        var t0 = c.currentTime + .03;
+        var gap = .54, dur = .42;
+        for(var i=0;i<3;i++){
+          var t = t0 + i*gap;
+          var v = (i === 2) ? dur*1.45 : dur;
+          var osc = c.createOscillator();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(360, t);
+          osc.frequency.linearRampToValueAtTime(620, t + v*.2);
+          osc.frequency.linearRampToValueAtTime(500, t + v*.55);
+          osc.frequency.linearRampToValueAtTime(300, t + v);
+          var vib = c.createOscillator(); vib.type = 'sine'; vib.frequency.value = 6.4;
+          var vibG = c.createGain(); vibG.gain.value = 26;
+          vib.connect(vibG); vibG.connect(osc.frequency);
+          var f1 = c.createBiquadFilter(); f1.type = 'bandpass'; f1.frequency.value = 950; f1.Q.value = 1.8;
+          var f2 = c.createBiquadFilter(); f2.type = 'bandpass'; f2.frequency.value = 2400; f2.Q.value = 2.4;
+          var g1 = c.createGain(); g1.gain.value = 1;
+          var g2 = c.createGain(); g2.gain.value = .5;
+          var g = c.createGain();
+          g.gain.setValueAtTime(.0001, t);
+          g.gain.linearRampToValueAtTime(.26, t + .06);
+          g.gain.linearRampToValueAtTime(.2, t + v*.5);
+          g.gain.exponentialRampToValueAtTime(.0001, t + v);
+          osc.connect(f1); osc.connect(f2);
+          f1.connect(g1); f2.connect(g2);
+          g1.connect(g); g2.connect(g); g.connect(master);
+          osc.start(t); osc.stop(t + v + .05);
+          vib.start(t); vib.stop(t + v + .05);
+          if(i < 2){
+            var len = Math.floor(c.sampleRate * .14);
+            var nb = c.createBuffer(1, len, c.sampleRate);
+            var nd = nb.getChannelData(0);
+            for(var k=0;k<len;k++) nd[k] = (Math.random()*2-1) * (1 - k/len);
+            var ns = c.createBufferSource(); ns.buffer = nb;
+            var nf = c.createBiquadFilter(); nf.type = 'highpass'; nf.frequency.value = 800;
+            var ng = c.createGain(); ng.gain.value = .035;
+            ns.connect(nf); nf.connect(ng); ng.connect(master);
+            ns.start(t + dur - .02);
+          }
+        }
+      },
+      cheer:function(){
+        var n = [523.25, 659.25, 783.99, 1046.5];
+        for(var i=0;i<n.length;i++) blip({ freq:n[i], type:'triangle', dur:.22, gain:.15, delay:i*.11 });
+      },
+      fanfare:function(){
+        var seq = [[523.25,0],[659.25,.14],[783.99,.28],[1046.5,.42],[783.99,.6],[1046.5,.72]];
+        for(var i=0;i<seq.length;i++) blip({ freq:seq[i][0], type:'triangle', dur:.3, gain:.15, delay:seq[i][1] });
+      },
+      cricketChirp:function(){
+        for(var i=0;i<3;i++) blip({ freq:2600 - i*40, type:'sine', dur:.045, gain:.05, delay:i*.075 });
+      },
+      startAmbience:function(){
+        var c = ac(); if(!c || ambGain) return;
+        var len = Math.floor(c.sampleRate * 2);
+        var buf = c.createBuffer(1, len, c.sampleRate);
+        var dd = buf.getChannelData(0);
+        for(var i=0;i<len;i++) dd[i] = (Math.random()*2-1) * .5;
+        var src = c.createBufferSource(); src.buffer = buf; src.loop = true;
+        var lp = c.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value = 420; lp.Q.value = .6;
+        ambGain = c.createGain(); ambGain.gain.value = muted ? 0 : .05;
+        src.connect(lp); lp.connect(ambGain); ambGain.connect(master);
+        src.start(); ambSrc = src;
+        chirpTimer = setInterval(function(){
+          if(!muted && Math.random() < .6) Sound.cricketChirp();
+        }, 2600);
+      },
+      duck:function(on){
+        if(!ambGain || !ctx) return;
+        ambGain.gain.setTargetAtTime(on ? .012 : (muted ? 0 : .05), ctx.currentTime, .25);
+      }
+    };
+  })();
+
+  /* =========================================================
+     4. 普通話朗讀（SpeechSynthesis）
+     ========================================================= */
+  var Reader = (function(){
+    var voice = null, supported = ('speechSynthesis' in window), rate = .92, token = 0, playing = false;
+    function pick(list){
+      if(!list || !list.length) return null;
+      var best = null, bestScore = -1;
+      for(var i=0;i<list.length;i++){
+        var v = list[i], lang = (v.lang || '').toLowerCase().replace('_','-'), name = v.name || '', s = 0;
+        if(lang.indexOf('zh') === 0) s += 10;
+        if(lang.indexOf('zh-cn') === 0 || lang.indexOf('cmn') === 0) s += 8;
+        if(/mandarin|putonghua|普通话|國語|国语/i.test(name)) s += 4;
+        if(lang.indexOf('zh-tw') === 0 || lang.indexOf('zh-hk') === 0) s += 3;
+        if(/xiaoxiao|xiaoyi|huihui|tingting|meijia|yaoyao|yunxi|yunyang|kangkang|lili|female|女/i.test(name)) s += 3;
+        if(v.localService) s += 1;
+        if(s > bestScore){ bestScore = s; best = v; }
+      }
+      return bestScore > 0 ? best : (list[0] || null);
+    }
+    function refresh(){
+      if(!supported) return;
+      var list = window.speechSynthesis.getVoices() || [];
+      voice = pick(list);
+      note();
+    }
+    function note(){
+      var el = document.getElementById('voiceNote');
+      if(!el) return;
+      if(!supported){ el.textContent = '這個瀏覽器不支援語音朗讀，可以先跟着畫面的拼音讀一讀。'; return; }
+      if(voice) el.textContent = '朗讀語音：' + voice.name + '（' + (voice.lang || 'zh') + '）';
+      else el.textContent = '裝置尚未提供普通話語音，將用系統預設語音朗讀。';
+    }
+    function highlight(idx){
+      var rows = document.querySelectorAll('#readList .read-row');
+      for(var i=0;i<rows.length;i++) rows[i].classList.toggle('reading', i === idx);
+      if(rows[idx] && rows[idx].scrollIntoView) rows[idx].scrollIntoView({ block:'center', behavior:'smooth' });
+    }
+    function clearHighlight(){
+      var rows = document.querySelectorAll('#readList .read-row');
+      for(var i=0;i<rows.length;i++) rows[i].classList.remove('reading');
+    }
+    function utter(i, done, myToken){
+      if(!supported) { if(done) done(); return; }
+      var u = new SpeechSynthesisUtterance(LINES[i].zh);
+      u.lang = 'zh-CN';
+      if(voice) u.voice = voice;
+      u.rate = rate; u.pitch = 1.05; u.volume = 1;
+      u.onstart = function(){ Sound.duck(true); highlight(i); };
+      u.onend = function(){
+        if(myToken !== undefined && myToken !== token) return;
+        Sound.duck(false);
+        if(done) setTimeout(done, 300);
+      };
+      u.onerror = u.onend;
+      window.speechSynthesis.speak(u);
+    }
+    return {
+      init:function(){
+        if(!supported){ note(); return; }
+        refresh();
+        window.speechSynthesis.onvoiceschanged = refresh;
+        setTimeout(refresh, 800);
+        setTimeout(refresh, 2000);
+      },
+      speakLine:function(i){
+        this.stop(); var my = ++token;
+        highlight(i);
+        utter(i, function(){ if(my === token) setTimeout(clearHighlight, 700); }, my);
+      },
+      speakList:function(idxs){
+        this.stop();
+        var my = ++token, k = 0;
+        function step(){
+          if(my !== token) return;
+          if(k >= idxs.length){ setTimeout(clearHighlight, 600); Sound.duck(false); return; }
+          highlight(idxs[k]);
+          utter(idxs[k], function(){ k++; step(); }, my);
+        }
+        step();
+      },
+      readAll:function(done){
+        this.stop();
+        var my = ++token, i = 0;
+        function step(){
+          if(my !== token) return;
+          if(i >= LINES.length){ clearHighlight(); Sound.duck(false); if(done) done(); return; }
+          utter(i, function(){ i++; step(); }, my);
+        }
+        step();
+      },
+      stop:function(){
+        token++;
+        if(supported && window.speechSynthesis.speak) window.speechSynthesis.cancel();
+        Sound.duck(false);
+        clearHighlight();
+      },
+      toggleSpeed:function(){
+        rate = (rate > .8) ? .68 : .92;
+        return rate > .8 ? '正常' : '慢一點';
+      },
+      isSupported:function(){ return supported; }
+    };
+  })();
+
+  /* =========================================================
+     5. 遊戲狀態 / 介面工具
+     ========================================================= */
+  var state = { level:0, cleared:[false,false,false,false,false], locked:false };
+
+  function $(id){ return document.getElementById(id); }
+  function show(id){
+    var screens = ['screen-cover','screen-play','screen-done','screen-read'];
+    for(var i=0;i<screens.length;i++){
+      var el = $(screens[i]);
+      if(el) el.classList.toggle('hidden', screens[i] !== id);
+    }
+    window.scrollTo({ top:0, behavior:'smooth' });
+  }
+  function setFeedback(html, kind){
+    var f = $('feedback');
+    f.setAttribute('data-kind', kind || 'idle');
+    f.innerHTML = (kind === 'ok' ? ICON.ok : kind === 'hint' ? ICON.hint : ICON.ear) + '<span>' + html + '</span>';
+  }
+  function stars(){ var n = 0; for(var i=0;i<state.cleared.length;i++) if(state.cleared[i]) n++; return n; }
+  function updateHUD(){
+    $('starText').textContent = stars() + ' / 5';
+    $('lvCount').textContent = (state.level + 1) + ' / 5';
+    var dots = '';
+    for(var i=0;i<5;i++){
+      var cls = state.cleared[i] ? 'done' : (i === state.level ? 'cur' : '');
+      dots += '<span class="dot ' + cls + '"></span>';
+    }
+    $('lvDots').innerHTML = dots;
+  }
+  function sentenceCard(nums, nextLabel, isLast){
+    var h = '<div class="panel p-3 mt-3 anim-pop">' +
+      '<div class="flex items-center gap-2">' +
+        '<span class="num-badge">文</span>' +
+        '<p class="sec-title" style="margin:0">課文這樣說</p>' +
+      '</div>';
+    for(var i=0;i<nums.length;i++){
+      var L = LINES[nums[i]];
+      h += '<p class="tc-line mt-2">' + L.tc + '</p><p class="py-line">' + L.py + '</p>';
+    }
+    h += '<div class="mt-3 flex flex-wrap gap-2">' +
+      '<button class="btn btn-sky" data-speak="' + nums.join(',') + '">' + ICON.play + '聽這一句</button>' +
+      '<button class="btn btn-glow" id="btnNext">' + (nextLabel || '下一關') + '</button>' +
+    '</div></div>';
+    $('cardSlot').innerHTML = h;
+    var sp = $('cardSlot').querySelector('[data-speak]');
+    if(sp) sp.addEventListener('click', function(){
+      var idxs = sp.getAttribute('data-speak').split(',').map(Number);
+      Sound.pop();
+      Reader.speakList(idxs);
+    });
+    var nx = $('btnNext');
+    if(nx) nx.addEventListener('click', function(){
+      Sound.tap();
+      if(isLast){ Reader.stop(); Sound.fanfare(); show('screen-done'); renderDone(); }
+      else { state.level++; renderLevel(); }
+    });
+  }
+
+  /* =========================================================
+     6. 五個關卡
+     ========================================================= */
+  function spot(label, spotKey, left, top, art){
+    return '<button class="spot" data-spot="' + spotKey + '" style="left:' + left + '%;top:' + top + '%" aria-label="' + label + '">' +
+      '<span class="halo"></span>' +
+      '<span class="art" style="width:var(--spot);height:var(--spot);display:block">' + art + '</span>' +
+      '<span class="tag">' + label + '</span>' +
+    '</button>';
+  }
+
+  var LEVELS = [
+    /* --- 第一關：聽聲辨位 --- */
+    {
+      title:'第一關 · 靜悄悄的夏夜',
+      task:'聽一聽，哪裏傳來「嗚嗚」的哭聲？點一點可疑的地方。',
+      html:function(){
+        return '<div class="scene" id="scene">' + bgSVG('l1') +
+          '<div style="position:absolute;left:82%;top:20%;width:22%;transform:translate(-50%,-50%)">' + svgMoon(true) + '</div>' +
+          '<div id="lotusSleep" style="position:absolute;left:16%;top:62%;width:30%;transform:translate(-50%,-50%);transform-origin:center">' + svgLotus('sleep') + '</div>' +
+          spot('小水珠', 'pad', 36, 84, svgPad()) +
+          spot('石頭', 'rock', 74, 78, svgRock()) +
+          spot('水草', 'grass', 56, 56, svgGrass()) +
+          '</div>' +
+          '<div class="mt-3"><button class="btn" id="btnHint" style="background:rgba(255,246,226,.92)">' +
+            ICON.play + '再聽一次哭聲</button></div>';
+      },
+      init:function(){
+        var scene = $('scene');
+        scene.querySelectorAll('.spot').forEach(function(el){
+          el.addEventListener('click', function(){
+            if(state.locked) return;
+            var key = el.getAttribute('data-spot');
+            if(key === 'grass'){
+              Sound.cry();
+              el.classList.add('found');
+              el.insertAdjacentHTML('beforeend', '<span class="cricket-pop">' + svgCricket(.42) + '</span>');
+              el.querySelector('.tag').textContent = '小蟋蟀';
+              var lw = $('lotusSleep');
+              if(lw) lw.innerHTML = svgLotus('awake');
+              setFeedback('嗚嗚——原來是一隻小蟋蟀趴在水草上哭！睡蓮也被哭聲吵醒了。', 'ok');
+              complete();
+            } else {
+              el.classList.add('found');
+              if(key === 'pad'){ Sound.drop(); setFeedback('荷葉上只有一顆亮亮的小水珠，叮咚一聲，不是哭聲喔。', 'hint'); }
+              else if(key === 'rock'){ Sound.croak(); setFeedback('石頭後面是青蛙在呱呱叫，不是哭聲喔。', 'hint'); }
+              else { Sound.twinkle(); setFeedback('水草旁邊安安靜靜的，再聽聽看哪裏在哭？', 'hint'); }
+            }
+          });
+        });
+        $('btnHint').addEventListener('click', function(){ Sound.cry(); setFeedback('仔細聽：嗚嗚——嗚嗚——聲音是從水草那邊傳來的。', 'hint'); });
+        function complete(){
+          state.locked = true;
+          if(!state.cleared[0]) state.cleared[0] = true;
+          updateHUD(); Sound.cheer();
+          setTimeout(function(){ sentenceCard([0,1,2], '下一關'); state.locked = false; }, 700);
+        }
+      }
+    },
+
+    /* --- 第二關：對話選擇 --- */
+    {
+      title:'第二關 · 你怎麼啦？',
+      task:'睡蓮問小蟋蟀怎麼了，幫小蟋蟀說出課文裏的話。',
+      html:function(){
+        return '<div class="scene" id="scene">' + bgSVG('l2') +
+          '<div style="position:absolute;left:80%;top:22%;width:20%;transform:translate(-50%,-50%)">' + svgMoon(true) + '</div>' +
+          '<div class="float" style="position:absolute;left:22%;top:60%;width:32%;transform:translate(-50%,-50%)">' + svgLotus('awake') + '</div>' +
+          '<div style="position:absolute;left:30%;top:34%;background:#FFF6E2;border:3px solid #2A2350;border-radius:16px;padding:6px 10px;font-weight:900;color:#2A2350;font-size:14px;">小蟋蟀…</div>' +
+          '<div style="position:absolute;left:60%;top:72%;width:24%;transform:translate(-50%,-50%)">' + svgGrass() + '</div>' +
+          '<div class="float" style="position:absolute;left:62%;top:60%;width:18%;transform:translate(-50%,-50%)">' + svgCricket(.6) + '</div>' +
+          '</div>' +
+          '<div class="mt-3 flex flex-col gap-2" id="opts"></div>';
+      },
+      init:function(){
+        var opts = [
+          { t:'「我不小心掉進池塘，上不了岸。」', ok:true },
+          { t:'「我想吃荷葉上的小水珠。」', ok:false, tip:'小蟋蟀不是肚子餓，他是遇到麻煩了。' },
+          { t:'「我在等月亮出來和我玩。」', ok:false, tip:'再想想，課文說他掉進了哪裏呢？' }
+        ];
+        var wrap = $('opts');
+        opts.forEach(function(o, i){
+          var b = document.createElement('button');
+          b.className = 'option';
+          b.innerHTML = '<span class="bullet">' + String.fromCharCode(65 + i) + '</span><span>' + o.t + '</span>';
+          b.addEventListener('click', function(){
+            if(state.locked) return;
+            if(o.ok){
+              b.classList.add('right');
+              Sound.correct();
+              setFeedback('答對了！小蟋蟀就是這樣說的。他掉進池塘，上不了岸，所以着急得哭了。', 'ok');
+              wrap.querySelectorAll('.option').forEach(function(x){ x.disabled = true; x.style.opacity = x === b ? 1 : .45; });
+              state.locked = true;
+              if(!state.cleared[1]) state.cleared[1] = true;
+              updateHUD();
+              setTimeout(function(){ sentenceCard([3,4], '下一關'); state.locked = false; }, 600);
+            } else {
+              b.classList.add('wrong');
+              Sound.wrong();
+              setFeedback(o.tip, 'hint');
+              setTimeout(function(){ b.classList.remove('wrong'); }, 500);
+            }
+          });
+          wrap.appendChild(b);
+        });
+      }
+    },
+
+    /* --- 第三關：荷葉階梯 --- */
+    {
+      title:'第三關 · 快上來吧！',
+      task:'點荷葉搭一條小路，從離小蟋蟀最近的開始，讓他一步一步爬上岸。',
+      html:function(){
+        return '<div class="scene" id="scene">' + bgSVG('l3') +
+          '<div style="position:absolute;left:84%;top:18%;width:18%;transform:translate(-50%,-50%)">' + svgMoon(true) + '</div>' +
+          '<div style="position:absolute;left:88%;top:22%;width:24%;transform:translate(-50%,-50%)">' + svgLotus('awake') + '</div>' +
+          spot('第一片荷葉', '1', 36, 80, svgPad()) +
+          spot('第二片荷葉', '2', 54, 66, svgPad()) +
+          spot('第三片荷葉', '3', 70, 52, svgPad()) +
+          '<span class="walker" id="cricketWalker" style="left:18%;top:86%">' + svgCricket(.5) + '</span>' +
+          '</div>' +
+          '<p class="small-text mt-2" style="color:rgba(255,246,226,.7)">提示：先點最靠近小蟋蟀的那片荷葉。</p>';
+      },
+      init:function(){
+        var expect = 1;
+        var walker = $('cricketWalker');
+        $('scene').querySelectorAll('.spot').forEach(function(el){
+          el.addEventListener('click', function(){
+            if(state.locked) return;
+            var step = parseInt(el.getAttribute('data-spot'), 10);
+            if(step === expect){
+              Sound.pop();
+              el.classList.add('found');
+              el.querySelector('.tag').textContent = '第' + '一二三'[step-1] + '片';
+              var pos = [[36,80],[54,66],[70,52]][step-1];
+              walker.style.left = pos[0] + '%';
+              walker.style.top = (pos[1] - 8) + '%';
+              walker.classList.remove('hop'); void walker.offsetWidth; walker.classList.add('hop');
+              expect++;
+              if(expect > 3){
+                state.locked = true;
+                setTimeout(function(){
+                  walker.style.left = '76%';
+                  walker.style.top = '44%';
+                  Sound.correct();
+                  setFeedback('小蟋蟀爬上來了！他一邊爬，一邊說：「睡蓮姑姑，謝謝您！」', 'ok');
+                }, 620);
+                if(!state.cleared[2]) state.cleared[2] = true;
+                updateHUD();
+                setTimeout(function(){ sentenceCard([5,6], '下一關'); state.locked = false; }, 1400);
+              } else {
+                setFeedback('爬上一格了，接着點下一片荷葉吧。', 'hint');
+              }
+            } else {
+              Sound.wrong();
+              el.classList.remove('found');
+              setFeedback(step < expect ? '這片荷葉已經走過啦，找再前面一點的那片。' : '先跨最近的那一片，步子小一點才爬得穩喔。', 'hint');
+            }
+          });
+        });
+      }
+    },
+
+    /* --- 第四關：點亮夏夜 --- */
+    {
+      title:'第四關 · 夏夜多美',
+      task:'把三個星星、一個月亮和兩隻螢火蟲都點亮，看看夏夜有多美。',
+      html:function(){
+        return '<div class="scene" id="scene" style="background:#0d1230">' + bgSVG('l4', { brightMoon:false }) +
+          '<button type="button" class="spot" data-lit="star" style="left:14%;top:16%" aria-label="星星"><span class="halo"></span><span class="art">' + svgStar(false) + '</span></button>' +
+          '<button type="button" class="spot" data-lit="star" style="left:38%;top:30%" aria-label="星星"><span class="halo"></span><span class="art">' + svgStar(false) + '</span></button>' +
+          '<button type="button" class="spot" data-lit="star" style="left:62%;top:12%" aria-label="星星"><span class="halo"></span><span class="art">' + svgStar(false) + '</span></button>' +
+          '<button type="button" class="spot" data-lit="moon" style="left:84%;top:26%" aria-label="月亮"><span class="halo"></span><span class="art">' + svgMoon(false) + '</span></button>' +
+          '<button type="button" class="spot" data-lit="firefly" style="left:26%;top:62%" aria-label="螢火蟲"><span class="halo"></span><span class="art">' + svgFirefly(false) + '</span></button>' +
+          '<button type="button" class="spot" data-lit="firefly" style="left:70%;top:70%" aria-label="螢火蟲"><span class="halo"></span><span class="art">' + svgFirefly(false) + '</span></button>' +
+          '<div id="lotusInScene" class="float" style="position:absolute;left:20%;top:84%;width:22%;transform:translate(-50%,-50%)">' + svgLotus('awake') + '</div>' +
+          '</div>' +
+          '<div class="mt-3 flex items-center gap-2 flex-wrap">' +
+            '<span class="chip" id="litCount">已點亮 0 / 6</span>' +
+            '<span class="small-text" style="color:rgba(255,246,226,.7)">點一點星星、月亮和螢火蟲</span>' +
+          '</div>';
+      },
+      init:function(){
+        var lit = 0;
+        $('scene').querySelectorAll('.spot').forEach(function(el){
+          el.addEventListener('click', function(){
+            if(state.locked || el.classList.contains('lit')) return;
+            var kind = el.getAttribute('data-lit');
+            el.classList.add('found','lit');
+            var ring = document.createElement('span');
+            ring.className = 'glow-ring';
+            el.appendChild(ring);
+            var art = el.querySelector('.art');
+            if(kind === 'star'){ art.innerHTML = svgStar(true); Sound.twinkle(); }
+            else if(kind === 'moon'){ art.innerHTML = svgMoon(true); Sound.correct(); }
+            else { art.innerHTML = svgFirefly(true); Sound.pop(); }
+            lit++;
+            $('litCount').textContent = '已點亮 ' + lit + ' / 6';
+            if(lit === 1) setFeedback('夏夜慢慢地亮起來了，繼續點！', 'hint');
+            else if(lit >= 6){
+              state.locked = true;
+              $('lotusInScene').innerHTML = svgLotus('happy');
+              Sound.cheer();
+              setFeedback('整片荷塘都亮起來了！睡蓮笑着說：「今晚你就在我這住下吧！你瞧，夏夜多美啊！」', 'ok');
+              if(!state.cleared[3]) state.cleared[3] = true;
+              updateHUD();
+              setTimeout(function(){ sentenceCard([7], '最後一關'); state.locked = false; }, 900);
+            }
+          });
+        });
+      }
+    },
+
+    /* --- 第五關：課文排排隊 --- */
+    {
+      title:'第五關 · 課文排排隊',
+      task:'四句話被打亂了，照着故事順序，一句一句點回上面的格子裏。',
+      html:function(){
+        var order = [0,2,5,7];
+        var shuffled = [5,0,7,2];
+        var h = '<div class="board p-3">';
+        h += '<p class="mini-title" style="color:rgba(255,246,226,.8)">故事順序</p>';
+        h += '<div class="mt-2 flex flex-col gap-2" id="slots">';
+        for(var i=0;i<4;i++) h += '<div class="slot" data-slot="' + i + '">第 ' + (i+1) + ' 句</div>';
+        h += '</div></div>';
+        h += '<div class="mt-3 flex flex-col gap-2" id="pool">';
+        for(var j=0;j<shuffled.length;j++){
+          h += '<button class="cardpick" data-line="' + shuffled[j] + '">' +
+            '<span class="num-badge" style="background:#8FD9FF">' + String.fromCharCode(65 + j) + '</span>' +
+            '<span class="min-w-0">' + LINES[shuffled[j]].tc + '</span></button>';
+        }
+        h += '</div>';
+        return h;
+      },
+      init:function(){
+        var order = [0,2,5,7];
+        var expect = 0;
+        var slots = $('slots');
+        $('pool').querySelectorAll('.cardpick').forEach(function(btn){
+          btn.addEventListener('click', function(){
+            if(state.locked) return;
+            var line = parseInt(btn.getAttribute('data-line'), 10);
+            if(line === order[expect]){
+              Sound.pop();
+              var slot = slots.querySelector('[data-slot="' + expect + '"]');
+              slot.classList.add('filled');
+              slot.textContent = LINES[line].tc;
+              btn.remove();
+              expect++;
+              setFeedback('排對了！接着找下一句。', 'hint');
+              if(expect === 4){
+                state.locked = true;
+                Sound.cheer();
+                setFeedback('四句話都排好了，整個故事連起來了！', 'ok');
+                if(!state.cleared[4]) state.cleared[4] = true;
+                updateHUD();
+                setTimeout(function(){ sentenceCard([0,1,2,3,4,5,6,7], '看總結', true); state.locked = false; }, 700);
+              }
+            } else {
+              Sound.wrong();
+              btn.classList.add('wrong');
+              var tip = expect === 0 ? '故事一開始，夏夜是怎樣的？' :
+                        expect === 1 ? '接着，睡蓮被誰的聲音吵醒了？' :
+                        expect === 2 ? '然後睡蓮請小蟋蟀做什麼？' : '最後睡蓮對小蟋蟀說了什麼？';
+              setFeedback('這句要放在更後面喔，' + tip, 'hint');
+              setTimeout(function(){ btn.classList.remove('wrong'); }, 500);
+            }
+          });
+        });
+      }
+    }
+  ];
+
+  function renderLevel(){
+    Reader.stop();
+    state.locked = false;
+    var L = LEVELS[state.level];
+    $('lvTitle').textContent = L.title;
+    $('lvTask').textContent = L.task;
+    $('cardSlot').innerHTML = '';
+    $('stage').innerHTML = L.html();
+    setFeedback('按一按畫面裏的東西試試看。', 'hint');
+    updateHUD();
+    L.init();
+    show('screen-play');
+  }
+
+  /* =========================================================
+     7. 封面 / 結算 / 朗讀頁
+     ========================================================= */
+  function renderCoverArt(){
+    $('coverArt').innerHTML = '<div class="scene" style="aspect-ratio:16/10">' + bgSVG('cover') +
+      '<div style="position:absolute;left:82%;top:24%;width:20%;transform:translate(-50%,-50%)">' + svgMoon(true) + '</div>' +
+      '<div class="float" style="position:absolute;left:22%;top:64%;width:34%;transform:translate(-50%,-50%)">' + svgLotus('awake') + '</div>' +
+      '<div style="position:absolute;left:52%;top:86%;width:22%;transform:translate(-50%,-50%)">' + svgPad() + '</div>' +
+      '<div class="float" style="position:absolute;left:56%;top:70%;width:16%;transform:translate(-50%,-50%)">' + svgCricket(.6) + '</div>' +
+      '<div style="position:absolute;left:40%;top:44%;width:12%;transform:translate(-50%,-50%)">' + svgFirefly(true) + '</div>' +
+      '<div style="position:absolute;left:72%;top:56%;width:11%;transform:translate(-50%,-50%)">' + svgFirefly(true) + '</div>' +
+      '</div>';
+  }
+
+  function renderDone(){
+    $('doneArt').innerHTML = '<div style="display:flex;gap:10px;align-items:flex-end;width:100%;max-width:320px">' +
+      '<span style="flex:1 1 0;min-width:0">' + svgLotus('happy') + '</span>' +
+      '<span style="flex:1 1 0;min-width:0">' + svgCricket(.8) + '</span>' +
+      '</div>';
+    var h = '';
+    for(var i=0;i<5;i++) h += '<span style="width:32px;height:32px;display:inline-block">' + ICON.star + '</span>';
+    $('doneStars').innerHTML = h;
+  }
+
+  function buildReadList(){
+    var h = '';
+    for(var i=0;i<LINES.length;i++){
+      h += '<div class="read-row" data-line="' + i + '" role="button" tabindex="0" aria-label="朗讀第' + (i+1) + '句">' +
+        '<span class="read-idx">' + (i+1) + '</span>' +
+        '<span class="min-w-0" style="flex:1 1 auto">' +
+          '<span class="read-tc" style="display:block">' + LINES[i].tc + '</span>' +
+          '<span class="read-py" style="display:block">' + LINES[i].py + '</span>' +
+        '</span>' +
+        '<span class="read-mini" aria-hidden="true">' + ICON.play + '</span>' +
+      '</div>';
+    }
+    $('readList').innerHTML = h;
+    $('readList').querySelectorAll('.read-row').forEach(function(row){
+      function go(){ Sound.pop(); Reader.speakLine(parseInt(row.getAttribute('data-line'), 10)); }
+      row.addEventListener('click', go);
+      row.addEventListener('keydown', function(e){ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); go(); } });
+    });
+  }
+
+  /* =========================================================
+     8. 事件綁定
+     ========================================================= */
+  function bind(){
+    $('btnSound').addEventListener('click', function(){
+      var m = Sound.toggle();
+      this.classList.toggle('is-off', m);
+      this.setAttribute('aria-pressed', m ? 'false' : 'true');
+      if(!m){ Sound.startAmbience(); Sound.pop(); }
+    });
+    $('btnStart').addEventListener('click', function(){
+      Sound.unlock(); Sound.startAmbience(); Sound.pop();
+      state.level = 0;
+      renderLevel();
+    });
+    $('btnAgain').addEventListener('click', function(){
+      state = { level:0, cleared:[false,false,false,false,false], locked:false };
+      Sound.pop(); renderLevel();
+    });
+    $('btnHome').addEventListener('click', function(){ Reader.stop(); Sound.tap(); show('screen-cover'); });
+    $('btnBackHome').addEventListener('click', function(){ Reader.stop(); Sound.tap(); show('screen-cover'); });
+    $('btnRetry').addEventListener('click', function(){ Sound.tap(); renderLevel(); });
+    $('btnReadAll').addEventListener('click', function(){
+      if(!Reader.isSupported()){ setReadNoteNoSupport(); return; }
+      Sound.pop();
+      var b = this;
+      b.textContent = '正在朗讀…';
+      Reader.readAll(function(){ b.textContent = '全文連讀'; });
+      $('readList').scrollIntoView({ block:'start', behavior:'smooth' });
+    });
+    $('btnStopRead').addEventListener('click', function(){ Sound.tap(); Reader.stop(); $('btnReadAll').textContent = '全文連讀'; });
+    $('btnSpeed').addEventListener('click', function(){
+      var label = Reader.toggleSpeed();
+      $('speedText').textContent = '速度：' + label;
+      this.setAttribute('aria-pressed', label === '慢一點' ? 'true' : 'false');
+      Sound.tap();
+    });
+    document.querySelectorAll('[data-goto="read"]').forEach(function(el){
+      el.addEventListener('click', function(){ Sound.tap(); Reader.stop(); show('screen-read'); });
+    });
+    function setReadNoteNoSupport(){
+      var el = $('voiceNote');
+      if(el) el.textContent = '這個瀏覽器不支援語音朗讀，可以先跟着拼音讀一讀。';
+    }
+  }
+
+  /* =========================================================
+     9. 啟動
+     ========================================================= */
+  renderCoverArt();
+  renderDone();
+  buildReadList();
+  bind();
+  Reader.init();
+  updateHUD();
+})();
+</script>
+</body>
+</html>

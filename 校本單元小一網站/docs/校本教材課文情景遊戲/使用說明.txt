@@ -1,0 +1,46 @@
+小一課文情景遊戲 · 原始內容 HTML 版
+=====================================
+
+一、這批檔案是什麼
+本資料夾的 11 個 HTML，就是原 docx 裡 11 條「mr.baidu.com」短連結所指向的遊戲本體。
+短連結只是跳轉外殼，實際遊戲頁面已原樣下載保存，畫面、關卡、音效、朗讀與計分邏輯都沒有改動。
+（僅把其中兩個檔案原本外連的 Tailwind 樣式庫改為內嵌，讓斷網也能正常顯示。）
+
+二、怎麼打開
+方法 1（推薦）：雙擊 00_課文情景遊戲書架.html，打開「書架」，點封面即可在頁面內全螢幕遊玩，
+                 左上角「返回書架」退出。這一個檔案已內含全部 11 個遊戲，可以單獨轉發。
+方法 2：直接雙擊 01～11 任一 HTML，只玩那一個故事。
+手機：把檔案傳到手機（微信／郵件／雲盤）後用瀏覽器打開；iOS 可用「檔案」App 長按以 Safari 開啟。
+
+三、檔案清單
+00_課文情景遊戲書架.html   合集書架（內含 11 個遊戲，單檔可獨立分享）
+01_孝順的小烏鴉.html
+02_逛商場.html
+03_中秋賞月.html
+04_我們都是小學生.html
+05_夏夜多美.html
+06_畫春天.html
+07_開學了.html
+08_金秋的葉子.html
+09_雨後天空更美麗.html
+10_月亮和雲朵.html
+11_四季.html
+
+四、說明
+・全部離線可用，不需要網絡，也不會上傳任何資料。
+・建議用 Chrome、Edge、Safari、Firefox 等現代瀏覽器開啟。
+・手機請保持媒體音量開啟，部分關卡有音效與普通話朗讀。
+・「四季」會在本機記錄四季徽章進度，可在該遊戲內按「清除進度」重設。
+
+原始短連結對照
+01 https://mr.baidu.com/r/24BtdjeecFi
+02 https://mr.baidu.com/r/24BwGKnxG0M
+03 https://mr.baidu.com/r/24CxMSAmav6
+04 https://mr.baidu.com/r/24CzmFV1DZS
+05 https://mr.baidu.com/r/24CDD6yaoOQ
+06 https://mr.baidu.com/r/24CGCVsnrlm
+07 https://mr.baidu.com/r/24CLre8MQQo
+08 https://mr.baidu.com/r/24CPzMA8KgE
+09 https://mr.baidu.com/r/24CXzZgbpT2
+10 https://mr.baidu.com/r/24D06Gmlk2Y
+11 https://mr.baidu.com/r/24D1XGG2lxu

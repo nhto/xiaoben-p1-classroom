@@ -1,0 +1,2216 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>畫春天｜小小畫家情景遊戲</title>
+<meta name="description" content="根據課文《畫春天》設計的繁體情景互動遊戲：打開爸爸送的彩色筆、認顏色、按順序畫出太陽草地樹和花、送小動物回家，最後聽全文普通話朗讀，還可以保存畫作。">
+<style>
+  :root{
+    --ink:#4b4034;
+    --ink-soft:#847a6a;
+    --cream:#fffdf7;
+    --line:#efe3ca;
+    --sky:#bfe7ff;
+    --sun:#ffc93c;
+    --pink:#ff8fb8;
+    --pink-deep:#ef5f95;
+    --grass:#7bd05a;
+    --card:#ffffff;
+    --radius:22px;
+    --shadow:0 8px 20px rgba(139,117,86,.16);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"PingFang TC","Heiti TC","Microsoft JhengHei","Noto Sans TC",system-ui,-apple-system,"Segoe UI",sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(circle at 12% 8%, #ffe9a8 0%, rgba(255,233,168,0) 42%),
+      radial-gradient(circle at 88% 4%, #cdefff 0%, rgba(205,239,255,0) 46%),
+      linear-gradient(180deg,#d9f1ff 0%, #eaf8ff 42%, #fff6e6 100%);
+    background-attachment:fixed;
+    min-height:100dvh;
+    -webkit-text-size-adjust:100%;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .app{min-height:100dvh;display:flex;flex-direction:column;max-width:1120px;margin:0 auto;width:100%}
+  .screen{display:none;flex:1;min-height:0;flex-direction:column}
+  .screen.is-active{display:flex}
+  h1,h2,h3,p{margin:0}
+  button{font:inherit}
+
+  /* ---------- 通用按鈕 ---------- */
+  .btn{
+    border:none;border-radius:18px;padding:13px 18px;min-height:48px;
+    font-size:1rem;font-weight:700;letter-spacing:.02em;
+    background:#fff;color:var(--ink);cursor:pointer;
+    box-shadow:0 4px 0 rgba(150,128,96,.16), 0 8px 18px rgba(139,117,86,.14);
+    transition:transform .14s ease, box-shadow .14s ease, opacity .2s ease;
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  }
+  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(150,128,96,.16)}
+  .btn:focus-visible{outline:3px solid #ff9f3d;outline-offset:2px}
+  .btn-primary{background:linear-gradient(180deg,#ffdd75,#ffc12f);color:#6d4a00}
+  .btn-ghost{background:#fff;border:3px solid var(--line)}
+  .btn-small{padding:9px 13px;min-height:42px;font-size:.9rem;border-radius:14px}
+  .btn[disabled]{opacity:.45;cursor:not-allowed;box-shadow:none;transform:none}
+  .btn[aria-pressed="true"]{background:linear-gradient(180deg,#c8f0a8,#a5e07c);border-color:#8ecf68;color:#33540f}
+  .icon-btn{
+    width:46px;height:46px;flex:0 0 auto;border:none;border-radius:16px;background:#fff;
+    color:var(--ink);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;
+    box-shadow:0 3px 0 rgba(150,128,96,.16), 0 6px 14px rgba(139,117,86,.12);
+  }
+  .icon-btn:active{transform:translateY(2px)}
+  .icon-btn[aria-pressed="false"]{color:#b9ac96}
+  .icon-btn svg{width:24px;height:24px;display:block}
+
+  /* ---------- 封面 ---------- */
+  #screenCover{justify-content:center;align-items:center;padding:20px 16px calc(24px + env(safe-area-inset-bottom))}
+  .cover{
+    width:100%;max-width:520px;background:rgba(255,255,255,.86);border:4px solid #fff;
+    border-radius:32px;box-shadow:var(--shadow);padding:22px 20px 24px;text-align:center;position:relative;
+  }
+  .cover-sun{width:118px;height:118px;margin:0 auto 6px;display:block}
+  .cover-kicker{font-size:.86rem;font-weight:700;color:var(--pink-deep);letter-spacing:.16em}
+  .cover h1{font-size:2.5rem;letter-spacing:.12em;margin:4px 0 2px;color:#8a5a12}
+  .cover-pinyin{font-size:.92rem;color:var(--ink-soft);letter-spacing:.06em}
+  .cover-desc{font-size:.95rem;line-height:1.7;color:#6d6353;margin:12px auto 0;max-width:22em}
+  .cover-btns{display:flex;flex-direction:column;gap:10px;margin-top:18px}
+  .cover-hint{font-size:.8rem;color:var(--ink-soft);margin-top:14px;line-height:1.6}
+  .cover-badge{
+    position:absolute;top:-14px;right:14px;background:#ffd9e7;color:#b93c72;font-size:.76rem;font-weight:700;
+    padding:6px 12px;border-radius:999px;border:3px solid #fff;
+  }
+
+  /* ---------- 遊戲頁 ---------- */
+  .topbar{
+    display:flex;align-items:center;gap:10px;padding:calc(8px + env(safe-area-inset-top)) 12px 8px;flex:0 0 auto;
+  }
+  .progress{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;align-items:center}
+  .stage-label{font-size:.8rem;font-weight:700;color:#7a6d59;letter-spacing:.06em}
+  .stars{display:flex;gap:3px}
+  .star{width:19px;height:19px;color:#e2dbc9}
+  .star.is-on{color:#ffc12f}
+  .star path{fill:currentColor}
+  .top-actions{display:flex;gap:8px;flex:0 0 auto}
+  .play-body{flex:1;min-height:0;display:flex;gap:16px;padding:0 12px calc(10px + env(safe-area-inset-bottom))}
+  .stage-col{flex:1;min-width:0;display:flex;flex-direction:column;min-height:0}
+  .sentence-strip{
+    flex:0 0 auto;background:rgba(255,255,255,.92);border:3px solid #fff;border-radius:18px;
+    padding:8px 10px;box-shadow:0 4px 12px rgba(139,117,86,.1);display:flex;gap:9px;align-items:center;
+  }
+  .sentence-strip .ss-body{flex:1;min-width:0}
+  .ss-pinyin{font-size:.72rem;color:#a4977d;letter-spacing:.04em;line-height:1.3;word-break:break-word}
+  .ss-text{font-size:.95rem;font-weight:700;line-height:1.5;word-break:break-word}
+  .task-bar{
+    flex:0 0 auto;margin-top:9px;background:linear-gradient(180deg,#fff8e2,#fff1cc);
+    border:3px solid #ffe39a;border-radius:18px;padding:11px 13px;
+    font-size:1.02rem;font-weight:700;line-height:1.6;display:flex;gap:9px;align-items:flex-start;
+    min-height:64px;
+  }
+  .task-ico{flex:0 0 auto;width:26px;height:26px;color:#e8940d;margin-top:1px}
+  .task-ico svg{width:100%;height:100%}
+  .task-bar.is-ok{background:linear-gradient(180deg,#eafbe0,#d8f5c6);border-color:#b6e596}
+  .task-bar.is-ok .task-ico{color:#4f9a2c}
+  .task-bar .hl{padding:1px 5px;border-radius:7px;background:rgba(255,255,255,.75);box-shadow:0 0 0 2px rgba(255,255,255,.6) inset}
+  .scene-wrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:8px 0}
+  .scene{width:100%;height:100%;max-height:100%;filter:drop-shadow(0 8px 16px rgba(120,100,70,.16))}
+  .controls{flex:0 0 auto;padding-top:6px}
+  .ctrl{display:flex;flex-direction:column;gap:9px}
+  .ctrl[hidden]{display:none}
+  .ctrl-hint{font-size:.86rem;color:#6f6455;text-align:center;line-height:1.5}
+  .ctrl-hint b{color:#c25a86}
+
+  /* 顏色筆 */
+  .chip-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+  .chip{
+    border:3px solid rgba(0,0,0,.1);border-radius:18px;min-height:64px;cursor:pointer;position:relative;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+    font-weight:800;font-size:1.28rem;box-shadow:0 4px 0 rgba(150,128,96,.18);
+    transition:transform .14s ease, box-shadow .14s ease;
+  }
+  .chip .pinyin{font-size:.66rem;font-weight:600;opacity:.85}
+  .chip:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(150,128,96,.18)}
+  .chip.is-found{box-shadow:0 0 0 4px #a5e07c inset, 0 4px 0 rgba(150,128,96,.18)}
+  .chip.is-found::after{
+    content:"";position:absolute;top:5px;right:6px;width:15px;height:15px;border-radius:50%;
+    background:#4f9a2c;box-shadow:0 0 0 2px #fff;
+  }
+  .chip.is-shake{animation:shake .42s ease}
+  .chip[disabled]{cursor:default;opacity:.98;transform:none}
+  .progress-line{
+    display:flex;align-items:center;gap:8px;font-size:.84rem;font-weight:700;color:#7a6d59;
+  }
+  .progress-track{flex:1;height:11px;border-radius:999px;background:#eee5d2;overflow:hidden}
+  .progress-fill{height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,#ffd44d,#8fd85f);transition:width .35s ease}
+  .pens-inline{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+  .pen-dot{width:22px;height:34px;border-radius:9px;box-shadow:0 3px 0 rgba(0,0,0,.1);border:2px solid rgba(255,255,255,.85)}
+  .pen-dot.is-own{transform:translateY(-4px)}
+
+  /* 畫畫步驟清單 */
+  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+  .step-item{
+    background:#fff;border:3px solid var(--line);border-radius:14px;padding:7px 4px;text-align:center;
+    font-size:.78rem;font-weight:700;color:#9a8f7d;min-height:50px;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:2px;
+  }
+  .step-item .num{
+    width:19px;height:19px;border-radius:50%;background:#eee3cb;color:#8a7d66;font-size:.68rem;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .step-item.is-now{border-color:#ffc12f;color:#8a5a12;background:#fffaea;transform:translateY(-3px)}
+  .step-item.is-now .num{background:#ffc12f;color:#6d4a00}
+  .step-item.is-done{border-color:#b6e596;color:#4f8a2c;background:#f2fbe9}
+  .step-item.is-done .num{background:#8fd85f;color:#fff}
+
+  /* 小動物 */
+  .animal-row{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+  .animal-btn{
+    background:#fff;border:3px solid var(--line);border-radius:18px;padding:8px 6px;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:3px;font-weight:700;font-size:.86rem;color:var(--ink);
+    box-shadow:0 4px 0 rgba(150,128,96,.16);transition:transform .14s, box-shadow .14s, border-color .2s;
+    min-height:86px;
+  }
+  .animal-btn svg{width:52px;height:38px}
+  .animal-btn:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(150,128,96,.16)}
+  .animal-btn.is-picked{border-color:#ffc12f;background:#fffaea;transform:translateY(-4px);box-shadow:0 6px 0 rgba(150,128,96,.16)}
+  .animal-btn[disabled]{opacity:.4;box-shadow:none;transform:none;cursor:default}
+  .animal-btn[disabled]::after{content:"已回家";font-size:.68rem;color:#4f8a2c;font-weight:700}
+
+  /* 媽媽 */
+  .mom-row{display:flex;align-items:center;gap:11px;background:rgba(255,255,255,.92);border:3px solid #fff;
+    border-radius:20px;padding:10px;box-shadow:0 4px 12px rgba(139,117,86,.1)}
+  .mom-avatar{width:64px;height:64px;flex:0 0 auto}
+  .mom-bubble{flex:1;min-width:0;background:#fff3f7;border:3px solid #ffd9e7;border-radius:16px;padding:8px 11px;
+    font-size:.95rem;font-weight:700;line-height:1.55}
+  .season-row{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+
+  /* ---------- 完成頁 ---------- */
+  #screenDone{overflow-y:auto;padding:calc(14px + env(safe-area-inset-top)) 14px calc(22px + env(safe-area-inset-bottom));align-items:center}
+  .done-card{width:100%;max-width:560px;display:flex;flex-direction:column;gap:12px;align-items:center}
+  .done-title{font-size:1.5rem;font-weight:800;color:#8a5a12;letter-spacing:.06em;text-align:center}
+  .done-sub{font-size:.92rem;color:#6d6353;text-align:center;line-height:1.6}
+  .done-stars{display:flex;gap:5px}
+  .done-stars .star{width:28px;height:28px}
+  .art-frame{
+    width:100%;background:#fff;border:6px solid #fff;border-radius:24px;box-shadow:var(--shadow);
+    overflow:hidden;position:relative;
+  }
+  .art-frame img{display:block;width:100%;height:auto;border-radius:18px;background:var(--cream)}
+  .art-fallback{display:none;padding:26px 16px;text-align:center;font-size:.9rem;color:var(--ink-soft);line-height:1.7}
+  .done-mom{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.92);border:3px solid #fff;
+    border-radius:20px;padding:10px;width:100%;box-shadow:0 4px 12px rgba(139,117,86,.1)}
+  .done-btns{display:grid;grid-template-columns:1fr 1fr;gap:9px;width:100%}
+  .done-btns .btn{width:100%}
+  .done-btns .full{grid-column:1 / -1}
+  .done-note{font-size:.78rem;color:var(--ink-soft);text-align:center;line-height:1.6}
+
+  /* ---------- 桌面課文側欄 ---------- */
+  .book-side{display:none;flex:0 0 320px;flex-direction:column;gap:10px;
+    background:rgba(255,255,255,.9);border:3px solid #fff;border-radius:22px;padding:13px;
+    box-shadow:var(--shadow);max-height:100%;overflow-y:auto}
+  .book-side h2{font-size:1rem;color:#8a5a12;letter-spacing:.08em;display:flex;align-items:center;gap:6px}
+  .book-side .side-note{font-size:.78rem;color:var(--ink-soft);line-height:1.5}
+  .s-row{display:flex;gap:8px;align-items:flex-start;padding:8px;border-radius:14px;background:#fdfbf4;border:2px solid #f2ead8;transition:background .25s,border-color .25s}
+  .s-row.is-now{background:#fff6d9;border-color:#ffd869}
+  .s-row.is-reading{background:#e8f8dc;border-color:#a5e07c}
+  .s-row .s-texts{flex:1;min-width:0}
+  .s-play{flex:0 0 auto;width:38px;height:38px;border:none;border-radius:12px;background:#fff;color:#c25a86;cursor:pointer;
+    box-shadow:0 2px 0 rgba(150,128,96,.16);display:inline-flex;align-items:center;justify-content:center}
+  .s-play svg{width:20px;height:20px}
+  .s-play:active{transform:translateY(2px)}
+  .s-play[aria-pressed="true"]{background:#8fd85f;color:#fff}
+  .s-pinyin{font-size:.68rem;color:#a4977d;line-height:1.35;word-break:break-word}
+  .s-text{font-size:.86rem;font-weight:700;line-height:1.5}
+  body.hide-pinyin .s-pinyin{display:none}
+
+  /* ---------- 彈層 ---------- */
+  .modal{position:fixed;inset:0;z-index:60;background:rgba(74,63,50,.42);display:flex;align-items:center;justify-content:center;padding:16px}
+  .modal[hidden]{display:none}
+  .modal-card{
+    width:100%;max-width:520px;max-height:88dvh;background:#fffdf7;border-radius:26px;border:4px solid #fff;
+    box-shadow:0 18px 40px rgba(74,63,50,.3);display:flex;flex-direction:column;overflow:hidden;
+  }
+  .modal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 14px 9px}
+  .modal-head h2{font-size:1.06rem;color:#8a5a12;letter-spacing:.06em}
+  .modal-body{padding:0 14px 8px;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
+  .modal-foot{padding:9px 14px calc(13px + env(safe-area-inset-bottom));display:flex;flex-wrap:wrap;gap:8px;border-top:2px dashed var(--line)}
+  .read-note{font-size:.78rem;color:#8a7d66;line-height:1.5;padding:0 14px 12px}
+  .zoom-img{width:100%;height:auto;border-radius:18px;background:var(--cream)}
+  .zoom-body{padding:0 14px 16px;overflow-y:auto}
+
+  /* ---------- 場景動畫 ---------- */
+  #scene .art{opacity:0}
+  #scene .art.fade{transition:opacity .55s ease}
+  #scene .art.is-on{opacity:1}
+  #scene .art.pop{transform-box:fill-box;transform-origin:50% 62%;transform:scale(.5);
+    transition:opacity .38s ease, transform .6s cubic-bezier(.34,1.56,.64,1)}
+  #scene .art.pop.is-on{transform:scale(1)}
+  #scene .art.grow{transform-box:fill-box;transform-origin:50% 100%;transform:scaleY(.15);
+    transition:opacity .35s ease, transform .65s cubic-bezier(.3,1.25,.6,1)}
+  #scene .art.grow.is-on{transform:scaleY(1)}
+  #scene .bob{animation:bob 2.6s ease-in-out infinite}
+  #scene .bob2{animation:bob 3.4s ease-in-out infinite}
+  #scene .wing{animation:flap 1.1s ease-in-out infinite;transform-box:fill-box;transform-origin:100% 50%}
+  #scene .ripple{animation:ripple 2.4s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+  @keyframes flap{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(12deg)}}
+  @keyframes ripple{0%,100%{opacity:.25;transform:translateX(0)}50%{opacity:.7;transform:translateX(4px)}}
+  #scene .hit{fill:#fff;fill-opacity:0;pointer-events:all;cursor:pointer;outline:none}
+  #scene .hit:focus{outline:none}
+  #scene .hit:focus-visible{stroke:#ff9f3d;stroke-width:4;stroke-dasharray:7 5;outline:none}
+  #scene .spot-line,#scene .zone-line{fill:none;stroke:#c9bda3;stroke-width:2.6;stroke-dasharray:8 7;opacity:0;transition:opacity .3s}
+  #scene .spot-label,#scene .zone-label{
+    font-size:11px;font-weight:700;fill:#b0a289;opacity:0;transition:opacity .3s;text-anchor:middle;
+    paint-order:stroke;stroke:#fffdf7;stroke-width:3.4;stroke-linejoin:round;
+  }
+  #scene .spot.is-current .spot-line,#scene .zone.is-current .zone-line{opacity:.95;animation:pulse 1.5s ease-in-out infinite}
+  #scene .spot.is-current .spot-label,#scene .zone.is-current .zone-label{opacity:1}
+  #scene .spot.is-ghost .spot-line,#scene .zone.is-ghost .zone-line{opacity:.16}
+  @keyframes pulse{0%,100%{stroke-width:2.6}50%{stroke-width:4.2}}
+  #gDrawUi,#gAnimalUi{display:none}
+  #scene.mode-draw #gDrawUi{display:block}
+  #scene.mode-animals #gAnimalUi{display:block}
+  #artBox{opacity:0;pointer-events:none;transition:opacity .35s}
+  #scene.mode-box #artBox,#scene.mode-color #artBox{opacity:1}
+  #scene.mode-box #artBox{pointer-events:auto}
+  #artBox .pulse-ring{animation:pulse-ring 1.6s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 50%}
+  @keyframes pulse-ring{0%,100%{transform:scale(1);opacity:.75}50%{transform:scale(1.06);opacity:.3}}
+  #artBox .pen{opacity:0;transform:translateY(16px);transition:opacity .3s ease, transform .5s cubic-bezier(.34,1.56,.64,1);transition-delay:var(--d)}
+  #artBox.is-open .pen{opacity:1;transform:translateY(0)}
+  #artBox .lid{transform-box:fill-box;transform-origin:0% 100%;transition:transform .5s cubic-bezier(.34,1.3,.64,1)}
+  #artBox.is-open .lid{transform:rotate(-104deg)}
+  #scene .shake{animation:shake .42s ease}
+  @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}40%{transform:translateX(5px)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+  .pop-in{animation:pop-in .5s cubic-bezier(.34,1.56,.64,1)}
+  @keyframes pop-in{0%{transform:scale(.7);opacity:0}100%{transform:scale(1);opacity:1}}
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important;transition:none !important}
+  }
+
+  /* ---------- 桌面 ---------- */
+  @media (min-width:900px){
+    .book-side{display:flex}
+    .sentence-strip{display:none}
+    .play-body{padding:0 18px 16px;gap:18px}
+    .cover h1{font-size:3rem}
+    .cover{max-width:560px}
+    .done-btns{grid-template-columns:1fr 1fr 1fr}
+    .done-btns .full{grid-column:1 / -1}
+    .chip-grid{grid-template-columns:repeat(7,1fr)}
+    .animal-row{grid-template-columns:repeat(3,1fr);gap:14px}
+    .step-item{font-size:.86rem;min-height:56px}
+    .topbar{padding-top:16px}
+    .scene-wrap{padding:6px 0}
+  }
+  /* 矮螢幕（小手機會出現的長寬比）：壓縮垂直留白，減少滾動 */
+  @media (max-width:899px) and (max-height:700px){
+    .task-bar{min-height:0;padding:9px 11px;font-size:.95rem}
+    .sentence-strip{padding:6px 9px}
+    .ss-text{font-size:.9rem}
+    .ss-pinyin{font-size:.68rem}
+    .chip{min-height:56px;font-size:1.14rem}
+    .animal-btn{min-height:78px}
+    .animal-btn svg{width:44px;height:32px}
+    .scene-wrap{padding:4px 0}
+    .controls{padding-top:4px}
+    .step-item{min-height:46px;font-size:.74rem}
+  }
+  @media (min-width:900px) and (max-height:620px){
+    .book-side{flex-basis:280px}
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app" data-generated-by="vibe-coding-frontend-design">
+
+  <!-- ================= 封面 ================= -->
+  <section class="screen is-active" id="screenCover">
+    <div class="cover">
+      <span class="cover-badge">第一課 · 情景遊戲</span>
+      <svg class="cover-sun" viewBox="0 0 120 120" aria-hidden="true">
+        <g stroke="#ffc93c" stroke-width="5" stroke-linecap="round">
+          <line x1="60" y1="6" x2="60" y2="18"/>
+          <line x1="60" y1="102" x2="60" y2="114"/>
+          <line x1="6" y1="60" x2="18" y2="60"/>
+          <line x1="102" y1="60" x2="114" y2="60"/>
+          <line x1="22" y1="22" x2="30" y2="30"/>
+          <line x1="90" y1="90" x2="98" y2="98"/>
+          <line x1="98" y1="22" x2="90" y2="30"/>
+          <line x1="30" y1="90" x2="22" y2="98"/>
+        </g>
+        <circle cx="60" cy="60" r="34" fill="#ffd93b" stroke="#f5b827" stroke-width="3"/>
+        <circle cx="49" cy="54" r="3.6" fill="#5b4630"/>
+        <circle cx="71" cy="54" r="3.6" fill="#5b4630"/>
+        <path d="M49 68 q 11 11 22 0" stroke="#5b4630" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+        <ellipse cx="42" cy="66" rx="5" ry="3.6" fill="#ffb3c6" opacity=".85"/>
+        <ellipse cx="78" cy="66" rx="5" ry="3.6" fill="#ffb3c6" opacity=".85"/>
+      </svg>
+      <p class="cover-kicker">小小畫家</p>
+      <h1>畫春天</h1>
+      <p class="cover-pinyin">huà chūn tiān</p>
+      <p class="cover-desc">今天，爸爸送我一盒彩色筆。<br>我們一起打開它，一筆一筆畫出春天，再把小動物送回牠們的家。</p>
+      <div class="cover-btns">
+        <button class="btn btn-primary" id="btnStart" type="button">開始畫春天</button>
+        <button class="btn btn-ghost" id="btnCoverRead" type="button">聽全文朗讀</button>
+        <button class="btn btn-ghost" id="btnCoverBook" type="button">看課文</button>
+      </div>
+      <p class="cover-hint">五個小關卡 · 配普通話朗讀 · 完成後可以保存畫作</p>
+    </div>
+  </section>
+
+  <!-- ================= 遊戲 ================= -->
+  <section class="screen" id="screenPlay">
+    <header class="topbar">
+      <button class="icon-btn" id="btnHome" type="button" aria-label="回到封面">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 5.5 8 12l6.5 6.5" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="progress">
+        <span class="stage-label" id="stageLabel">第 1 關 / 共 5 關</span>
+        <span class="stars" id="stars" aria-label="星星進度：0 / 5"></span>
+      </div>
+      <div class="top-actions">
+        <button class="icon-btn" id="btnSound" type="button" aria-label="音效開關" aria-pressed="true">
+          <svg viewBox="0 0 24 24" aria-hidden="true" id="soundIcon"><path d="M4 9.4h3.3L11.8 5.2v13.6L7.3 14.6H4z" fill="currentColor"/><path d="M15 8.6a5 5 0 0 1 0 6.8" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/><path d="M17.6 6.2a8.4 8.4 0 0 1 0 11.6" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/></svg>
+        </button>
+        <button class="icon-btn" id="btnBook" type="button" aria-label="打開課文與朗讀">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6.6C9.8 4.9 6.6 4.6 3.6 5.4v12.4c3-.8 6.2-.5 8.4 1.2 2.2-1.7 5.4-2 8.4-1.2V5.4c-3-.8-6.2-.5-8.4 1.2z" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linejoin="round"/><path d="M12 6.6v12.4" fill="none" stroke="currentColor" stroke-width="2.1"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="play-body">
+      <aside class="book-side" id="bookSide" aria-label="課文內容">
+        <h2>課文 · 畫春天</h2>
+        <p class="side-note">按小喇叭可以聽這一句；全文朗讀在右上角的書本按鈕裡。</p>
+        <div class="s-list" id="sideList"></div>
+      </aside>
+
+      <div class="stage-col">
+        <div class="sentence-strip" id="sentenceStrip">
+          <div class="ss-body">
+            <p class="ss-pinyin" id="stripPinyin"></p>
+            <p class="ss-text" id="stripText"></p>
+          </div>
+          <button class="s-play" id="btnStripPlay" type="button" aria-label="朗讀這一句">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.4h3.3L11.8 5.2v13.6L7.3 14.6H4z" fill="currentColor"/><path d="M15 8.6a5 5 0 0 1 0 6.8" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+
+        <div class="task-bar" id="taskBar">
+          <span class="task-ico" id="taskIco" aria-hidden="true"></span>
+          <span class="task-text" id="taskText"></span>
+        </div>
+
+        <div class="scene-wrap">
+          <svg class="scene" id="scene" viewBox="0 0 320 240" preserveAspectRatio="xMidYMid meet" role="img" aria-label="畫春天的白紙場景">
+            <defs>
+              <clipPath id="paperClip"><rect x="6" y="6" width="308" height="228" rx="20"/></clipPath>
+              <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#b9e5ff"/><stop offset="1" stop-color="#eef9ff"/>
+              </linearGradient>
+              <linearGradient id="grassGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#aae685"/><stop offset="1" stop-color="#6ec648"/>
+              </linearGradient>
+              <linearGradient id="pondGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="#9adcf8"/><stop offset="1" stop-color="#5dbdec"/>
+              </linearGradient>
+            </defs>
+
+            <g clip-path="url(#paperClip)">
+              <rect x="6" y="6" width="308" height="228" fill="#fffdf7"/>
+              <rect id="artSky" class="art fade" x="6" y="6" width="308" height="228" fill="url(#skyGrad)"/>
+
+              <g id="artRainbow" class="art pop">
+                <path d="M70 130 A66 66 0 0 1 202 130" fill="none" stroke="#ef5350" stroke-width="4.4"/>
+                <path d="M74 130 A62 62 0 0 1 198 130" fill="none" stroke="#ff9b3d" stroke-width="4.4"/>
+                <path d="M78 130 A58 58 0 0 1 194 130" fill="none" stroke="#ffd93b" stroke-width="4.4"/>
+                <path d="M82 130 A54 54 0 0 1 190 130" fill="none" stroke="#6cc24a" stroke-width="4.4"/>
+                <path d="M86 130 A50 50 0 0 1 186 130" fill="none" stroke="#35c4d6" stroke-width="4.4"/>
+                <path d="M90 130 A46 46 0 0 1 182 130" fill="none" stroke="#4a8df0" stroke-width="4.4"/>
+                <path d="M94 130 A42 42 0 0 1 178 130" fill="none" stroke="#8a5cf6" stroke-width="4.4"/>
+              </g>
+
+              <path id="artGrass" class="art grow" d="M6 156 C 44 146, 76 166, 112 156 C 148 146, 180 168, 216 156 C 252 146, 284 166, 314 154 L 314 234 L 6 234 Z" fill="url(#grassGrad)"/>
+              <g id="artTufts" class="art fade">
+                <path d="M40 224 q 3 -10 6 0" fill="none" stroke="#5cb142" stroke-width="2"/>
+                <path d="M212 226 q 3 -10 6 0" fill="none" stroke="#5cb142" stroke-width="2"/>
+                <path d="M286 220 q 3 -10 6 0" fill="none" stroke="#5cb142" stroke-width="2"/>
+              </g>
+
+              <g id="artTree" class="art pop">
+                <rect x="243" y="112" width="16" height="50" rx="7" fill="#b7814f"/>
+                <circle cx="251" cy="106" r="30" fill="#69c14a"/>
+                <circle cx="226" cy="117" r="21" fill="#5cb142"/>
+                <circle cx="276" cy="117" r="21" fill="#5cb142"/>
+                <circle cx="251" cy="87" r="21" fill="#7bd05a"/>
+                <circle cx="238" cy="104" r="3.2" fill="#e9536a"/>
+                <circle cx="265" cy="96" r="3.2" fill="#e9536a"/>
+                <circle cx="252" cy="120" r="3.2" fill="#e9536a"/>
+              </g>
+
+              <g id="artFlowerBase" class="art pop">
+                <path d="M128 224 q 18 -12 36 -6 q 18 -8 34 2" fill="none" stroke="#4faa3a" stroke-width="2.2"/>
+              </g>
+              <g id="artFlowers">
+                <g class="art pop flower" id="flower0" transform="translate(142,204)">
+                  <path d="M0 4 V 18" stroke="#4faa3a" stroke-width="2.4" stroke-linecap="round"/>
+                  <circle cx="0" cy="-4.5" r="4.6" fill="#e9413a"/><circle cx="5.6" cy="-1.4" r="4.6" fill="#e9413a"/>
+                  <circle cx="3.4" cy="4.8" r="4.6" fill="#e9413a"/><circle cx="-3.4" cy="4.8" r="4.6" fill="#e9413a"/>
+                  <circle cx="-5.6" cy="-1.4" r="4.6" fill="#e9413a"/>
+                  <circle cx="0" cy="0" r="3" fill="#ffd93b"/>
+                </g>
+                <g class="art pop flower" id="flower1" transform="translate(160,196)">
+                  <path d="M0 4 V 20" stroke="#4faa3a" stroke-width="2.4" stroke-linecap="round"/>
+                  <circle cx="0" cy="-4.5" r="4.6" fill="#ff8a34"/><circle cx="5.6" cy="-1.4" r="4.6" fill="#ff8a34"/>
+                  <circle cx="3.4" cy="4.8" r="4.6" fill="#ff8a34"/><circle cx="-3.4" cy="4.8" r="4.6" fill="#ff8a34"/>
+                  <circle cx="-5.6" cy="-1.4" r="4.6" fill="#ff8a34"/>
+                  <circle cx="0" cy="0" r="3" fill="#fff2b0"/>
+                </g>
+                <g class="art pop flower" id="flower2" transform="translate(178,206)">
+                  <path d="M0 4 V 18" stroke="#4faa3a" stroke-width="2.4" stroke-linecap="round"/>
+                  <circle cx="0" cy="-4.5" r="4.6" fill="#8a5cf6"/><circle cx="5.6" cy="-1.4" r="4.6" fill="#8a5cf6"/>
+                  <circle cx="3.4" cy="4.8" r="4.6" fill="#8a5cf6"/><circle cx="-3.4" cy="4.8" r="4.6" fill="#8a5cf6"/>
+                  <circle cx="-5.6" cy="-1.4" r="4.6" fill="#8a5cf6"/>
+                  <circle cx="0" cy="0" r="3" fill="#ffd93b"/>
+                </g>
+                <g class="art pop flower" id="flower3" transform="translate(196,198)">
+                  <path d="M0 4 V 20" stroke="#4faa3a" stroke-width="2.4" stroke-linecap="round"/>
+                  <circle cx="0" cy="-4.5" r="4.6" fill="#ff5fa2"/><circle cx="5.6" cy="-1.4" r="4.6" fill="#ff5fa2"/>
+                  <circle cx="3.4" cy="4.8" r="4.6" fill="#ff5fa2"/><circle cx="-3.4" cy="4.8" r="4.6" fill="#ff5fa2"/>
+                  <circle cx="-5.6" cy="-1.4" r="4.6" fill="#ff5fa2"/>
+                  <circle cx="0" cy="0" r="3" fill="#fff2b0"/>
+                </g>
+                <g class="art pop flower" id="flower4" transform="translate(154,212)">
+                  <path d="M0 4 V 16" stroke="#4faa3a" stroke-width="2.4" stroke-linecap="round"/>
+                  <circle cx="0" cy="-4.5" r="4.6" fill="#3f8cf3"/><circle cx="5.6" cy="-1.4" r="4.6" fill="#3f8cf3"/>
+                  <circle cx="3.4" cy="4.8" r="4.6" fill="#3f8cf3"/><circle cx="-3.4" cy="4.8" r="4.6" fill="#3f8cf3"/>
+                  <circle cx="-5.6" cy="-1.4" r="4.6" fill="#3f8cf3"/>
+                  <circle cx="0" cy="0" r="3" fill="#ffd93b"/>
+                </g>
+              </g>
+
+              <g id="artSun" class="art pop">
+                <g stroke="#ffc93c" stroke-width="4.6" stroke-linecap="round">
+                  <line x1="88" y1="58" x2="99" y2="58"/>
+                  <line x1="78.6" y1="80.6" x2="86.4" y2="88.4"/>
+                  <line x1="56" y1="90" x2="56" y2="101"/>
+                  <line x1="33.4" y1="80.6" x2="25.6" y2="88.4"/>
+                  <line x1="24" y1="58" x2="13" y2="58"/>
+                  <line x1="33.4" y1="35.4" x2="25.6" y2="27.6"/>
+                  <line x1="56" y1="26" x2="56" y2="15"/>
+                  <line x1="78.6" y1="35.4" x2="86.4" y2="27.6"/>
+                </g>
+                <circle cx="56" cy="58" r="26" fill="#ffd93b" stroke="#f5b827" stroke-width="2.4"/>
+                <circle cx="47" cy="54" r="3" fill="#5b4630"/>
+                <circle cx="65" cy="54" r="3" fill="#5b4630"/>
+                <path d="M48 66 q 8 8 16 0" stroke="#5b4630" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+                <ellipse cx="41" cy="63" rx="4" ry="3" fill="#ffb3c6" opacity=".85"/>
+                <ellipse cx="71" cy="63" rx="4" ry="3" fill="#ffb3c6" opacity=".85"/>
+              </g>
+
+              <g id="artPond" class="art fade">
+                <ellipse cx="84" cy="198" rx="46" ry="19" fill="url(#pondGrad)"/>
+                <ellipse cx="84" cy="196" rx="34" ry="12" fill="#bceafd" opacity=".6"/>
+                <path class="ripple" d="M46 206 q 8 5 16 0 q 8 -5 16 0" fill="none" stroke="#ffffff" stroke-width="2.2" opacity=".6"/>
+              </g>
+
+              <g id="artDuck" class="art pop" transform="translate(84,192)">
+                <g class="bob">
+                  <ellipse cx="0" cy="3" rx="20" ry="12" fill="#ffd93b"/>
+                  <path d="M-16 2 q 10 -9 2 6 z" fill="#ffe98a"/>
+                  <ellipse cx="-10" cy="0" rx="9" ry="6" fill="#ffe98a"/>
+                  <circle cx="13" cy="-9" r="11" fill="#ffe14f"/>
+                  <path d="M22 -9 l 10 4.5 l -10 4.5 z" fill="#ff9b3d"/>
+                  <circle cx="16" cy="-12" r="2.1" fill="#3b3b3b"/>
+                  <circle cx="16.8" cy="-12.7" r="0.8" fill="#fff"/>
+                </g>
+              </g>
+
+              <g id="artRabbit" class="art pop" transform="translate(248,192)">
+                <g class="bob2">
+                  <circle cx="-16" cy="4" r="5.4" fill="#f4f4fb" stroke="#e3e3ee" stroke-width="1"/>
+                  <ellipse cx="0" cy="2" rx="18" ry="12" fill="#fdfdff" stroke="#e6e6f0" stroke-width="1.2"/>
+                  <ellipse cx="9" cy="-20" rx="3.6" ry="9.5" fill="#fdfdff" stroke="#e6e6f0" stroke-width="1.2"/>
+                  <ellipse cx="16" cy="-20" rx="3.6" ry="9.5" fill="#fdfdff" stroke="#e6e6f0" stroke-width="1.2"/>
+                  <ellipse cx="9" cy="-20" rx="1.7" ry="6" fill="#ffc2d4"/>
+                  <ellipse cx="16" cy="-20" rx="1.7" ry="6" fill="#ffc2d4"/>
+                  <circle cx="13" cy="-6" r="10" fill="#fdfdff" stroke="#e6e6f0" stroke-width="1.2"/>
+                  <circle cx="16" cy="-8" r="2.1" fill="#3b3b3b"/>
+                  <circle cx="16.8" cy="-8.7" r="0.8" fill="#fff"/>
+                  <circle cx="10.4" cy="-3.4" r="2.1" fill="#ff9fb8"/>
+                </g>
+              </g>
+
+              <g id="artSwallow" class="art pop" transform="translate(140,46)">
+                <g class="bob">
+                  <path class="wing" d="M-2 -2 C -12 -17 -26 -20 -35 -11 C -22 -9 -12 -4 -4 2 Z" fill="#39435c"/>
+                  <path class="wing" d="M-2 2 C -12 16 -26 19 -35 10 C -22 8 -12 3 -4 -2 Z" fill="#4b5674"/>
+                  <path d="M-28 0 L -46 -8 L -43 0 L -46 8 Z" fill="#39435c"/>
+                  <ellipse cx="0" cy="0" rx="16" ry="10" fill="#404a63"/>
+                  <circle cx="11" cy="-3" r="9.2" fill="#46516b"/>
+                  <path d="M2 6 q 7 5 13 -1 q -6 3 -13 1 z" fill="#fbfbfd"/>
+                  <path d="M19 -4 l 10 4 l -10 4 z" fill="#ffb03a"/>
+                  <circle cx="13.5" cy="-5.5" r="2.2" fill="#fff"/>
+                  <circle cx="13.8" cy="-5.5" r="1" fill="#333"/>
+                </g>
+              </g>
+            </g>
+
+            <rect x="6" y="6" width="308" height="228" rx="20" fill="none" stroke="#f0e6d2" stroke-width="3"/>
+
+            <!-- 互動熱區（不輸出到畫作） -->
+            <g id="gDrawUi" class="uiOnly">
+              <g class="spot" data-spot="sun">
+                <circle class="spot-line" cx="56" cy="58" r="31"/>
+                <text class="spot-label" x="56" y="103">圓圓的太陽</text>
+                <circle class="hit" cx="56" cy="58" r="35" data-target="sun"/>
+              </g>
+              <g class="spot" data-spot="grass">
+                <rect class="spot-line" x="20" y="160" width="280" height="62" rx="18"/>
+                <text class="spot-label" x="160" y="196">綠油油的草地</text>
+                <rect class="hit" x="20" y="160" width="280" height="62" data-target="grass"/>
+              </g>
+              <g class="spot" data-spot="tree">
+                <rect class="spot-line" x="219" y="62" width="76" height="90" rx="16"/>
+                <text class="spot-label" x="257" y="110">高高的樹</text>
+                <rect class="hit" x="219" y="62" width="76" height="90" data-target="tree"/>
+              </g>
+              <g class="spot" data-spot="flower">
+                <circle class="spot-line" cx="170" cy="204" r="30"/>
+                <text class="spot-label" x="170" y="170">五顏六色的花</text>
+                <circle class="hit" cx="170" cy="204" r="30" data-target="flower"/>
+              </g>
+            </g>
+
+            <g id="gAnimalUi" class="uiOnly">
+              <g class="zone" data-zone="sky">
+                <rect class="zone-line" x="10" y="10" width="300" height="136" rx="18"/>
+                <text class="zone-label" x="276" y="32">天空</text>
+                <rect class="hit" x="10" y="10" width="300" height="136" data-zone="sky"/>
+              </g>
+              <g class="zone" data-zone="grass">
+                <rect class="zone-line" x="10" y="152" width="300" height="78" rx="18"/>
+                <text class="zone-label" x="170" y="168">草地</text>
+                <rect class="hit" x="10" y="152" width="300" height="78" data-zone="grass"/>
+              </g>
+              <g class="zone" data-zone="pond">
+                <ellipse class="zone-line" cx="84" cy="198" rx="50" ry="28"/>
+                <text class="zone-label" x="84" y="204">水裏</text>
+                <ellipse class="hit" cx="84" cy="198" rx="52" ry="30" data-zone="pond"/>
+              </g>
+            </g>
+
+            <g id="artBox" class="noExport" transform="translate(160,124)">
+              <g id="boxPens">
+                <rect class="pen" x="-54" y="-18" width="7" height="32" rx="3.5" fill="#e9413a" style="--d:0s"/>
+                <rect class="pen" x="-44.4" y="-18" width="7" height="32" rx="3.5" fill="#ff8a34" style="--d:.04s"/>
+                <rect class="pen" x="-34.8" y="-18" width="7" height="32" rx="3.5" fill="#ffd63b" style="--d:.08s"/>
+                <rect class="pen" x="-25.2" y="-18" width="7" height="32" rx="3.5" fill="#5cc45c" style="--d:.12s"/>
+                <rect class="pen" x="-15.6" y="-18" width="7" height="32" rx="3.5" fill="#1fb3a6" style="--d:.16s"/>
+                <rect class="pen" x="-6" y="-18" width="7" height="32" rx="3.5" fill="#3f8cf3" style="--d:.2s"/>
+                <rect class="pen" x="3.6" y="-18" width="7" height="32" rx="3.5" fill="#8a5cf6" style="--d:.24s"/>
+                <rect class="pen" x="13.2" y="-18" width="7" height="32" rx="3.5" fill="#ff5fa2" style="--d:.28s"/>
+                <rect class="pen" x="22.8" y="-18" width="7" height="32" rx="3.5" fill="#8d5524" style="--d:.32s"/>
+                <rect class="pen" x="32.4" y="-18" width="7" height="32" rx="3.5" fill="#4a4a4a" style="--d:.36s"/>
+                <rect class="pen" x="42" y="-18" width="7" height="32" rx="3.5" fill="#c9d3e0" style="--d:.4s"/>
+                <rect class="pen" x="51.6" y="-18" width="7" height="32" rx="3.5" fill="#7dd3fc" style="--d:.44s"/>
+              </g>
+              <rect x="-62" y="-4" width="124" height="42" rx="13" fill="#ff9ec4" stroke="#f478a6" stroke-width="2.4"/>
+              <rect x="-30" y="12" width="60" height="11" rx="5.5" fill="#fff0f6" opacity=".75"/>
+              <path class="lid" d="M-62 -4 h124 v-16 a13 13 0 0 0 -13 -13 h-98 a13 13 0 0 0 -13 13 z" fill="#ffb3d1" stroke="#f478a6" stroke-width="2.4"/>
+              <rect class="pulse-ring" x="-70" y="-36" width="140" height="86" rx="20" fill="none" stroke="#ffc12f" stroke-width="3.4" stroke-dasharray="10 8"/>
+              <rect class="hit uiOnly" x="-72" y="-38" width="144" height="88" rx="20" data-target="box" aria-hidden="false"/>
+            </g>
+          </svg>
+        </div>
+
+        <div class="controls" id="controls">
+          <div class="ctrl" id="ctrlBox" hidden>
+            <p class="ctrl-hint">點一點畫紙上的<b>筆盒</b>，看看爸爸送的禮物。</p>
+          </div>
+
+          <div class="ctrl" id="ctrlColor" hidden>
+            <div class="progress-line"><span id="colorCount">顏色 0 / 7</span><span class="progress-track"><span class="progress-fill" id="colorFill"></span></span></div>
+            <div class="chip-grid" id="chipGrid"></div>
+          </div>
+
+          <div class="ctrl" id="ctrlDraw" hidden>
+            <div class="steps" id="stepList"></div>
+          </div>
+
+          <div class="ctrl" id="ctrlAnimal" hidden>
+            <p class="ctrl-hint">先點小動物，再點畫紙上牠的<b>家</b>。</p>
+            <div class="animal-row" id="animalRow"></div>
+          </div>
+
+          <div class="ctrl" id="ctrlMom" hidden>
+            <div class="mom-row">
+              <svg class="mom-avatar" viewBox="0 0 64 64" aria-hidden="true">
+                <circle cx="32" cy="36" r="19" fill="#ffd9b0" stroke="#f0bd8c" stroke-width="2"/>
+                <path d="M13 34 q 4 -22 19 -22 q 15 0 19 22 q -8 -9 -19 -9 q -11 0 -19 9 z" fill="#6b4a34"/>
+                <circle cx="32" cy="9" r="8" fill="#6b4a34"/>
+                <circle cx="25" cy="35" r="2.4" fill="#5b4630"/>
+                <circle cx="39" cy="35" r="2.4" fill="#5b4630"/>
+                <path d="M27 43 q 5 5 10 0" stroke="#c1604f" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+                <ellipse cx="20" cy="40" rx="3.4" ry="2.4" fill="#ffb3c6" opacity=".9"/>
+                <ellipse cx="44" cy="40" rx="3.4" ry="2.4" fill="#ffb3c6" opacity=".9"/>
+                <path d="M14 64 q 4 -14 18 -14 q 14 0 18 14 z" fill="#ff9ec4"/>
+              </svg>
+              <p class="mom-bubble" id="momBubble">媽媽誇我畫得好，她說：「你畫出了春天。」</p>
+            </div>
+            <p class="ctrl-hint">媽媽問：你畫出了什麼季節？</p>
+            <div class="season-row" id="seasonRow">
+              <button class="btn btn-ghost" type="button" data-season="spring">春天</button>
+              <button class="btn btn-ghost" type="button" data-season="summer">夏天</button>
+              <button class="btn btn-ghost" type="button" data-season="autumn">秋天</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 完成頁 ================= -->
+  <section class="screen" id="screenDone">
+    <div class="done-card">
+      <p class="done-title" id="doneTitle">我畫出了春天！</p>
+      <div class="done-stars" id="doneStars" aria-hidden="true"></div>
+      <p class="done-sub" id="doneSub">五個小關卡全部完成，一起來聽聽整篇課文吧。</p>
+      <div class="art-frame">
+        <img id="finalArt" alt="我畫的春天：太陽、草地、高高的樹、五顏六色的花，還有小燕子、小鴨子、小白兔和一道彩虹">
+        <p class="art-fallback" id="artFallback">畫作預覽暫時做不出來，不過剛才畫的春天還在遊戲畫面裡呢。</p>
+      </div>
+      <div class="done-mom">
+        <svg class="mom-avatar" viewBox="0 0 64 64" aria-hidden="true">
+          <circle cx="32" cy="36" r="19" fill="#ffd9b0" stroke="#f0bd8c" stroke-width="2"/>
+          <path d="M13 34 q 4 -22 19 -22 q 15 0 19 22 q -8 -9 -19 -9 q -11 0 -19 9 z" fill="#6b4a34"/>
+          <circle cx="32" cy="9" r="8" fill="#6b4a34"/>
+          <circle cx="25" cy="35" r="2.4" fill="#5b4630"/>
+          <circle cx="39" cy="35" r="2.4" fill="#5b4630"/>
+          <path d="M27 43 q 5 5 10 0" stroke="#c1604f" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+          <ellipse cx="20" cy="40" rx="3.4" ry="2.4" fill="#ffb3c6" opacity=".9"/>
+          <ellipse cx="44" cy="40" rx="3.4" ry="2.4" fill="#ffb3c6" opacity=".9"/>
+          <path d="M14 64 q 4 -14 18 -14 q 14 0 18 14 z" fill="#ff9ec4"/>
+        </svg>
+        <p class="mom-bubble">媽媽誇我畫得好，她說：「你畫出了春天。」</p>
+      </div>
+      <div class="done-btns">
+        <button class="btn btn-primary" id="btnSave" type="button">保存畫作</button>
+        <button class="btn btn-ghost" id="btnShare" type="button">分享給朋友</button>
+        <button class="btn btn-ghost" id="btnZoom" type="button">放大看畫</button>
+        <button class="btn btn-ghost full" id="btnDoneRead" type="button">聽全文朗讀</button>
+        <button class="btn btn-ghost full" id="btnAgain" type="button">再玩一次</button>
+      </div>
+      <p class="done-note">保存後可以在相簿裡看到自己的畫；分享可以把這個小遊戲傳給同學。</p>
+    </div>
+  </section>
+
+  <!-- ================= 課文 · 朗讀彈層 ================= -->
+  <div class="modal" id="bookModal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="bookTitle">
+      <div class="modal-head">
+        <h2 id="bookTitle">課文 · 畫春天</h2>
+        <button class="icon-btn" id="btnBookClose" type="button" aria-label="關閉課文">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="modal-body" id="bookList"></div>
+      <div class="modal-foot">
+        <button class="btn btn-primary btn-small" id="btnReadAll" type="button">全文連讀</button>
+        <button class="btn btn-ghost btn-small" id="btnReadStop" type="button">停止</button>
+        <button class="btn btn-ghost btn-small" id="btnSlow" type="button" aria-pressed="false">慢速朗讀</button>
+        <button class="btn btn-ghost btn-small" id="btnPinyin" type="button" aria-pressed="true">顯示拼音</button>
+      </div>
+      <p class="read-note" id="readNote"></p>
+    </div>
+  </div>
+
+  <!-- ================= 放大看畫 ================= -->
+  <div class="modal" id="zoomModal" hidden>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="zoomTitle">
+      <div class="modal-head">
+        <h2 id="zoomTitle">我的畫：春天</h2>
+        <button class="icon-btn" id="btnZoomClose" type="button" aria-label="關閉">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="zoom-body"><img class="zoom-img" id="zoomImg" alt="放大後的畫作"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function () {
+    'use strict';
+
+    /* =========================================================
+       0. 課文資料（依第一課《畫春天》原文，繁體）
+       ========================================================= */
+    var LESSON = {
+        title: '畫春天',
+        pinyin: 'huà chūn tiān',
+        sentences: [
+            { text: '今天，爸爸送我一盒彩色筆。', pinyin: 'jīn tiān, bà ba sòng wǒ yì hé cǎi sè bǐ.' },
+            { text: '筆的顏色有紅、橙、黃、綠、青、藍、紫，我很喜歡。', pinyin: 'bǐ de yán sè yǒu hóng chéng huáng lǜ qīng lán zǐ, wǒ hěn xǐ huan.' },
+            { text: '我拿了一張白紙，先畫一個圓圓的太陽，再畫一片綠油油的草地，還有高高的樹，五顏六色的花。', pinyin: 'wǒ ná le yì zhāng bái zhǐ, xiān huà yí gè yuán yuán de tài yáng, zài huà yí piàn lǜ yóu yóu de cǎo dì, hái yǒu gāo gāo de shù, wǔ yán liù sè de huā.' },
+            { text: '小燕子在 天 上 飛，小鴨子在水裏游，小白兔在草地上跑，還有一道彩虹掛在天上呢！', pinyin: 'xiǎo yàn zi zài tiān shang fēi, xiǎo yā zi zài shuǐ lǐ yóu, xiǎo bái tù zài cǎo dì shang pǎo, hái yǒu yí dào cǎi hóng guà zài tiān shang ne!' },
+            { text: '媽媽誇我畫得好，她說：「你畫出了春天。」', pinyin: 'mā ma kuā wǒ huà de hǎo, tā shuō: 「nǐ huà chū le chūn tiān.」' }
+        ]
+    };
+
+    var COLORS = [
+        { name: '紅', pinyin: 'hóng', hex: '#e9413a', ink: '#fff' },
+        { name: '橙', pinyin: 'chéng', hex: '#ff8a34', ink: '#fff' },
+        { name: '黃', pinyin: 'huáng', hex: '#ffd63b', ink: '#8a6100' },
+        { name: '綠', pinyin: 'lǜ', hex: '#4dbb4d', ink: '#fff' },
+        { name: '青', pinyin: 'qīng', hex: '#1fb3a6', ink: '#fff' },
+        { name: '藍', pinyin: 'lán', hex: '#3f8cf3', ink: '#fff' },
+        { name: '紫', pinyin: 'zǐ', hex: '#8a5cf6', ink: '#fff' }
+    ];
+
+    var DRAW_STEPS = [
+        {
+            key: 'sun', name: '圓圓的太陽',
+            tip: '課文說：<span class="hl">先畫一個圓圓的太陽</span>。點一點白紙上虛線的圈圈。',
+            hint: '課文裡更早要畫的是<span class="hl">圓圓的太陽</span>，點一點白紙上虛線的圈圈。'
+        },
+        {
+            key: 'grass', name: '綠油油的草地',
+            tip: '課文接著說：<span class="hl">再畫一片綠油油的草地</span>。點一點白紙下面那片白白的地方。',
+            hint: '課文裡的順序是先畫太陽，再畫<span class="hl">綠油油的草地</span>。'
+        },
+        {
+            key: 'tree', name: '高高的樹',
+            tip: '課文還說：<span class="hl">還有高高的樹</span>。點一點白紙右邊的虛線方框。',
+            hint: '太陽和草地畫好了，接下來要畫<span class="hl">高高的樹</span>，點一點右邊的虛線方框。'
+        },
+        {
+            key: 'flower', name: '五顏六色的花',
+            tip: '課文最後說：<span class="hl">五顏六色的花</span>。點一點虛線的圓圈，先開一朵花。',
+            hint: '最後要畫的是<span class="hl">五顏六色的花</span>，點一點虛線的圓圈。'
+        }
+    ];
+
+    var ANIMALS = [
+        {
+            key: 'swallow', name: '小燕子', zone: 'sky', zoneName: '天空',
+            tip: '小燕子在 天 上 飛',
+            wrongTip: '小燕子不會在水裏游，也不會在草地上跑哦，課文說牠在 天 上 飛。'
+        },
+        {
+            key: 'duck', name: '小鴨子', zone: 'pond', zoneName: '水裏',
+            tip: '小鴨子在水裏游',
+            wrongTip: '小鴨子不會在 天 上 飛哦，課文說牠在水裏游。'
+        },
+        {
+            key: 'rabbit', name: '小白兔', zone: 'grass', zoneName: '草地',
+            tip: '小白兔在草地上跑',
+            wrongTip: '小白兔不會在水裏游哦，課文說牠在草地上跑。'
+        }
+    ];
+
+    var FLOWER_KEYS = ['flower0', 'flower1', 'flower2', 'flower3', 'flower4'];
+    var ANIMAL_KEYS = ['artSwallow', 'artDuck', 'artRabbit'];
+
+    /* =========================================================
+       1. 音效（WebAudio 即時合成，離線可用）
+       ========================================================= */
+    var Sfx = (function () {
+        var ctx = null;
+        var master = null;
+        var enabled = true;
+
+        function ensure() {
+            if (!enabled) { return null; }
+            if (!ctx) {
+                var AC = window.AudioContext || window.webkitAudioContext;
+                if (!AC) { return null; }
+                try {
+                    ctx = new AC();
+                    master = ctx.createGain();
+                    master.gain.value = 0.55;
+                    master.connect(ctx.destination);
+                }
+                catch (e) { ctx = null; return null; }
+            }
+            if (ctx.state === 'suspended' && ctx.resume) { ctx.resume().catch(function () {}); }
+            return ctx;
+        }
+
+        function tone(o) {
+            var c = ensure();
+            if (!c) { return; }
+            var t0 = c.currentTime + (o.delay || 0);
+            var dur = o.dur || 0.18;
+            var osc = c.createOscillator();
+            var g = c.createGain();
+            osc.type = o.type || 'sine';
+            osc.frequency.setValueAtTime(o.from || o.freq || 440, t0);
+            if (o.to) { osc.frequency.exponentialRampToValueAtTime(Math.max(40, o.to), t0 + dur); }
+            if (o.vib && osc.frequency.detune) {
+                var lfo = c.createOscillator();
+                var lg = c.createGain();
+                lfo.frequency.value = o.vib;
+                lg.gain.value = o.vibDepth || 14;
+                lfo.connect(lg);
+                lg.connect(osc.frequency);
+                lfo.start(t0);
+                lfo.stop(t0 + dur + 0.05);
+            }
+            var out = osc;
+            if (o.filter) {
+                var f = c.createBiquadFilter();
+                f.type = o.filter.type || 'lowpass';
+                f.frequency.value = o.filter.freq || 1200;
+                f.Q.value = o.filter.q || 1;
+                osc.connect(f);
+                out = f;
+            }
+            var peak = (o.gain == null ? 0.16 : o.gain);
+            g.gain.setValueAtTime(0.0001, t0);
+            g.gain.exponentialRampToValueAtTime(peak, t0 + 0.016);
+            g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+            out.connect(g);
+            g.connect(master);
+            osc.start(t0);
+            osc.stop(t0 + dur + 0.06);
+        }
+
+        function noiseSweep(o) {
+            var c = ensure();
+            if (!c) { return; }
+            var dur = o.dur || 0.26;
+            var len = Math.max(1, Math.floor(c.sampleRate * dur));
+            var buf = c.createBuffer(1, len, c.sampleRate);
+            var data = buf.getChannelData(0);
+            for (var i = 0; i < len; i++) { data[i] = (Math.random() * 2 - 1) * (1 - i / len); }
+            var src = c.createBufferSource();
+            src.buffer = buf;
+            var f = c.createBiquadFilter();
+            f.type = 'bandpass';
+            f.Q.value = 1.1;
+            var t0 = c.currentTime + (o.delay || 0);
+            f.frequency.setValueAtTime(o.freqFrom || 700, t0);
+            f.frequency.exponentialRampToValueAtTime(o.freqTo || 2200, t0 + dur);
+            var g = c.createGain();
+            g.gain.value = (o.gain == null ? 0.1 : o.gain);
+            src.connect(f);
+            f.connect(g);
+            g.connect(master);
+            src.start(t0);
+            src.stop(t0 + dur);
+        }
+
+        return {
+            unlock: function () { ensure(); },
+            setEnabled: function (v) { enabled = !!v; if (enabled) { ensure(); } },
+            isEnabled: function () { return enabled; },
+            click: function () { tone({ freq: 660, dur: 0.07, type: 'triangle', gain: 0.11 }); },
+            openBox: function () {
+                tone({ from: 380, to: 780, dur: 0.24, gain: 0.15 });
+                noiseSweep({ dur: 0.18, freqFrom: 900, freqTo: 2600, gain: 0.07, delay: 0.02 });
+                tone({ from: 780, to: 1240, dur: 0.26, gain: 0.12, delay: 0.16 });
+            },
+            ding: function () {
+                tone({ freq: 880, dur: 0.13, gain: 0.15 });
+                tone({ freq: 1320, dur: 0.2, gain: 0.12, delay: 0.09 });
+            },
+            nope: function () { tone({ from: 340, to: 190, dur: 0.22, type: 'triangle', gain: 0.1 }); },
+            brush: function () { noiseSweep({ dur: 0.3, freqFrom: 600, freqTo: 2400, gain: 0.085 }); },
+            flower: function (i) {
+                var notes = [523, 587, 659, 784, 880];
+                tone({ freq: notes[i % notes.length], dur: 0.22, gain: 0.13, delay: 0.04 });
+                tone({ freq: notes[i % notes.length] * 2, dur: 0.16, gain: 0.07, delay: 0.1 });
+            },
+            chirp: function () {
+                tone({ freq: 1900, dur: 0.06, gain: 0.1, vib: 40, vibDepth: 60 });
+                tone({ freq: 2300, dur: 0.06, gain: 0.1, delay: 0.1, vib: 40, vibDepth: 60 });
+                tone({ freq: 2700, dur: 0.08, gain: 0.1, delay: 0.2, vib: 40, vibDepth: 60 });
+            },
+            quack: function () {
+                tone({ from: 360, to: 250, dur: 0.15, type: 'sawtooth', gain: 0.11, vib: 22, vibDepth: 40, filter: { type: 'lowpass', freq: 900 } });
+                tone({ from: 330, to: 230, dur: 0.15, type: 'sawtooth', gain: 0.1, delay: 0.2, vib: 22, vibDepth: 40, filter: { type: 'lowpass', freq: 900 } });
+            },
+            hop: function () {
+                tone({ from: 420, to: 900, dur: 0.12, gain: 0.12 });
+                tone({ from: 380, to: 820, dur: 0.12, gain: 0.1, delay: 0.18 });
+            },
+            rainbow: function () {
+                var notes = [523, 587, 659, 784, 880, 1046, 1318];
+                for (var i = 0; i < notes.length; i++) {
+                    tone({ freq: notes[i], dur: 0.16, gain: 0.12, delay: i * 0.075, type: 'triangle' });
+                }
+            },
+            fanfare: function () {
+                var notes = [523, 659, 784, 1046];
+                for (var i = 0; i < notes.length; i++) {
+                    tone({ freq: notes[i], dur: 0.3, gain: 0.14, delay: i * 0.13, type: 'triangle' });
+                }
+                tone({ freq: 1568, dur: 0.5, gain: 0.1, delay: 0.56 });
+            },
+            praise: function () {
+                tone({ freq: 659, dur: 0.3, gain: 0.13 });
+                tone({ freq: 988, dur: 0.42, gain: 0.12, delay: 0.16 });
+            }
+        };
+    })();
+
+    /* =========================================================
+       2. 語音朗讀（普通話）
+       ========================================================= */
+    var Speech = (function () {
+        var synth = (typeof window.speechSynthesis !== 'undefined') ? window.speechSynthesis : null;
+        var supported = !!(synth && typeof window.SpeechSynthesisUtterance === 'function');
+        var voice = null;
+        var slow = false;
+        var token = 0;
+        var playing = false;
+        var currentIndex = -1;
+        var listeners = [];
+
+        function pickVoice() {
+            if (!supported) { return null; }
+            var vs = [];
+            try { vs = synth.getVoices() || []; } catch (e) { vs = []; }
+            var best = null;
+            var bestScore = -1;
+            for (var i = 0; i < vs.length; i++) {
+                var v = vs[i];
+                var l = String(v.lang || '').toLowerCase().replace('_', '-');
+                var s = -1;
+                if (l.indexOf('zh') === 0 || l.indexOf('cmn') === 0) { s = 0; }
+                else { continue; }
+                if (l === 'zh-cn' || l === 'cmn-hans-cn' || l === 'zh-hans' || l === 'zh-hans-cn') { s += 8; }
+                if (/zh-cn|zh-hans|cmn-hans/.test(l)) { s += 4; }
+                if (/xiaoxiao|huihui|kangkang|yaoyao|tingting|ting-ting|meijia|sinji|female|女|mandarin|國語|普通话|普通話/.test(String(v.name || ''))) { s += 2; }
+                if (s > bestScore) { bestScore = s; best = v; }
+            }
+            return best;
+        }
+
+        function refreshVoice() {
+            voice = pickVoice();
+            notify();
+        }
+
+        function notify() {
+            for (var i = 0; i < listeners.length; i++) { listeners[i](state()); }
+        }
+
+        function state() {
+            return {
+                supported: supported,
+                hasVoice: !!voice,
+                playing: playing,
+                currentIndex: currentIndex,
+                slow: slow
+            };
+        }
+
+        function utter(text, rate, onEnd) {
+            var u = new SpeechSynthesisUtterance(text);
+            u.lang = 'zh-CN';
+            u.rate = rate;
+            if (voice) {
+                try { u.voice = voice; }
+                catch (e) { voice = null; }
+            }
+            u.pitch = 1.05;
+            var done = false;
+            u.text = text;
+            function finish(errored) {
+                if (done) { return; }
+                done = true;
+                onEnd(errored);
+            }
+            u.onend = function () { finish(false); };
+            u.onerror = function () { finish(true); };
+            try { synth.speak(u); } catch (e) { finish(true); }
+        }
+
+        function stop() {
+            token += 1;
+            playing = false;
+            currentIndex = -1;
+            if (supported) {
+                try { synth.cancel(); } catch (e) {}
+            }
+            notify();
+        }
+
+        function speakOne(index, opt) {
+            opt = opt || {};
+            if (!supported) { return false; }
+            stop();
+            var myToken = token;
+            playing = true;
+            currentIndex = index;
+            notify();
+            utter(LESSON.sentences[index].text, opt.rate || (slow ? 0.72 : 0.95), function () {
+                if (myToken !== token) { return; }
+                playing = false;
+                currentIndex = -1;
+                notify();
+            });
+            return true;
+        }
+
+        function speakAll(onIndex) {
+            if (!supported) { return false; }
+            stop();
+            token += 1;
+            var myToken = token;
+            playing = true;
+            var i = 0;
+            function next() {
+                if (myToken !== token) { return; }
+                if (i >= LESSON.sentences.length) {
+                    playing = false;
+                    currentIndex = -1;
+                    notify();
+                    return;
+                }
+                currentIndex = i;
+                notify();
+                var idx = i;
+                i += 1;
+                utter(LESSON.sentences[idx].text, slow ? 0.72 : 0.95, function () {
+                    if (myToken !== token) { return; }
+                    setTimeout(next, 260);
+                });
+            }
+            next();
+            return true;
+        }
+
+        if (supported) {
+            synth.onvoiceschanged = refreshVoice;
+            refreshVoice();
+        }
+
+        return {
+            isSupported: function () { return supported; },
+            hasVoice: function () { return !!voice; },
+            isPlaying: function () { return playing; },
+            currentIndex: function () { return currentIndex; },
+            isSlow: function () { return slow; },
+            setSlow: function (v) { slow = !!v; notify(); },
+            speakOne: speakOne,
+            speakAll: speakAll,
+            stop: stop,
+            onChange: function (fn) { listeners.push(fn); fn(state()); },
+            refresh: refreshVoice
+        };
+    })();
+
+    /* =========================================================
+       3. 端能力橋接（newapp-schema-bridge 權威實現，公共部分不可改寫）
+       ========================================================= */
+    var REQUEST_TYPE = 'newapp-native-request';
+    var RESPONSE_TYPE = 'newapp-native-response';
+    var env = new URLSearchParams(location.search).get('env');
+    var shouldUsePostMessage = env === 'newapp';
+    var pending = new Map();
+
+    function createRequestId() {
+        return 'native_' + Date.now() + '_'
+            + Math.random().toString(36).slice(2);
+    }
+
+    function invokeHostNative(capability, params) {
+        return new Promise(function (resolve, reject) {
+            var requestId = createRequestId();
+            pending.set(requestId, { resolve: resolve, reject: reject });
+            window.parent.postMessage({
+                type: REQUEST_TYPE,
+                requestId: requestId,
+                capability: capability,
+                params: params || {}
+            }, '*');
+        });
+    }
+
+    function invokeOrFallback(capability, params, fallback) {
+        if (!shouldUsePostMessage || window.parent === window) {
+            return Promise.resolve().then(fallback);
+        }
+        return invokeHostNative(capability, params).catch(function () {
+            return Promise.resolve().then(fallback);
+        });
+    }
+
+    var h5Loading;
+
+    function h5Toast(message) {
+        var el = document.createElement('div');
+        el.textContent = message;
+        el.style.cssText = [
+            'position:fixed',
+            'left:50%',
+            'top:50%',
+            'transform:translate(-50%,-50%)',
+            'z-index:99999',
+            'padding:12px 24px',
+            'color:#fff',
+            'background:rgba(20,20,20,.88)',
+            'border-radius:10px',
+            'pointer-events:none',
+            'transition:opacity .3s',
+        ].join(';');
+        document.body.appendChild(el);
+        setTimeout(function () {
+            el.style.opacity = '0';
+            setTimeout(function () { el.remove(); }, 300);
+        }, 2200);
+    }
+
+    function h5HideLoading() {
+        if (h5Loading) { h5Loading.remove(); }
+        h5Loading = undefined;
+    }
+
+    function h5SaveImage(params) {
+        var imageUrl = params.imageUrl;
+        if (!imageUrl) {
+            h5Toast('暂无可保存的图片');
+            throw new Error('imageUrl is required');
+        }
+        var link = document.createElement('a');
+        link.href = imageUrl;
+        link.download = 'hua-chun-tian.png';
+        link.click();
+    }
+
+    async function h5WriteClipboard(text) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            try {
+                await navigator.clipboard.writeText(text);
+                return;
+            }
+            catch (e) {}
+        }
+        h5Toast('当前浏览器不支持自动复制，请手动复制');
+        throw new Error('clipboard write unavailable');
+    }
+
+    async function h5Share(data) {
+        var url = data.url || location.href;
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: data.title || document.title,
+                    text: data.content || '',
+                    url: url
+                });
+                return;
+            }
+            catch (error) {
+                if (error.name === 'AbortError') {
+                    throw error;
+                }
+            }
+        }
+        await h5WriteClipboard(url);
+    }
+
+    function getBrowserFallback(capability, params) {
+        params = params || {};
+        var handlers = {
+            showToast: function () { h5Toast(params.message || ''); },
+            hideLoading: h5HideLoading,
+            saveImage: function () { h5SaveImage(params); },
+            share: function () { return h5Share(params); },
+        };
+        return handlers[capability] || (function () {
+            throw new Error('unsupported browser fallback: ' + capability);
+        });
+    }
+
+    window.addEventListener('message', function (event) {
+        if (
+            event.source !== window.parent
+            || !event.data || event.data.type !== RESPONSE_TYPE
+        ) {
+            return;
+        }
+        var response = event.data;
+        var request = pending.get(response.requestId);
+        if (!request) { return; }
+        pending.delete(response.requestId);
+        if (response.ok) {
+            request.resolve(response.data);
+        }
+        else {
+            request.reject(new Error(response.error || 'native invoke failed'));
+        }
+    });
+
+    window.addEventListener('DOMContentLoaded', function () {
+        invokeOrFallback('hideLoading', {}, h5HideLoading).catch(function () {});
+    });
+
+    function toast(message, type) {
+        var capability = 'showToast';
+        var params = { message: message, type: type || 'info' };
+        return invokeOrFallback(capability, params, getBrowserFallback(capability, params)).catch(function () {});
+    }
+
+    /* =========================================================
+       4. 狀態
+       ========================================================= */
+    var state = {
+        screen: 'cover',
+        started: false,
+        stage: 0,
+        stars: 0,
+        colorIndex: 0,
+        drawStep: 0,
+        flowerCount: 0,
+        animalIndex: 0,
+        pickedAnimal: null,
+        busy: false,
+        stageAdvancing: false,
+        sound: true,
+        painting: null,
+        paintingError: false
+    };
+
+    var timers = [];
+    var pngPromise = null;
+
+    var scene = document.getElementById('scene');
+
+    function after(ms, fn) {
+        var id = setTimeout(function () {
+            var i = timers.indexOf(id);
+            if (i >= 0) { timers.splice(i, 1); }
+            fn();
+        }, ms);
+        timers.push(id);
+        return id;
+    }
+
+    function clearTimers() {
+        while (timers.length) { clearTimeout(timers.pop()); }
+    }
+
+    function $(id) { return document.getElementById(id); }
+
+    /* =========================================================
+       5. 畫面切換 / 星星
+       ========================================================= */
+    function showScreen(name) {
+        state.screen = name;
+        var screens = ['screenCover', 'screenPlay', 'screenDone'];
+        for (var i = 0; i < screens.length; i++) {
+            var el = $(screens[i]);
+            el.classList.toggle('is-active', screens[i] === 'screen' + name.charAt(0).toUpperCase() + name.slice(1));
+        }
+        window.scrollTo(0, 0);
+    }
+
+    function renderStars() {
+        var html = '';
+        for (var i = 0; i < 5; i++) {
+            html += '<svg class="star' + (i < state.stars ? ' is-on' : '') + '" viewBox="0 0 24 24" aria-hidden="true">'
+                + '<path d="M12 2.6l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.5 6.1 20.6l1.2-6.5L2.5 9.5l6.6-.9z"/></svg>';
+        }
+        $('stars').innerHTML = html;
+        $('stars').setAttribute('aria-label', '星星進度：' + state.stars + ' / 5');
+        $('doneStars').innerHTML = html;
+        $('stageLabel').textContent = '第 ' + Math.min(state.stage + 1, 5) + ' 關 / 共 5 關';
+    }
+
+    /* =========================================================
+       6. 課文清單（側欄 + 彈層共用）
+       ========================================================= */
+    var SPEAKER_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.4h3.3L11.8 5.2v13.6L7.3 14.6H4z" fill="currentColor"/><path d="M15 8.6a5 5 0 0 1 0 6.8" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/></svg>';
+
+    function buildSentenceList(container) {
+        var html = '';
+        for (var i = 0; i < LESSON.sentences.length; i++) {
+            html += '<div class="s-row" data-index="' + i + '">'
+                + '<button class="s-play" type="button" data-play="' + i + '" aria-label="朗讀第' + (i + 1) + '句" aria-pressed="false">' + SPEAKER_SVG + '</button>'
+                + '<div class="s-texts"><p class="s-pinyin">' + LESSON.sentences[i].pinyin + '</p>'
+                + '<p class="s-text">' + LESSON.sentences[i].text + '</p></div></div>';
+        }
+        container.innerHTML = html;
+        container.addEventListener('click', function (ev) {
+            var btn = ev.target.closest ? ev.target.closest('[data-play]') : null;
+            if (!btn) { return; }
+            var idx = parseInt(btn.getAttribute('data-play'), 10);
+            Speech.speakOne(idx);
+            Sfx.click();
+        });
+    }
+
+    function syncReadUi() {
+        var playing = Speech.isPlaying();
+        var cur = Speech.currentIndex();
+        var rows = document.querySelectorAll('.s-row');
+        for (var i = 0; i < rows.length; i++) {
+            var idx = parseInt(rows[i].getAttribute('data-index'), 10);
+            rows[i].classList.toggle('is-reading', playing && idx === cur);
+            var btn = rows[i].querySelector('.s-play');
+            if (btn) { btn.setAttribute('aria-pressed', (playing && idx === cur) ? 'true' : 'false'); }
+        }
+        var slowBtn = $('btnSlow');
+        slowBtn.setAttribute('aria-pressed', Speech.isSlow() ? 'true' : 'false');
+        slowBtn.textContent = Speech.isSlow() ? '慢速：開' : '慢速朗讀';
+    }
+
+    function updateReadNote() {
+        var note = $('readNote');
+        if (!Speech.isSupported()) {
+            note.textContent = '這台裝置的瀏覽器不支援網頁語音朗讀，可以請老師或家長讀給你聽。';
+            $('btnReadAll').disabled = true;
+            $('btnReadStop').disabled = true;
+            $('btnSlow').disabled = true;
+            return;
+        }
+        if (!Speech.hasVoice()) {
+            note.textContent = '未偵測到普通話語音，會改用系統預設語音朗讀；也可以在系統設定裡加入中文（普通話）語音。';
+        }
+        else {
+            note.textContent = '普通話朗讀：可以逐句聽，也可以按下「全文連讀」把整篇課文聽完。';
+        }
+    }
+
+    function openBook(highlightIndex) {
+        $('bookModal').hidden = false;
+        updateReadNote();
+        syncReadUi();
+        if (typeof highlightIndex === 'number') {
+            var row = document.querySelector('#bookList .s-row[data-index="' + highlightIndex + '"]');
+            if (row && row.scrollIntoView) { row.scrollIntoView({ block: 'nearest' }); }
+        }
+        $('btnBookClose').focus();
+    }
+
+    function closeBook() {
+        $('bookModal').hidden = true;
+        Speech.stop();
+    }
+
+    /* =========================================================
+       7. 關卡共用畫面
+       ========================================================= */
+    var STAGES = [
+        { key: 'box', color: 0 },
+        { key: 'color', color: 1 },
+        { key: 'draw', color: 2 },
+        { key: 'animals', color: 3 },
+        { key: 'mom', color: 4 }
+    ];
+
+    var TASK_ICO = {
+        ask: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.4l2.7 5.5 6.1.9-4.4 4.3 1 6-5.4-2.9-5.4 2.9 1-6L3.2 9.8l6.1-.9z" fill="currentColor"/></svg>',
+        ok: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.8l4.2 4.2L19 7.4" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+    };
+
+    function setTask(html, ok) {
+        $('taskText').innerHTML = html;
+        $('taskBar').classList.toggle('is-ok', !!ok);
+        $('taskIco').innerHTML = ok ? TASK_ICO.ok : TASK_ICO.ask;
+    }
+
+    function setSentenceStrip(index) {
+        $('stripPinyin').textContent = LESSON.sentences[index].pinyin;
+        $('stripText').textContent = LESSON.sentences[index].text;
+        $('btnStripPlay').setAttribute('aria-label', '朗讀第' + (index + 1) + '句：' + LESSON.sentences[index].text);
+    }
+
+    function highlightSentence(index) {
+        var rows = document.querySelectorAll('.s-row');
+        for (var i = 0; i < rows.length; i++) {
+            rows[i].classList.toggle('is-now', parseInt(rows[i].getAttribute('data-index'), 10) === index);
+        }
+    }
+
+    function showCtrl(key) {
+        var ids = ['ctrlBox', 'ctrlColor', 'ctrlDraw', 'ctrlAnimal', 'ctrlMom'];
+        var map = { box: 'ctrlBox', color: 'ctrlColor', draw: 'ctrlDraw', animals: 'ctrlAnimal', mom: 'ctrlMom' };
+        for (var i = 0; i < ids.length; i++) {
+            $(ids[i]).hidden = (ids[i] !== map[key]);
+        }
+    }
+
+    function setSceneMode(mode) {
+        scene.classList.remove('mode-box', 'mode-color', 'mode-draw', 'mode-animals', 'mode-done');
+        scene.classList.add('mode-' + mode);
+        var boxHit = scene.querySelector('.hit[data-target="box"]');
+        if (boxHit) { boxHit.setAttribute('tabindex', mode === 'box' ? '0' : '-1'); }
+    }
+
+    function reveal(id, cls) {
+        var el = $(id);
+        if (!el) { return; }
+        el.classList.add('is-on');
+        if (cls) { el.classList.add(cls); }
+    }
+
+    function renderStage() {
+        var st = STAGES[state.stage];
+        renderStars();
+        highlightSentence(st.color);
+        setSentenceStrip(st.color);
+        showCtrl(st.key);
+        setSceneMode(st.key);
+
+        if (st.key === 'box') {
+            $('artBox').classList.remove('is-open');
+            setTask('課文說：<span class="hl">今天，爸爸送我一盒彩色筆。</span>點一點畫紙中間的筆盒，把它打開吧！', false);
+        }
+        else if (st.key === 'color') {
+            $('artBox').classList.add('is-open');
+            renderColorStage();
+        }
+        else if (st.key === 'draw') {
+            renderDrawStage();
+        }
+        else if (st.key === 'animals') {
+            renderAnimalStage();
+        }
+        else if (st.key === 'mom') {
+            setSceneMode('done');
+            reveal('artSky');
+            reveal('artGrass');
+            reveal('artTufts');
+            reveal('artTree');
+            reveal('artFlowerBase');
+            reveal('artRainbow');
+            reveal('artPond');
+            reveal('artSun');
+            for (var f = 0; f < FLOWER_KEYS.length; f++) { reveal(FLOWER_KEYS[f]); }
+            for (var a = 0; a < ANIMAL_KEYS.length; a++) { reveal(ANIMAL_KEYS[a]); }
+            $('momBubble').textContent = '媽媽正在看我畫的春天……';
+            setTask('課文說：<span class="hl">媽媽誇我畫得好，她說：「你畫出了春天。」</span>媽媽問你：畫裡的景象是哪一個季節？', false);
+        }
+    }
+
+    /* =========================================================
+       8. 第 1 關：打開筆盒
+       ========================================================= */
+    function openBox() {
+        if (state.busy || state.stage !== 0) { return; }
+        var box = $('artBox');
+        if (box.classList.contains('is-open')) { return; }
+        state.busy = true;
+        Sfx.openBox();
+        box.classList.add('is-open');
+        setTask('哇！<span class="hl">是一盒彩色筆，一共 12 種顏色</span>，我很喜歡。', true);
+        state.stars = Math.max(state.stars, 1);
+        renderStars();
+        after(1500, function () {
+            state.busy = false;
+            completeStage();
+        });
+    }
+
+    /* =========================================================
+       9. 第 2 關：認顏色
+       ========================================================= */
+    function buildChips() {
+        var grid = $('chipGrid');
+        var html = '';
+        for (var i = 0; i < COLORS.length; i++) {
+            var c = COLORS[i];
+            html += '<button class="chip" type="button" data-color="' + i + '" aria-label="' + c.name + '色的筆" '
+                + 'style="background:' + c.hex + ';color:' + c.ink + '">' + c.name
+                + '<span class="pinyin">' + c.pinyin + '</span></button>';
+        }
+        grid.innerHTML = html;
+        grid.addEventListener('click', function (ev) {
+            var btn = ev.target.closest ? ev.target.closest('[data-color]') : null;
+            if (!btn) { return; }
+            pickColor(parseInt(btn.getAttribute('data-color'), 10), btn);
+        });
+    }
+
+    function renderColorStage() {
+        var target = COLORS[state.colorIndex];
+        $('colorCount').textContent = '顏色 ' + state.colorIndex + ' / ' + COLORS.length;
+        $('colorFill').style.width = (state.colorIndex / COLORS.length * 100) + '%';
+        var chips = $('chipGrid').querySelectorAll('.chip');
+        for (var i = 0; i < chips.length; i++) {
+            var idx = parseInt(chips[i].getAttribute('data-color'), 10);
+            var found = idx < state.colorIndex;
+            chips[i].classList.toggle('is-found', found);
+            chips[i].disabled = found;
+        }
+        if (target) {
+            setTask('課文說：<span class="hl">筆的顏色有紅、橙、黃、綠、青、藍、紫。</span>請點出「'
+                + '<span class="hl" style="color:' + (target.hex === '#ffd63b' ? '#c99a00' : target.hex) + '">' + target.name + '</span>」色的筆。', false);
+        }
+    }
+
+    function pickColor(index, btn) {
+        if (state.busy || state.stage !== 1) { return; }
+        if (index < state.colorIndex) { return; }
+        if (index === state.colorIndex) {
+            state.colorIndex += 1;
+            Sfx.ding();
+            state.stars = Math.max(state.stars, 2);
+            renderColorStage();
+            renderStars();
+            if (state.colorIndex >= COLORS.length) {
+                setTask('七種顏色都找到了！紅、橙、黃、綠、青、藍、紫，通通在筆盒裡。', true);
+                state.busy = true;
+                after(1300, function () { state.busy = false; completeStage(); });
+            }
+            return;
+        }
+        btn.classList.add('is-shake');
+        Sfx.nope();
+        after(430, function () { btn.classList.remove('is-shake'); });
+        var target = COLORS[state.colorIndex];
+        setTask('再找一找：現在要找的是「<span class="hl">' + target.name + '</span>」色，'
+            + '它的顏色是' + describeColor(target.name) + '。', false);
+    }
+
+    function describeColor(name) {
+        var map = {
+            '紅': '像蘋果一樣紅紅的', '橙': '像橙子一樣的橙色', '黃': '像太陽一樣黃黃的',
+            '綠': '像草地一樣綠綠的', '青': '比藍色再綠一點的青色', '藍': '像天空一樣藍藍的', '紫': '像葡萄一樣紫紫的'
+        };
+        return map[name] || '這個顏色';
+    }
+
+    /* =========================================================
+       10. 第 3 關：按課文順序畫
+       ========================================================= */
+    function buildSteps() {
+        var list = $('stepList');
+        var html = '';
+        for (var i = 0; i < DRAW_STEPS.length; i++) {
+            html += '<div class="step-item" data-step="' + i + '"><span class="num">' + (i + 1) + '</span>'
+                + '<span>' + DRAW_STEPS[i].name + '</span></div>';
+        }
+        list.innerHTML = html;
+    }
+
+    function renderDrawStage() {
+        var step = DRAW_STEPS[state.drawStep];
+        var items = $('stepList').querySelectorAll('.step-item');
+        for (var i = 0; i < items.length; i++) {
+            var idx = parseInt(items[i].getAttribute('data-step'), 10);
+            var done = idx < state.drawStep || (idx === 3 && state.drawStep === 3 && state.flowerCount >= FLOWER_KEYS.length);
+            var now = (idx === state.drawStep) && !(idx === 3 && state.flowerCount > 0);
+            items[i].classList.toggle('is-done', !!done);
+            items[i].classList.toggle('is-now', !!now && !done);
+        }
+        var spots = scene.querySelectorAll('.spot');
+        for (var s = 0; s < spots.length; s++) {
+            var key = spots[s].getAttribute('data-spot');
+            var isCurrent = key === step.key;
+            var isGhost = !isCurrent;
+            spots[s].classList.toggle('is-current', isCurrent);
+            spots[s].classList.toggle('is-ghost', isGhost);
+        }
+        var drawGroup = scene.querySelector('#gDrawUi');
+        var currentSpot = scene.querySelector('.spot[data-spot="' + step.key + '"]');
+        if (drawGroup && currentSpot && drawGroup.lastElementChild !== currentSpot) {
+            drawGroup.appendChild(currentSpot);
+        }
+        if (step.key === 'flower' && state.flowerCount > 0) {
+            var left = FLOWER_KEYS.length - state.flowerCount;
+            setTask('花兒要<span class="hl">五顏六色</span>哦！再點 ' + left + ' 次花叢，讓花兒一朵一朵開出來。', false);
+        }
+        else {
+            setTask(step.tip, false);
+        }
+    }
+
+    function tapSpot(key, el) {
+        if (state.busy || state.stage !== 2) { return; }
+        var step = DRAW_STEPS[state.drawStep];
+        if (key !== step.key) {
+            Sfx.nope();
+            if (el) {
+                el.classList.add('shake');
+                after(430, function () { el.classList.remove('shake'); });
+            }
+            setTask(step.hint, false);
+            return;
+        }
+        state.busy = true;
+        if (key === 'sun') {
+            reveal('artSky');
+            reveal('artSun');
+            Sfx.brush();
+            after(220, function () { Sfx.ding(); });
+            after(700, function () { state.busy = false; state.drawStep = 1; renderDrawStage(); });
+            return;
+        }
+        if (key === 'grass') {
+            reveal('artGrass');
+            reveal('artTufts');
+            Sfx.brush();
+            after(220, function () { Sfx.ding(); });
+            after(700, function () { state.busy = false; state.drawStep = 2; renderDrawStage(); });
+            return;
+        }
+        if (key === 'tree') {
+            reveal('artTree');
+            Sfx.brush();
+            after(220, function () { Sfx.ding(); });
+            after(700, function () { state.busy = false; state.drawStep = 3; renderDrawStage(); });
+            return;
+        }
+        reveal('artFlowerBase');
+        Sfx.brush();
+        after(300, function () {
+            state.busy = false;
+            state.drawStep = 3;
+            state.flowerCount = 0;
+            renderDrawStage();
+            tapFlower();
+        });
+    }
+
+    function tapFlower() {
+        if (state.busy || state.stage !== 2 || state.drawStep !== 3) { return; }
+        if (state.flowerCount >= FLOWER_KEYS.length) { return; }
+        var key = FLOWER_KEYS[state.flowerCount];
+        reveal(key);
+        Sfx.flower(state.flowerCount);
+        state.flowerCount += 1;
+        renderDrawStage();
+        if (state.flowerCount >= FLOWER_KEYS.length) {
+            setTask('五顏六色的花都開好了！畫紙上有了<span class="hl">太陽、草地、高高的樹和花</span>。', true);
+            state.stars = Math.max(state.stars, 3);
+            renderStars();
+            state.busy = true;
+            after(1300, function () { state.busy = false; completeStage(); });
+        }
+    }
+
+    /* =========================================================
+       11. 第 4 關：小動物回家
+       ========================================================= */
+    var ANIMAL_ICONS = {
+        swallow: '<svg viewBox="0 0 52 38" aria-hidden="true"><path d="M16 19 L2 12 L6 19 L2 26 Z" fill="#39435c"/><ellipse cx="26" cy="19" rx="14" ry="9" fill="#404a63"/><circle cx="36" cy="15" r="8" fill="#46516b"/><path d="M43 13 l 8 3.4 l -8 3.4 z" fill="#ffb03a"/><circle cx="38" cy="13" r="2" fill="#fff"/><circle cx="38.3" cy="13" r="1" fill="#333"/><path d="M24 24 q 8 5 14 -2 q -7 3 -14 2 z" fill="#fbfbfd"/></svg>',
+        duck: '<svg viewBox="0 0 52 38" aria-hidden="true"><ellipse cx="22" cy="24" rx="17" ry="11" fill="#ffd93b"/><ellipse cx="13" cy="22" rx="8" ry="6" fill="#ffe98a"/><circle cx="35" cy="15" r="9.5" fill="#ffe14f"/><path d="M43 15 l 8 3.6 l -8 3.6 z" fill="#ff9b3d"/><circle cx="37" cy="12" r="1.9" fill="#3b3b3b"/><circle cx="37.7" cy="11.4" r="0.7" fill="#fff"/></svg>',
+        rabbit: '<svg viewBox="0 0 52 38" aria-hidden="true"><ellipse cx="21" cy="26" rx="15" ry="10" fill="#fdfdff" stroke="#e6e6f0" stroke-width="1.2"/><ellipse cx="31" cy="9" rx="3.4" ry="9" fill="#fdfdff" stroke="#e6e6f0" stroke-width="1.2"/><ellipse cx="38" cy="9" rx="3.4" ry="9" fill="#fdfdff" stroke="#e6e6f0" stroke-width="1.2"/><ellipse cx="31" cy="10" rx="1.6" ry="5.6" fill="#ffc2d4"/><ellipse cx="38" cy="10" rx="1.6" ry="5.6" fill="#ffc2d4"/><circle cx="35" cy="23" r="9.4" fill="#fdfdff" stroke="#e6e6f0" stroke-width="1.2"/><circle cx="38" cy="21" r="2" fill="#3b3b3b"/><circle cx="38.7" cy="20.4" r="0.7" fill="#fff"/><circle cx="32.6" cy="26" r="2" fill="#ff9fb8"/><circle cx="8" cy="26" r="4.6" fill="#f4f4fb" stroke="#e6e6f0" stroke-width="1"/></svg>'
+    };
+
+    function buildAnimalButtons() {
+        var row = $('animalRow');
+        var html = '';
+        for (var i = 0; i < ANIMALS.length; i++) {
+            var a = ANIMALS[i];
+            html += '<button class="animal-btn" type="button" data-animal="' + i + '" aria-label="選' + a.name + '">'
+                + ANIMAL_ICONS[a.key] + '<span>' + a.name + '</span></button>';
+        }
+        row.innerHTML = html;
+        row.addEventListener('click', function (ev) {
+            var btn = ev.target.closest ? ev.target.closest('[data-animal]') : null;
+            if (!btn || btn.disabled) { return; }
+            pickAnimal(parseInt(btn.getAttribute('data-animal'), 10));
+        });
+    }
+
+    function renderAnimalStage() {
+        var idx = state.animalIndex;
+        var btns = $('animalRow').querySelectorAll('.animal-btn');
+        for (var i = 0; i < btns.length; i++) {
+            var bi = parseInt(btns[i].getAttribute('data-animal'), 10);
+            btns[i].disabled = bi < idx;
+            btns[i].classList.toggle('is-picked', state.pickedAnimal === bi);
+        }
+        var zones = scene.querySelectorAll('.zone');
+        var picked = state.pickedAnimal !== null;
+        if (idx < ANIMALS.length) {
+            var need = ANIMALS[idx];
+            for (var z = 0; z < zones.length; z++) {
+                var zk = zones[z].getAttribute('data-zone');
+                zones[z].classList.toggle('is-current', picked && zk === need.zone);
+                zones[z].classList.toggle('is-ghost', !(picked && zk === need.zone));
+            }
+            if (picked) {
+                setTask(PICK_TIPS[idx], false);
+            }
+            else {
+                setTask('課文說：<span class="hl">' + ANIMALS[idx].tip + '</span>先點下面的「' + need.name + '」，再點畫紙上牠的家。', false);
+            }
+        }
+        else {
+            var rainbowShown = $('artRainbow').classList.contains('is-on');
+            for (var z2 = 0; z2 < zones.length; z2++) {
+                zones[z2].classList.toggle('is-current', zones[z2].getAttribute('data-zone') === 'sky' && !rainbowShown);
+                zones[z2].classList.toggle('is-ghost', !(zones[z2].getAttribute('data-zone') === 'sky' && !rainbowShown));
+            }
+            setTask('課文說：<span class="hl">還有一道彩虹掛在天上呢！</span>點一點天空，讓彩虹掛上去。', false);
+        }
+    }
+
+    var PICK_TIPS = [
+        '小燕子選好了！現在點一點畫紙上的「天空」，讓牠飛上去。',
+        '小鴨子選好了！現在點一點「水裏」，讓牠游一游。',
+        '小白兔選好了！現在點一點「草地」，讓牠跑一跑。'
+    ];
+
+    function pickAnimal(index) {
+        if (state.busy || state.stage !== 3 || index !== state.animalIndex) { return; }
+        state.pickedAnimal = index;
+        Sfx.click();
+        renderAnimalStage();
+    }
+
+    function tapZone(zone, el) {
+        if (state.busy || state.stage !== 3) { return; }
+        if (state.animalIndex >= ANIMALS.length) {
+            if (zone !== 'sky') {
+                Sfx.nope();
+                setTask('課文說：彩虹<span class="hl">掛在天上</span>呢！點一點天空。', false);
+                return;
+            }
+            state.busy = true;
+            reveal('artRainbow');
+            Sfx.rainbow();
+            setTask('彩虹掛在天上，畫裡的春天真好看！', true);
+            state.stars = Math.max(state.stars, 4);
+            renderStars();
+            after(1400, function () {
+                state.busy = false;
+                renderAnimalStage();
+                completeStage();
+            });
+            return;
+        }
+        var need = ANIMALS[state.animalIndex];
+        if (state.pickedAnimal === null) {
+            Sfx.nope();
+            setTask('先點下面的「<span class="hl">' + need.name + '</span>」，再點牠的家。', false);
+            return;
+        }
+        if (zone !== need.zone) {
+            Sfx.nope();
+            if (el) {
+                el.classList.add('shake');
+                after(430, function () { el.classList.remove('shake'); });
+            }
+            setTask(need.wrongTip + ' 再試一次：先點小動物，再點「<span class="hl">' + need.zoneName + '</span>」。', false);
+            state.pickedAnimal = null;
+            renderAnimalStage();
+            return;
+        }
+        state.busy = true;
+        state.pickedAnimal = null;
+        var node = $('art' + need.key.charAt(0).toUpperCase() + need.key.slice(1));
+        reveal(node.id);
+        if (need.key === 'swallow') { Sfx.chirp(); }
+        else if (need.key === 'duck') { Sfx.quack(); }
+        else { Sfx.hop(); }
+        state.animalIndex += 1;
+        setTask('太棒了，' + need.name + '回到' + need.zoneName + '了！', true);
+        renderStars();
+        after(1100, function () {
+            state.busy = false;
+            renderAnimalStage();
+            if (state.animalIndex >= ANIMALS.length) {
+                state.stars = Math.max(state.stars, 4);
+                renderStars();
+            }
+        });
+    }
+
+    /* =========================================================
+       12. 第 5 關：媽媽問季節
+       ========================================================= */
+    function answerSeason(value) {
+        if (state.busy || state.stage !== 4) { return; }
+        if (value !== 'spring') {
+            Sfx.nope();
+            $('momBubble').textContent = '想一想：畫裡有小燕子、花兒和彩虹，這是哪一個季節呢？';
+            setTask('再想一想：<span class="hl">小燕子在 天 上 飛</span>、花兒都開了、還有一道彩虹，這是哪一個季節呢？', false);
+            return;
+        }
+        state.busy = true;
+        Sfx.praise();
+        $('momBubble').textContent = '媽媽誇我畫得好，她說：「你畫出了春天。」';
+        setTask('答對了！<span class="hl">這是春天</span>。媽媽說：「你畫出了春天。」', true);
+        state.stars = 5;
+        renderStars();
+        after(900, function () { Sfx.fanfare(); });
+        after(2300, function () {
+            state.busy = false;
+            showDone();
+        });
+    }
+
+    /* =========================================================
+       13. 關卡推進 / 完成
+       ========================================================= */
+    function completeStage() {
+        if (state.stageAdvancing) { return; }
+        state.stageAdvancing = true;
+        state.stars = Math.min(5, Math.max(state.stars, state.stage + 1));
+        renderStars();
+        Sfx.fanfare();
+        var next = state.stage + 1;
+        after(1100, function () {
+            state.stageAdvancing = false;
+            if (next >= STAGES.length) { showDone(); return; }
+            goStage(next);
+        });
+    }
+
+    function goStage(index) {
+        clearTimers();
+        state.stageAdvancing = false;
+        state.stage = index;
+        state.pickedAnimal = null;
+        state.busy = false;
+        renderStage();
+    }
+
+    function showDone() {
+        clearTimers();
+        Speech.stop();
+        state.stars = 5;
+        renderStars();
+        showScreen('done');
+        var img = $('finalArt');
+        var fallback = $('artFallback');
+        img.style.display = 'none';
+        fallback.style.display = 'none';
+        makePaintingPng().then(function (url) {
+            img.src = url;
+            img.style.display = 'block';
+            $('zoomImg').src = url;
+        }).catch(function () {
+            state.paintingError = true;
+            fallback.style.display = 'block';
+            $('btnSave').disabled = true;
+            $('btnZoom').disabled = true;
+        });
+        Sfx.fanfare();
+    }
+
+    /* =========================================================
+       14. 畫作輸出（SVG → PNG）
+       ========================================================= */
+    function makePaintingPng() {
+        if (state.painting) { return Promise.resolve(state.painting); }
+        if (pngPromise) { return pngPromise; }
+        pngPromise = new Promise(function (resolve, reject) {
+            var clone = scene.cloneNode(true);
+            var strip = clone.querySelectorAll('.uiOnly, .noExport');
+            for (var i = 0; i < strip.length; i++) {
+                if (strip[i].parentNode) { strip[i].parentNode.removeChild(strip[i]); }
+            }
+            clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+            clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+            clone.setAttribute('width', '960');
+            clone.setAttribute('height', '720');
+            clone.removeAttribute('class');
+            clone.removeAttribute('id');
+            var source = new XMLSerializer().serializeToString(clone);
+            var url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(source);
+            var image = new Image();
+            image.onload = function () {
+                try {
+                    var canvas = document.createElement('canvas');
+                    canvas.width = 960;
+                    canvas.height = 720;
+                    var ctx = canvas.getContext('2d');
+                    ctx.fillStyle = '#fffdf7';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+                    resolve(canvas.toDataURL('image/png'));
+                }
+                catch (err) { reject(err); }
+            };
+            image.onerror = function () { reject(new Error('painting render failed')); };
+            image.src = url;
+        });
+        pngPromise = pngPromise.then(function (url) {
+            state.painting = url;
+            return url;
+        }, function (err) {
+            pngPromise = null;
+            throw err;
+        });
+        return pngPromise;
+    }
+
+    /* =========================================================
+       15. 保存 / 分享 / 放大
+       ========================================================= */
+    function savePainting() {
+        if (state.busy) { return; }
+        state.busy = true;
+        makePaintingPng().then(function (url) {
+            var capability = 'saveImage';
+            var params = { imageUrl: url };
+            return invokeOrFallback(capability, params, getBrowserFallback(capability, params)).then(function () {
+                return toast('畫作已保存，去相簿看看吧！', 'success');
+            });
+        }).catch(function () {
+            if (state.painting) {
+                return toast('保存沒有成功，先放大畫作，長按圖片也可以保存哦', 'error').then(function () {
+                    openZoom();
+                });
+            }
+            return toast('保存沒有成功，可以稍後再試一次', 'error');
+        }).then(function () {
+            state.busy = false;
+        });
+    }
+
+    function shareGame() {
+        if (state.busy) { return; }
+        var capability = 'share';
+        var params = {
+            title: '畫春天｜小小畫家情景遊戲',
+            content: '一起打開彩色筆，畫出春天、聽課文朗讀吧！',
+            url: location.href,
+            source: 'h5_page'
+        };
+        invokeOrFallback(capability, params, getBrowserFallback(capability, params)).catch(function (err) {
+            if (err && err.name === 'AbortError') { return; }
+            toast('分享沒有成功，可以再試一次', 'error');
+        });
+    }
+
+    function openZoom() {
+        $('zoomModal').hidden = false;
+        $('btnZoomClose').focus();
+    }
+
+    function closeZoom() {
+        $('zoomModal').hidden = true;
+    }
+
+    /* =========================================================
+       16. 重置 / 初始化
+       ========================================================= */
+    function resetGame() {
+        clearTimers();
+        Speech.stop();
+        state.started = false;
+        state.stage = 0;
+        state.stars = 0;
+        state.colorIndex = 0;
+        state.drawStep = 0;
+        state.flowerCount = 0;
+        state.animalIndex = 0;
+        state.pickedAnimal = null;
+        state.busy = false;
+        state.stageAdvancing = false;
+        state.painting = null;
+        state.paintingError = false;
+        pngPromise = null;
+
+        scene.classList.remove('mode-box', 'mode-color', 'mode-draw', 'mode-animals', 'mode-done');
+        var arts = scene.querySelectorAll('.art');
+        for (var i = 0; i < arts.length; i++) { arts[i].classList.remove('is-on'); }
+        $('artBox').classList.remove('is-open');
+        var spots = scene.querySelectorAll('.spot, .zone');
+        for (var s = 0; s < spots.length; s++) {
+            spots[s].classList.remove('is-current', 'is-ghost', 'shake');
+        }
+        var chips = $('chipGrid').querySelectorAll('.chip');
+        for (var c = 0; c < chips.length; c++) {
+            chips[c].disabled = false;
+            chips[c].classList.remove('is-found', 'is-shake');
+        }
+        var animals = $('animalRow').querySelectorAll('.animal-btn');
+        for (var a = 0; a < animals.length; a++) {
+            animals[a].disabled = false;
+            animals[a].classList.remove('is-picked');
+        }
+        $('colorFill').style.width = '0%';
+        $('colorCount').textContent = '顏色 0 / 7';
+        $('momBubble').textContent = '媽媽誇我畫得好，她說：「你畫出了春天。」';
+        $('finalArt').style.display = 'none';
+        $('finalArt').removeAttribute('src');
+        $('artFallback').style.display = 'none';
+        $('btnSave').disabled = false;
+        $('btnZoom').disabled = false;
+        $('zoomModal').hidden = true;
+        $('bookModal').hidden = true;
+        $('btnStart').textContent = '開始畫春天';
+        renderStars();
+        showScreen('cover');
+    }
+
+    function startGame() {
+        Sfx.unlock();
+        Sfx.click();
+        if (state.started) {
+            showScreen('play');
+            renderStage();
+            return;
+        }
+        state.started = true;
+        $('btnStart').textContent = '繼續畫春天';
+        goStage(0);
+        showScreen('play');
+    }
+
+    function goHome() {
+        Speech.stop();
+        clearTimers();
+        state.busy = false;
+        showScreen('cover');
+        if (state.started) { $('btnStart').textContent = '繼續畫春天'; }
+    }
+
+    function bindHit(el, label, handler) {
+        if (!el) { return; }
+        el.setAttribute('tabindex', '0');
+        el.setAttribute('role', 'button');
+        el.setAttribute('aria-label', label);
+        el.addEventListener('click', function (ev) {
+            ev.preventDefault();
+            ev.stopPropagation();
+            handler(el);
+        });
+        el.addEventListener('keydown', function (ev) {
+            if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') {
+                ev.preventDefault();
+                handler(el);
+            }
+        });
+    }
+
+    function init() {
+        buildChips();
+        buildSteps();
+        buildAnimalButtons();
+        buildSentenceList($('bookList'));
+        buildSentenceList($('sideList'));
+        Speech.onChange(syncReadUi);
+        renderStars();
+        updateReadNote();
+
+        $('btnStart').addEventListener('click', startGame);
+        $('btnHome').addEventListener('click', goHome);
+        $('btnAgain').addEventListener('click', function () {
+            Sfx.click();
+            resetGame();
+        });
+        $('btnSound').addEventListener('click', function () {
+            state.sound = !state.sound;
+            Sfx.setEnabled(state.sound);
+            $('btnSound').setAttribute('aria-pressed', state.sound ? 'true' : 'false');
+            $('soundIcon').style.opacity = state.sound ? '1' : '0.45';
+            if (state.sound) { Sfx.click(); }
+        });
+        $('btnBook').addEventListener('click', function () { Sfx.click(); openBook(); });
+        $('btnCoverBook').addEventListener('click', function () { Sfx.unlock(); Sfx.click(); openBook(); });
+        $('btnBookClose').addEventListener('click', function () { Sfx.click(); closeBook(); });
+        $('btnCoverRead').addEventListener('click', function () {
+            Sfx.unlock();
+            Sfx.click();
+            openBook();
+            if (Speech.isSupported()) { Speech.speakAll(); }
+        });
+        $('btnDoneRead').addEventListener('click', function () {
+            Sfx.click();
+            openBook();
+            if (Speech.isSupported()) { Speech.speakAll(); }
+        });
+        $('btnReadAll').addEventListener('click', function () {
+            Sfx.click();
+            if (!Speech.isSupported()) { return; }
+            Speech.speakAll();
+        });
+        $('btnReadStop').addEventListener('click', function () {
+            Sfx.click();
+            Speech.stop();
+        });
+        $('btnSlow').addEventListener('click', function () {
+            Sfx.click();
+            Speech.setSlow(!Speech.isSlow());
+            syncReadUi();
+        });
+        $('btnPinyin').addEventListener('click', function () {
+            Sfx.click();
+            var on = document.body.classList.toggle('hide-pinyin') === false;
+            $('btnPinyin').setAttribute('aria-pressed', on ? 'true' : 'false');
+        });
+        $('btnStripPlay').addEventListener('click', function () {
+            Sfx.click();
+            var idx = STAGES[state.stage] ? STAGES[state.stage].color : 0;
+            Speech.speakOne(idx);
+        });
+
+        $('btnSave').addEventListener('click', function () { Sfx.click(); savePainting(); });
+        $('btnShare').addEventListener('click', function () { Sfx.click(); shareGame(); });
+        $('btnZoom').addEventListener('click', function () { Sfx.click(); openZoom(); });
+        $('btnZoomClose').addEventListener('click', function () { Sfx.click(); closeZoom(); });
+        $('zoomModal').addEventListener('click', function (ev) {
+            if (ev.target === $('zoomModal')) { closeZoom(); }
+        });
+        $('bookModal').addEventListener('click', function (ev) {
+            if (ev.target === $('bookModal')) { closeBook(); }
+        });
+        document.addEventListener('keydown', function (ev) {
+            if (ev.key !== 'Escape') { return; }
+            if (!$('bookModal').hidden) { closeBook(); }
+            if (!$('zoomModal').hidden) { closeZoom(); }
+        });
+
+        var seasonRow = $('seasonRow');
+        seasonRow.addEventListener('click', function (ev) {
+            var btn = ev.target.closest ? ev.target.closest('[data-season]') : null;
+            if (!btn) { return; }
+            answerSeason(btn.getAttribute('data-season'));
+        });
+
+        var hits = scene.querySelectorAll('.hit');
+        for (var i = 0; i < hits.length; i++) {
+            var target = hits[i].getAttribute('data-target');
+            var zone = hits[i].getAttribute('data-zone');
+            if (target === 'box') {
+                bindHit(hits[i], '打開筆盒', function () { openBox(); });
+            }
+            else if (target) {
+                bindHit(hits[i], '在畫紙上畫' + (SPOT_LABEL[target] || target), function (el) {
+                    var key = el.getAttribute('data-target');
+                    if (key === 'flower' && state.drawStep === 3 && state.flowerCount > 0) {
+                        tapFlower();
+                        return;
+                    }
+                    tapSpot(key, scene.querySelector('.spot[data-spot="' + key + '"]'));
+                });
+            }
+            else if (zone) {
+                bindHit(hits[i], ANIMAL_ZONE_LABEL(zone), function (el) {
+                    tapZone(el.getAttribute('data-zone'), scene.querySelector('.zone[data-zone="' + el.getAttribute('data-zone') + '"]'));
+                });
+            }
+        }
+
+        document.addEventListener('visibilitychange', function () {
+            if (document.hidden) { Speech.stop(); }
+        });
+
+    }
+
+    var SPOT_LABEL = {
+        sun: '圓圓的太陽', grass: '綠油油的草地', tree: '高高的樹', flower: '五顏六色的花'
+    };
+
+    function ANIMAL_ZONE_LABEL(zone) {
+        if (zone === 'sky') { return '天空'; }
+        if (zone === 'pond') { return '水裏'; }
+        return '草地';
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    }
+    else {
+        init();
+    }
+})();
+</script>
+</body>
+</html>

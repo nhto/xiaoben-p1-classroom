@@ -1,0 +1,1787 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>我和媽媽逛商場 · 課文情景遊戲</title>
+<meta name="description" content="把課文《我和媽媽逛商場》變成四幕可玩的情景遊戲：牽媽媽的手走去商場、在熱鬧的商場找出三種人、仔細挑一件合適的綠色毛衣、最後穿上新毛衣和媽媽合照；全繁體字、Q版可愛風，配有劇情音效與結尾全文普通話朗讀。">
+<style>
+:root{
+  --ink:#5b4a42;
+  --ink-soft:#8d7a71;
+  --cream:#fff8ee;
+  --paper:#fffdf8;
+  --sky1:#e6f4ff;
+  --sky2:#ffeecd;
+  --pink:#ff9db1;
+  --pink-d:#f2788f;
+  --yellow:#ffd166;
+  --green:#7ed6a5;
+  --green-d:#4fbf85;
+  --blue:#8ecdf2;
+  --purple:#c3a6e8;
+  --floor:#ffe6cb;
+  --shadow:0 6px 0 rgba(91,74,66,.14);
+  --radius:18px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{
+  font-family:"PingFang TC","Hiragino Sans TC","Noto Sans TC","Microsoft JhengHei",system-ui,-apple-system,sans-serif;
+  color:var(--ink);
+  background:
+    radial-gradient(1200px 600px at 15% -10%, #fff2d9 0%, transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, #e8f6ff 0%, transparent 55%),
+    #fdf3e6;
+  min-height:100%;
+}
+button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer}
+.app{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:18px;
+  min-height:100%;
+  padding:10px clamp(8px,2.6vw,18px) 14px;
+  max-width:1500px;
+  margin:0 auto;
+  align-content:start;
+}
+.game-col{
+  display:flex;
+  flex-direction:column;
+  width:100%;
+  max-width:520px;
+  margin:0 auto;
+  height:calc(100vh - 24px);
+  height:calc(100dvh - 24px);
+  min-height:520px;
+  min-height:min(520px, calc(100dvh - 20px));
+  background:var(--paper);
+  border:3px solid var(--ink);
+  border-radius:26px;
+  box-shadow:0 12px 0 rgba(91,74,66,.16), 0 20px 40px rgba(91,74,66,.12);
+  overflow:hidden;
+  position:relative;
+}
+/* ---------- HUD ---------- */
+.hud{
+  flex:0 0 auto;display:flex;align-items:center;gap:8px;
+  padding:8px 10px;
+  background:linear-gradient(#fff5e4,#ffeacf);
+  border-bottom:3px solid var(--ink);
+}
+.icon-btn{
+  width:40px;height:40px;flex:0 0 auto;border-radius:14px;
+  border:2.5px solid var(--ink);background:#fff;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 3px 0 rgba(91,74,66,.2);
+  transition:transform .12s ease;
+}
+.icon-btn:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(91,74,66,.2)}
+.icon-btn svg{width:22px;height:22px;display:block}
+.icon-btn[aria-pressed="false"]{background:#f0e6da}
+.hud-mid{flex:1 1 auto;min-width:0;text-align:center}
+.hud-scene{
+  display:inline-block;max-width:100%;
+  font-size:13px;font-weight:800;letter-spacing:.4px;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;
+  background:#fff;border:2.5px solid var(--ink);border-radius:999px;
+  padding:4px 12px;box-shadow:0 3px 0 rgba(91,74,66,.16);
+}
+.hud-right{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+.hearts{display:flex;gap:3px;align-items:center}
+.hearts svg{width:18px;height:18px;display:block;transition:transform .25s ease}
+.hearts svg .fill{fill:#f2e5da}
+.hearts svg.on .fill{fill:var(--pink-d)}
+.hearts svg.on{animation:pop .45s ease}
+@keyframes pop{0%{transform:scale(.6)}60%{transform:scale(1.25)}100%{transform:scale(1)}}
+/* ---------- goal / hint ---------- */
+.goalbar{
+  flex:0 0 auto;display:flex;align-items:center;gap:8px;
+  padding:6px 12px;font-size:12.5px;font-weight:700;color:#7a6559;
+  background:#fffdf7;border-bottom:2.5px dashed rgba(91,74,66,.28);
+}
+.goal-text{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.goal-progress{
+  flex:0 0 auto;font-weight:800;color:var(--ink);
+  background:#ffe9c9;border:2px solid var(--ink);border-radius:999px;padding:1px 9px;font-size:12px;
+}
+.hintbar{
+  flex:0 0 auto;padding:8px 12px 10px;font-size:12.5px;line-height:1.45;font-weight:700;color:#7a6559;
+  background:linear-gradient(#fff8ec,#ffeed8);
+  border-top:3px solid var(--ink);
+  min-height:44px;display:flex;align-items:center;
+}
+/* ---------- stage ---------- */
+.stage{position:relative;flex:1 1 auto;min-height:0;overflow:hidden;background:var(--sky1)}
+.scene{position:absolute;inset:0;overflow:hidden;display:none}
+.scene.active{display:block}
+.scene.scroll{overflow-y:auto;-webkit-overflow-scrolling:touch;display:none}
+.scene.scroll.active{display:block}
+.ground{
+  position:absolute;left:0;right:0;bottom:0;height:38%;
+  background:linear-gradient(#f3d7b4,#e8c39b);
+  border-top:3px solid rgba(91,74,66,.35);
+}
+.ground:after{
+  content:"";position:absolute;top:46%;left:0;right:0;height:5px;
+  background:repeating-linear-gradient(90deg,#fffaf0 0 22px,transparent 22px 48px);
+  opacity:.9;
+}
+.sky{position:absolute;inset:0;background:linear-gradient(#dff1ff 0%, #ffeed2 58%, #ffe3bd 100%)}
+.cloud{position:absolute;background:#fff;border-radius:999px;opacity:.95}
+/* ---------- home ---------- */
+.home-wrap{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;overflow-y:auto;padding:14px 14px 18px;gap:10px}
+.home-title{
+  font-size:clamp(22px,7.6vw,34px);font-weight:900;letter-spacing:2px;margin:6px 0 0;
+  color:#fff;text-shadow:0 3px 0 var(--pink-d), 0 6px 0 rgba(91,74,66,.18);
+  -webkit-text-stroke:2px var(--ink);
+}
+.home-sub{font-size:13px;font-weight:800;color:#8d7a71;background:#fff;border:2.5px solid var(--ink);border-radius:999px;padding:3px 14px}
+.home-art{width:min(88%,330px);flex:0 0 auto}
+.home-art svg{width:100%;height:auto;display:block}
+.btn-main{
+  width:min(88%,330px);padding:13px 18px;font-size:17px;font-weight:900;letter-spacing:1px;
+  background:linear-gradient(#ffd97a,var(--yellow));border:3px solid var(--ink);border-radius:20px;
+  box-shadow:0 6px 0 var(--ink);transition:transform .1s ease;
+}
+.btn-main:active{transform:translateY(4px);box-shadow:0 2px 0 var(--ink)}
+.chapter-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;width:min(94%,420px)}
+.chip{
+  display:flex;flex-direction:column;gap:2px;text-align:left;padding:9px 11px;
+  background:#fff;border:2.5px solid var(--ink);border-radius:16px;box-shadow:0 4px 0 rgba(91,74,66,.18);
+  font-size:12.5px;font-weight:800;line-height:1.3;
+}
+.chip:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(91,74,66,.18)}
+.chip small{font-weight:700;color:var(--ink-soft);font-size:11px}
+.home-note{font-size:11.5px;font-weight:700;color:#95806f;text-align:center;line-height:1.5;max-width:92%}
+#scene-end{background:linear-gradient(#fff6e6,#ffe9cf)}
+#people-layer{position:absolute;inset:0}
+.walker,.person,.bag,.sweater,.chip{padding:0;margin:0;font:inherit;text-align:inherit}
+/* ---------- 場景一 ---------- */
+.walker{
+  position:absolute;bottom:6%;left:10%;width:26%;max-width:150px;
+  transform:translateX(-50%);
+  cursor:grab;touch-action:none;z-index:5;
+}
+.walker svg{width:100%;height:auto;display:block}
+.walker .bob{transform-origin:50% 100%}
+.walker.walking .bob{animation:bob .45s infinite ease-in-out}
+.walker.dragging{cursor:grabbing}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-1.2deg)}50%{transform:translateY(-5%) rotate(1.2deg)}}
+.heart-token{
+  position:absolute;width:9%;max-width:52px;transform:translate(-50%,-50%);z-index:4;
+  animation:float 1.8s ease-in-out infinite;
+}
+.heart-token svg{width:100%;height:auto;display:block;filter:drop-shadow(0 3px 0 rgba(91,74,66,.2))}
+@keyframes float{0%,100%{transform:translate(-50%,-50%)}50%{transform:translate(-50%,-72%)}}
+.heart-token.gone{animation:collect .4s forwards ease-out}
+@keyframes collect{to{transform:translate(-50%,-50%) scale(1.9);opacity:0}}
+.door{
+  position:absolute;right:3%;bottom:7%;width:24%;max-width:150px;z-index:2;
+}
+.door svg{width:100%;height:auto;display:block}
+.door.glow:after{
+  content:"";position:absolute;inset:-12%;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,214,120,.75),transparent 68%);
+  animation:pulse 1.6s infinite ease-in-out;pointer-events:none;
+}
+@keyframes pulse{0%,100%{opacity:.45}50%{opacity:1}}
+.bldg-row{position:absolute;left:0;right:0;bottom:36%;top:3%;z-index:1}
+.bldg{position:absolute;bottom:0;z-index:1}
+.bldg svg{display:block;height:100%;width:100%}
+.pop-up{
+  position:absolute;left:50%;top:26%;transform:translate(-50%,0);
+  font-size:14px;font-weight:900;color:#fff;background:var(--pink-d);
+  border:2.5px solid var(--ink);border-radius:999px;padding:4px 14px;
+  box-shadow:0 4px 0 rgba(91,74,66,.2);opacity:0;pointer-events:none;z-index:12;
+  transition:opacity .2s ease;
+}
+.pop-up.show{opacity:1;animation:pop .5s ease}
+/* ---------- 場景二 ---------- */
+.mall-floor{position:absolute;inset:0;background:linear-gradient(#fff3df 0%,#ffeada 52%,#f7dfc6 100%)}
+.mall-floor:after{content:"";position:absolute;left:0;right:0;bottom:0;height:30%;
+  background:
+    repeating-linear-gradient(90deg,rgba(91,74,66,.09) 0 2px,transparent 2px 46px),
+    repeating-linear-gradient(0deg,rgba(91,74,66,.09) 0 2px,transparent 2px 46px);}
+.mall-deco{position:absolute;top:0;left:0;right:0;height:12%;opacity:.95}
+.mall-top{position:absolute;left:0;right:0;top:0;z-index:9;display:flex;flex-direction:column}
+.mall-banner{position:relative;z-index:9;margin:0;text-align:center;font-size:12.5px;font-weight:800;color:#7a6559;
+  background:#fffdf7;border-bottom:2.5px dashed rgba(91,74,66,.22);padding:6px 8px}
+
+.person{
+  position:absolute;width:19%;max-width:112px;min-width:58px;
+  transform:translate(-50%,-50%);z-index:5;touch-action:none;
+}
+.person .inner{display:block;animation:walkbob .9s infinite ease-in-out}
+@keyframes walkbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4%)}}
+.person svg{width:100%;height:auto;display:block}
+.person.found{filter:drop-shadow(0 0 6px rgba(79,191,133,.95))}
+.person.found .inner{animation:none}
+.person.shake{animation:shake .45s}
+@keyframes shake{0%,100%{margin-left:0}25%{margin-left:-6px}75%{margin-left:6px}}
+.tag-list{display:flex;gap:6px;justify-content:center;align-items:center;padding:7px 8px;
+  background:#fffdf7;border-bottom:2.5px dashed rgba(91,74,66,.22);flex-wrap:wrap}
+.tag{
+  width:44px;height:44px;flex:0 0 auto;border:2.5px dashed rgba(91,74,66,.5);border-radius:14px;
+  background:#fffdf7;display:flex;align-items:center;justify-content:center;overflow:hidden;
+}
+.tag svg{width:76%;height:76%;display:block;opacity:.28}
+.tag.done{border-style:solid;border-color:var(--green-d);background:#effaf3;animation:pop .5s ease}
+.tag.done svg{opacity:1}
+/* ---------- 場景三 ---------- */
+.rack-wrap{position:absolute;inset:0;display:flex;flex-direction:column;padding:8px 10px 6px;gap:6px}
+.rack-title{font-size:12.5px;font-weight:800;color:#8d7a71;text-align:center}
+.rack{flex:1 1 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;align-content:center;
+  background:linear-gradient(#fff6e6,#ffe9cf);border:3px solid rgba(91,74,66,.5);border-radius:18px;padding:8px 6px}
+.sweater{
+  position:relative;display:flex;align-items:center;justify-content:center;
+  border:2.5px solid transparent;border-radius:14px;padding:2px;min-height:66px;overflow:visible;
+  transition:transform .12s ease;
+}
+.sweater:active{transform:scale(.95)}
+.sweater svg{width:100%;height:auto;display:block;overflow:visible;filter:drop-shadow(0 3px 0 rgba(91,74,66,.18))}
+.sweater .size{position:absolute;bottom:1px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:800;color:#8d7a71}
+.sweater.out{opacity:.35;filter:grayscale(.85)}
+.sweater.out .mark{position:absolute;top:2px;right:4px;font-size:11px;font-weight:900;color:#fff;background:rgba(91,74,66,.7);border-radius:999px;padding:0 6px}
+.sweater.hintpick{animation:pick 1s infinite ease-in-out}
+@keyframes pick{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.trywin{
+  position:absolute;inset:0;z-index:20;display:none;align-items:center;justify-content:center;
+  background:rgba(91,74,66,.5);padding:12px;
+}
+.trywin.show{display:flex;animation:fade .18s ease}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.trycard{
+  width:100%;max-width:330px;background:var(--paper);border:3px solid var(--ink);border-radius:20px;
+  box-shadow:0 8px 0 rgba(91,74,66,.28);padding:12px;display:flex;flex-direction:column;gap:8px;align-items:center;
+}
+.trycard h4{margin:0;font-size:15px;font-weight:900}
+.tryrow{display:flex;align-items:center;gap:10px;width:100%;justify-content:center}
+.tryrow .wear{width:34%;max-width:96px}
+.tryrow .wear svg{width:100%;height:auto;display:block}
+.tryrow .piece{width:40%;max-width:110px}
+.tryrow .piece svg{width:100%;height:auto;display:block;overflow:visible}
+.verdict{font-size:13px;font-weight:800;text-align:center;line-height:1.45;color:#7a6559;
+  background:#fff4e2;border:2px dashed rgba(91,74,66,.35);border-radius:14px;padding:7px 10px;width:100%}
+.btn-sm{
+  padding:10px 16px;font-size:14px;font-weight:900;border:2.5px solid var(--ink);border-radius:16px;
+  background:linear-gradient(#ffd97a,var(--yellow));box-shadow:0 4px 0 var(--ink);
+}
+.btn-sm:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.btn-sm.ghost{background:#fff}
+/* ---------- 場景四 ---------- */
+.pin-scene{position:absolute;inset:0;background:linear-gradient(#eaf6ff 0%,#fff0da 62%,#ffe4c6 100%)}
+.pin-door{position:absolute;left:2%;bottom:36%;width:22%;max-width:130px;opacity:.9}
+.pin-door svg{width:100%;height:auto;display:block}
+.pin-child{position:absolute;left:47%;bottom:14%;width:22%;max-width:124px;transform:translateX(-50%);z-index:5}
+.pin-child svg{width:100%;height:auto;display:block}
+.pin-mom{position:absolute;right:7%;bottom:14%;width:23%;max-width:132px;z-index:4}
+.pin-mom svg{width:100%;height:auto;display:block}
+.bag{
+  position:absolute;left:7%;bottom:12%;width:20%;max-width:118px;z-index:8;touch-action:none;
+}
+.bag svg{width:100%;height:auto;display:block}
+.bag.dragmode{cursor:grab}
+.sweater-token{position:absolute;z-index:30;width:16%;max-width:96px;pointer-events:none;transform:translate(-50%,-50%);display:none}
+.sweater-token.show{display:block}
+.sweater-token svg{width:100%;height:auto;display:block;filter:drop-shadow(0 4px 0 rgba(91,74,66,.25))}
+.bubble{
+  position:absolute;top:16%;right:6%;max-width:46%;font-size:12.5px;font-weight:800;line-height:1.4;
+  background:#fff;border:2.5px solid var(--ink);border-radius:16px;padding:7px 11px;box-shadow:0 4px 0 rgba(91,74,66,.18);
+  opacity:0;transform:translateY(6px);transition:.25s ease;z-index:12;
+}
+.bubble.show{opacity:1;transform:translateY(0)}
+.bubble:after{content:"";position:absolute;left:22px;bottom:-11px;width:16px;height:16px;background:#fff;border-right:2.5px solid var(--ink);border-bottom:2.5px solid var(--ink);transform:rotate(45deg)}
+.spark{position:absolute;font-size:16px;font-weight:900;color:#fff;background:var(--yellow);border:2.5px solid var(--ink);border-radius:999px;padding:2px 10px;z-index:20;pointer-events:none;animation:rise .9s ease-out forwards}
+@keyframes rise{to{transform:translateY(-46px) scale(1.15);opacity:0}}
+.shutter{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:40}
+.shutter.flash{animation:flash .5s ease-out}
+@keyframes flash{0%{opacity:0}18%{opacity:.92}100%{opacity:0}}
+.photo{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.85);opacity:0;
+  width:min(74%,300px);background:#fff;border:3px solid var(--ink);border-radius:14px;
+  padding:8px 8px 6px;box-shadow:0 10px 0 rgba(91,74,66,.25);z-index:45;text-align:center;pointer-events:none;
+  transition:.35s cubic-bezier(.2,1.3,.5,1);
+}
+.photo.show{opacity:1;transform:translate(-50%,-50%) scale(1);pointer-events:auto}
+.photo svg{width:100%;height:auto;display:block;border-radius:8px}
+.photo p{margin:6px 0 2px;font-size:12.5px;font-weight:900;color:#7a6559}
+/* ---------- 結算 ---------- */
+.end-wrap{padding:14px 13px 22px;display:flex;flex-direction:column;gap:11px;align-items:center}
+.end-title{font-size:clamp(18px,5.6vw,24px);font-weight:900;letter-spacing:1.5px;text-align:center;color:#fff;
+  -webkit-text-stroke:2px var(--ink);text-shadow:0 3px 0 rgba(242,120,143,.85);margin:4px 0 0}
+.end-card{
+  width:100%;background:#fff;border:3px solid var(--ink);border-radius:20px;box-shadow:0 6px 0 rgba(91,74,66,.18);
+  padding:11px 12px;
+}
+.end-card h3{margin:0 0 6px;font-size:13.5px;font-weight:900;display:flex;align-items:center;gap:6px}
+.end-card h3 .dot{width:10px;height:10px;border-radius:50%;background:var(--pink-d);border:2px solid var(--ink)}
+.reward-row{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:800;color:#7a6559;flex-wrap:wrap}
+.badge{
+  font-size:11.5px;font-weight:900;background:#fff2d6;border:2px solid var(--ink);border-radius:999px;padding:2px 9px;
+}
+.badge.off{background:#f2ece4;color:#a99c90;border-color:#c9bbae;text-decoration:line-through}
+.text-body{font-size:14px;line-height:1.72;font-weight:700;color:#5f4d45}
+.text-body .ln{
+  display:flex;gap:7px;padding:5px 6px;border-radius:12px;border:2px solid transparent;cursor:pointer;
+  transition:background .18s ease;
+}
+.text-body .ln .no{
+  flex:0 0 auto;width:20px;height:20px;border-radius:50%;background:#ffe9c9;border:2px solid var(--ink);
+  font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;margin-top:2px;
+}
+.text-body .ln.reading{background:#fff3d9;border-color:var(--yellow)}
+.text-body .ln.reading .no{background:var(--yellow)}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;width:100%}
+.btn-mini{
+  padding:9px 13px;font-size:12.5px;font-weight:900;border:2.5px solid var(--ink);border-radius:14px;background:#fff;
+  box-shadow:0 3px 0 rgba(91,74,66,.3);
+}
+.btn-mini.on{background:linear-gradient(#ffd97a,var(--yellow))}
+.btn-mini:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(91,74,66,.3)}
+.btn-mini.wide{width:100%;background:linear-gradient(#cfeeff,#8ecdf2);font-size:14px;padding:11px}
+.note{font-size:11.5px;font-weight:700;color:#95806f;line-height:1.5;text-align:center}
+/* ---------- 幕簾轉場 ---------- */
+.curtain{position:absolute;inset:0;z-index:60;pointer-events:none;display:flex;opacity:0}
+.curtain.go{animation:curtainGo .7s ease-in-out}
+.curtain span{flex:1 1 50%;background:linear-gradient(#ffd7e2,#ff9db1);border:0}
+@keyframes curtainGo{
+  0%{opacity:0;transform:scaleX(0)}
+  22%{opacity:1;transform:scaleX(1)}
+  55%{opacity:1;transform:scaleX(1)}
+  100%{opacity:0;transform:scaleX(0)}
+}
+/* ---------- 桌面側欄 ---------- */
+.side{display:none}
+@media (min-width:900px) and (min-height:560px){
+  .app{grid-template-columns:minmax(0,520px) minmax(0,420px);justify-content:center;gap:26px;padding-top:24px}
+  .side{display:flex;flex-direction:column;gap:14px;align-self:start}
+  .side-card{background:var(--paper);border:3px solid var(--ink);border-radius:22px;box-shadow:0 8px 0 rgba(91,74,66,.16);padding:16px 18px}
+  .side-card h2{margin:0 0 8px;font-size:17px;font-weight:900;letter-spacing:1px}
+  .side-card p,.side-card li{font-size:13.5px;line-height:1.75;font-weight:700;color:#6d5b52;margin:0}
+  .side-card ol{margin:8px 0 0;padding-left:20px}
+  .side-card li{margin-bottom:4px}
+  .side-tag{display:inline-block;font-size:11.5px;font-weight:900;background:#ffe9c9;border:2px solid var(--ink);border-radius:999px;padding:2px 10px;margin-bottom:8px}
+}
+@media (max-width:899px){
+  .game-col{max-width:none;height:calc(100dvh - 20px);border-radius:20px}
+}
+@media (max-height:470px){
+  .hud{padding:5px 8px}
+  .icon-btn{width:34px;height:34px}
+  .goalbar{font-size:11.5px;padding:4px 10px}
+  .hintbar{font-size:11.5px;min-height:36px;padding:5px 10px 6px}
+  .rack{grid-template-columns:repeat(5,1fr)}
+}
+</style>
+</head>
+<body>
+<main class="app" data-generated-by="vibe-coding-frontend-design" id="app">
+  <div class="game-col" id="game-col">
+    <header class="hud">
+      <button class="icon-btn" id="btn-home" aria-label="回到首頁">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5" fill="none" stroke="#5b4a42" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 11v8h12v-8" fill="#ffd166" stroke="#5b4a42" stroke-width="2.2" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="hud-mid"><span class="hud-scene" id="hud-scene">首頁</span></div>
+      <div class="hud-right">
+        <div class="hearts" id="hearts" role="img" aria-label="已經得到的愛心"></div>
+        <button class="icon-btn" id="btn-sound" aria-label="音效開關" aria-pressed="true">
+          <svg viewBox="0 0 24 24" aria-hidden="true" id="sound-icon"></svg>
+        </button>
+      </div>
+    </header>
+    <div class="goalbar">
+      <span class="goal-text" id="goal-text">把課文變成遊戲，一起逛商場吧！</span>
+      <span class="goal-progress" id="goal-progress">準備中</span>
+    </div>
+
+    <section class="stage" id="stage">
+      <!-- ========== 首頁 ========== -->
+      <div class="scene active" id="scene-home">
+        <div class="sky"></div>
+        <div class="cloud" style="width:26%;height:9%;top:8%;left:6%"></div>
+        <div class="cloud" style="width:18%;height:7%;top:16%;left:62%"></div>
+        <div class="home-wrap">
+          <h1 class="home-title">我和媽媽<br>逛商場</h1>
+          <span class="home-sub">課文情景遊戲 · 第四課</span>
+          <div class="home-art" id="home-art"></div>
+          <button class="btn-main" id="btn-start">開始故事</button>
+          <div class="chapter-grid" id="chapter-grid"></div>
+          <p class="home-note">玩法：用手指拖著小主角走，或點一下路上想去的地方。<br>第一次點畫面才會開啟音效（瀏覽器的規定）。</p>
+        </div>
+      </div>
+
+      <!-- ========== 第一幕 ========== -->
+      <div class="scene" id="scene-s1">
+        <div class="sky"></div>
+        <div class="bldg-row" id="bldg-row"></div>
+        <div class="ground"></div>
+        <div class="door glow" id="s1-door"></div>
+        <div id="s1-hearts"></div>
+        <div class="walker" id="walker" role="application" aria-label="小主角和媽媽，可以拖著走"></div>
+        <div class="pop-up" id="s1-pop"></div>
+      </div>
+
+      <!-- ========== 第二幕 ========== -->
+      <div class="scene" id="scene-s2">
+        <div class="mall-floor"></div>
+        <div class="mall-deco" id="mall-deco"></div>
+        <div class="mall-top">
+          <p class="mall-banner">商場裏面的人真多呀！</p>
+          <div class="tag-list" id="tag-list"></div>
+        </div>
+        <div id="people-layer"></div>
+        <div class="pop-up" id="s2-pop"></div>
+      </div>
+
+      <!-- ========== 第三幕 ========== -->
+      <div class="scene" id="scene-s3">
+        <div class="rack-wrap">
+          <p class="rack-title" id="rack-title">毛衣架 · 點一件看看媽媽怎麼說</p>
+          <div class="rack" id="rack"></div>
+        </div>
+        <div class="trywin" id="trywin"></div>
+        <div class="pop-up" id="s3-pop"></div>
+      </div>
+
+      <!-- ========== 第四幕 ========== -->
+      <div class="scene" id="scene-s4">
+        <div class="pin-scene"></div>
+        <div class="pin-door" id="pin-door"></div>
+        <div class="pin-mom" id="pin-mom"></div>
+        <div class="pin-child" id="pin-child"></div>
+        <div class="bag" id="bag"></div>
+        <div class="sweater-token" id="sweater-token"></div>
+        <div class="bubble" id="bubble">真好看！這件毛衣很適合你。</div>
+        <div class="shutter" id="shutter"></div>
+        <div class="photo" id="photo"></div>
+        <button class="btn-sm" id="btn-photo" style="position:absolute;left:50%;bottom:4%;transform:translateX(-50%);z-index:30;display:none">拍一張合照</button>
+        <button class="btn-sm" id="btn-to-end" style="position:absolute;left:50%;bottom:4%;transform:translateX(-50%);z-index:31;display:none">去看看今天的收穫</button>
+        <div class="pop-up" id="s4-pop"></div>
+      </div>
+
+      <!-- ========== 結算 ========== -->
+      <div class="scene scroll" id="scene-end">
+        <div class="end-wrap">
+          <h2 class="end-title">逛商場，逛得很開心！</h2>
+          <div class="end-card">
+            <h3><span class="dot"></span>今天的收穫</h3>
+            <div class="reward-row" id="end-rewards"></div>
+          </div>
+          <div class="end-card">
+            <h3><span class="dot"></span>課文・我和媽媽逛商場｜普通話朗讀</h3>
+            <div class="text-body" id="text-body"></div>
+            <div class="btn-row" id="read-controls" style="margin-top:8px">
+              <button class="btn-mini wide" id="btn-read-all">▶ 播放全文朗讀</button>
+              <button class="btn-mini" id="btn-read-again" style="display:none">繼續朗讀</button>
+              <button class="btn-mini" id="btn-read-stop" style="display:none">停止</button>
+              <button class="btn-mini" id="btn-rate" aria-pressed="false">速度：正常</button>
+            </div>
+            <p class="note" id="read-note">點句子可以單獨再聽一次。</p>
+          </div>
+          <div class="end-card">
+            <h3><span class="dot"></span>再讀一次課文重點</h3>
+            <p style="margin:0;font-size:13px;line-height:1.7;font-weight:700;color:#6d5b52">
+              星期天中午，我和媽媽一起逛商場。商場裏面人真多：有的人在買衣服，有的人在看鞋子，還有的人在挑玩具。最後我們買了一件綠色的毛衣，逛得很開心。
+            </p>
+          </div>
+          <div class="btn-row">
+            <button class="btn-sm" id="btn-replay">再玩一次</button>
+            <button class="btn-sm ghost" id="btn-back-home">回到首頁</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="curtain" id="curtain"><span></span><span></span></div>
+    </section>
+
+    <footer class="hintbar"><span id="hint-text" aria-live="polite">按「開始故事」，我們一起去逛商場。</span></footer>
+  </div>
+
+  <aside class="side">
+    <div class="side-card">
+      <span class="side-tag">課文・第四課</span>
+      <h2>我和媽媽逛商場</h2>
+      <p>星期天中午，我和媽媽一起逛商場。商場裏面的人真多呀！有的人在買衣服，有的人在看鞋子，還有的人在挑玩具。</p>
+      <p style="margin-top:8px">媽媽想給我買一件毛衣。媽媽認真地看，仔細地挑。毛衣有的太大，有的太小，有的顏色太深，有的顏色太淺。最後，我們買了一件綠色的毛衣。我們逛商場逛得很開心。</p>
+    </div>
+    <div class="side-card">
+      <h2>四幕玩法</h2>
+      <ol>
+        <li><b>出發逛商場</b>：拖著小主角走到商場，路上撿 3 顆心心。</li>
+        <li><b>熱鬧的商場</b>：點出正在買衣服、看鞋子、挑玩具的人。</li>
+        <li><b>仔細挑毛衣</b>：點毛衣聽媽媽的評語，把不合適的放回架上。</li>
+        <li><b>穿上新毛衣</b>：把綠色毛衣拖到小主角身上，再合照一張。</li>
+      </ol>
+      <p style="margin-top:8px">操作：手機直接拖曳與點按；桌面用滑鼠，也可以按 ← → 或 A、D 走路。</p>
+    </div>
+  </aside>
+</main>
+
+<script>
+/* =========================================================
+   1 · 資料與常數（課文、幕次、毛衣、人物）
+   ========================================================= */
+var TEXT_LINES = [
+  '星期天中午，我和媽媽一起逛商場。',
+  '商場裏面的人真多呀！有的人在買衣服，有的人在看鞋子，還有的人在挑玩具。',
+  '媽媽想給我買一件毛衣。',
+  '媽媽認真地看，仔細地挑。毛衣有的太大，有的太小，有的顏色太深，有的顏色太淺。',
+  '最後，我們買了一件綠色的毛衣。我們逛商場逛得很開心。'
+];
+
+var SCENE_META = {
+  home:{name:'首頁', goal:'把課文變成遊戲，一起逛商場吧！', progress:'準備中',
+        hint:'按「開始故事」，我們一起去逛商場。'},
+  s1:{name:'第一幕・出發', goal:'牽著媽媽的手走到商場，路上撿 3 顆心心', progress:'心心 0/3',
+      hint:'用手指拖著小主角走，或點一下馬路上的位置，他自己走過去。'},
+  s2:{name:'第二幕・商場', goal:'找出正在買衣服、看鞋子、挑玩具的人', progress:'找到 0/3',
+      hint:'點一下你覺得正在買衣服／看鞋子／挑玩具的人。'},
+  s3:{name:'第三幕・挑毛衣', goal:'把不合適的毛衣放回架上，再挑出最合適的一件', progress:'0/5',
+      hint:'點一件毛衣，聽聽媽媽怎麼說，再把不合適的放回架上。'},
+  s4:{name:'第四幕・穿毛衣', goal:'把綠色毛衣穿上，再和媽媽拍一張合照', progress:'0/2',
+      hint:'把購物袋裡的綠色毛衣拖到小主角身上。'},
+  end:{name:'結算・開心回家', goal:'聽一遍課文的普通話朗讀，也可以點句子單獨聽', progress:'完成',
+       hint:'可以點句子單獨再聽，也可以切換朗讀速度。'}
+};
+
+var PEOPLE_DEF = [
+  {id:'clothes', item:'clothes', label:'買衣服', correct:true,  lane:0, x:16, dir:1,  speed:4.6},
+  {id:'shoes',   item:'shoes',   label:'看鞋子', correct:true,  lane:1, x:64, dir:-1, speed:4.1},
+  {id:'toys',    item:'toys',    label:'挑玩具', correct:true,  lane:2, x:34, dir:1,  speed:3.8},
+  {id:'drink',   item:'drink',   label:'喝飲料', correct:false, lane:0, x:58, dir:-1, speed:5.2},
+  {id:'phone',   item:'phone',   label:'看手機', correct:false, lane:1, x:24, dir:1,  speed:4.9},
+  {id:'book',    item:'book',    label:'看書',   correct:false, lane:2, x:74, dir:-1, speed:4.4}
+];
+var LANES = [58, 72, 86];   /* 三條走道，百分比（畫面高度） */
+
+var SWEATERS = [
+  {id:'dark',  color:'#8a5fa8', dark:true,  scale:1.00, size:'L',  verdict:'這件顏色太深了，看起來暗暗的。', short:'顏色太深'},
+  {id:'big',   color:'#ef7b7b', dark:false, scale:1.26, size:'XL', verdict:'這件太大了，穿起來鬆鬆垮垮的。', short:'太大'},
+  {id:'green', color:'#5fc48c', dark:false, scale:1.00, size:'M',  verdict:'剛剛好！顏色也很漂亮。', short:'剛剛好', good:true},
+  {id:'small', color:'#7fb6e6', dark:false, scale:0.66, size:'S',  verdict:'這件太小了，根本穿不下。', short:'太小'},
+  {id:'light', color:'#f7e6c4', dark:false, scale:1.02, size:'M',  verdict:'這件顏色太淺了，看起來淡淡的。', short:'顏色太淺'}
+];
+
+var HEART_POS = [24, 48, 68];
+
+/* =========================================================
+   2 · 狀態模型
+   ========================================================= */
+var state = {
+  scene:'home',
+  soundOn:true,
+  hearts:0,
+  badge:true,
+  s1:{x:10, targetX:10, dragging:false, lane:null, taken:[false,false,false], done:false, atDoor:false, popAt:0},
+  s2:{found:{}, done:false, wrong:0},
+  s3:{out:{}, chosen:null, done:false, opened:null},
+  s4:{wearing:false, photo:false, done:false},
+  read:{idx:-1, playing:false, rate:1}
+};
+var people = [];
+var loopId = null, lastTs = 0, chatterTimer = null;
+
+/* =========================================================
+   3 · 音效（Web Audio 即時合成，無任何外部音檔）
+   ========================================================= */
+var Sfx = {
+  ctx:null, master:null, amb:null, ambGain:null, noiseBuf:null, on:true,
+  ensure:function(){
+    if(this.ctx) return this.ctx;
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if(!AC) return null;
+    try{ this.ctx = new AC(); }catch(e){ return null; }
+    this.master = this.ctx.createGain();
+    this.master.gain.value = this.on ? 0.85 : 0;
+    this.master.connect(this.ctx.destination);
+    /* 噪音緩衝：環境音與布料聲共用 */
+    var len = Math.floor(this.ctx.sampleRate * 1.6);
+    var buf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
+    var data = buf.getChannelData(0);
+    for(var i=0;i<len;i++){ data[i] = (Math.random()*2-1) * (1 - i/len*0.15); }
+    this.noiseBuf = buf;
+    return this.ctx;
+  },
+  unlock:function(){
+    var ctx = this.ensure();
+    if(!ctx) return;
+    if(ctx.state === 'suspended') ctx.resume();
+  },
+  setOn:function(flag){
+    this.on = flag;
+    if(!this.ctx) return;
+    var t = this.ctx.currentTime;
+    this.master.gain.cancelScheduledValues(t);
+    this.master.gain.linearRampToValueAtTime(flag?0.85:0, t+0.08);
+    if(!flag){ this.stopAmbience(); }
+  },
+  tone:function(opt){
+    var ctx = this.ensure();
+    if(!ctx || !this.on) return;
+    var t0 = ctx.currentTime + (opt.delay||0);
+    var osc = ctx.createOscillator();
+    var g = ctx.createGain();
+    osc.type = opt.type || 'sine';
+    osc.frequency.setValueAtTime(opt.f0, t0);
+    if(opt.f1){ osc.frequency.exponentialRampToValueAtTime(Math.max(40,opt.f1), t0 + (opt.dur||0.18)); }
+    var peak = opt.gain==null ? 0.22 : opt.gain;
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(peak, t0 + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + (opt.dur||0.18));
+    osc.connect(g); g.connect(this.master);
+    osc.start(t0); osc.stop(t0 + (opt.dur||0.18) + 0.05);
+  },
+  noise:function(opt){
+    var ctx = this.ensure();
+    if(!ctx || !this.on || !this.noiseBuf) return;
+    var t0 = ctx.currentTime + (opt.delay||0);
+    var src = ctx.createBufferSource(); src.buffer = this.noiseBuf;
+    var f = ctx.createBiquadFilter();
+    f.type = opt.filter || 'bandpass';
+    f.frequency.value = opt.freq || 1200;
+    f.Q.value = opt.q==null?1.1:opt.q;
+    var g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(opt.gain==null?0.16:opt.gain, t0+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0+(opt.dur||0.25));
+    src.connect(f); f.connect(g); g.connect(this.master);
+    src.start(t0); src.stop(t0+(opt.dur||0.25)+0.05);
+  },
+  tap:function(){ this.tone({f0:760, f1:980, dur:0.09, type:'triangle', gain:0.16}); },
+  step:function(){ this.noise({freq:320, q:0.8, dur:0.09, gain:0.07, filter:'lowpass'}); },
+  heart:function(){ this.tone({f0:784, dur:0.1, type:'triangle', gain:0.2});
+                    this.tone({f0:1046, dur:0.12, type:'triangle', gain:0.18, delay:0.09});
+                    this.tone({f0:1318, dur:0.16, type:'triangle', gain:0.15, delay:0.18}); },
+  right:function(item){
+    if(item === 'clothes'){ this.noise({freq:2200, q:0.9, dur:0.3, gain:0.13}); this.tone({f0:880, f1:1320, dur:0.2, type:'sine', gain:0.18, delay:0.05}); }
+    else if(item === 'shoes'){ this.tone({f0:220, f1:150, dur:0.11, type:'square', gain:0.1});
+                               this.tone({f0:660, f1:990, dur:0.18, type:'sine', gain:0.17, delay:0.08}); }
+    else { this.tone({f0:1174, dur:0.1, type:'triangle', gain:0.18});
+           this.tone({f0:1568, dur:0.18, type:'triangle', gain:0.15, delay:0.08}); }
+  },
+  wrongSoft:function(){ this.tone({f0:420, f1:300, dur:0.22, type:'sine', gain:0.14}); },
+  fabric:function(){ this.noise({freq:2600, q:0.7, dur:0.22, gain:0.12}); },
+  putBack:function(){ this.tone({f0:300, f1:210, dur:0.16, type:'sine', gain:0.16}); },
+  chosen:function(){ [659,784,988,1318].forEach(function(f,i){ Sfx.tone({f0:f, dur:0.22, type:'triangle', gain:0.16, delay:i*0.09}); }); },
+  wear:function(){ this.noise({freq:1800, q:0.8, dur:0.28, gain:0.12}); this.tone({f0:523, f1:784, dur:0.3, type:'triangle', gain:0.16, delay:0.06}); },
+  star:function(){ [880,1109,1318,1760].forEach(function(f,i){ Sfx.tone({f0:f, dur:0.16, type:'sine', gain:0.14, delay:i*0.07}); }); },
+  shutter:function(){ this.noise({freq:3400, q:1.4, dur:0.06, gain:0.2, filter:'highpass'}); this.tone({f0:180, f1:90, dur:0.09, type:'square', gain:0.12}); },
+  cheer:function(){ [523,659,784,1046].forEach(function(f,i){ Sfx.tone({f0:f, dur:0.4, type:'triangle', gain:0.13, delay:i*0.12}); }); },
+  curtain:function(){ this.noise({freq:420, q:0.6, dur:0.5, gain:0.1, filter:'lowpass'}); },
+  ambience:function(mode){
+    var ctx = this.ensure();
+    if(!ctx || !this.on || !this.noiseBuf) return;
+    this.stopAmbience();
+    var src = ctx.createBufferSource(); src.buffer = this.noiseBuf; src.loop = true;
+    var f = ctx.createBiquadFilter();
+    var g = ctx.createGain();
+    var lfo = null, lfoGain = null;
+    if(mode === 'street'){ f.type='bandpass'; f.frequency.value=520; f.Q.value=0.6; g.gain.value=0.05; }
+    else if(mode === 'mall'){ f.type='bandpass'; f.frequency.value=980; f.Q.value=0.8; g.gain.value=0.05;
+      lfo = ctx.createOscillator(); lfo.frequency.value=0.16; lfoGain = ctx.createGain(); lfoGain.gain.value=260;
+      lfo.connect(lfoGain); lfoGain.connect(f.frequency); lfo.start(); }
+    else { f.type='lowpass'; f.frequency.value=420; g.gain.value=0.04; }
+    src.connect(f); f.connect(g); g.connect(this.master);
+    src.start();
+    this.amb = {src:src, lfo:lfo};
+    this.ambGain = g;
+    if(mode === 'mall'){
+      chatterTimer = setInterval(function(){
+        if(!Sfx.on) return;
+        Sfx.tone({f0:300+Math.random()*260, f1:250+Math.random()*200, dur:0.16, type:'triangle', gain:0.05});
+      }, 1400);
+    }
+  },
+  stopAmbience:function(){
+    if(this.amb){
+      try{ this.amb.src.stop(); }catch(e){}
+      if(this.amb.lfo){ try{ this.amb.lfo.stop(); }catch(e){} }
+      this.amb = null;
+    }
+    if(chatterTimer){ clearInterval(chatterTimer); chatterTimer = null; }
+  }
+};
+
+/* =========================================================
+   4 · 語音朗讀（結尾全文普通話朗讀）
+   ========================================================= */
+var Speech = {
+  supported: !!(window.speechSynthesis && window.SpeechSynthesisUtterance),
+  voice:null,
+  token:0,
+  init:function(){
+    if(!this.supported) return;
+    var pick = function(){
+      var vs = [];
+      try{ vs = window.speechSynthesis.getVoices() || []; }catch(e){ vs = []; }
+      if(!vs.length) return;
+      var zh = vs.filter(function(v){ return /^zh/i.test(v.lang || ''); });
+      var cn = zh.filter(function(v){ return /zh[-_]?(cn|CN|Hans|hans)/.test(v.lang || '') || /普通話|普通话|Chinese \(China|Mainland/i.test(v.name||''); });
+      Speech.voice = cn[0] || zh[0] || null;
+    };
+    pick();
+    try{ window.speechSynthesis.onvoiceschanged = pick; }catch(e){}
+  },
+  speak:function(text, rate, onEnd, onFail){
+    if(!this.supported){ if(onFail) onFail(); return null; }
+    this.token++;
+    var my = this.token;
+    var u = new window.SpeechSynthesisUtterance(text);
+    u.lang = this.voice ? this.voice.lang : 'zh-CN';
+    if(this.voice) u.voice = this.voice;
+    u.rate = rate; u.pitch = 1.06;
+    u.onend = function(){ if(my !== Speech.token) return; if(onEnd) onEnd(); };
+    u.onerror = function(){
+      if(my !== Speech.token) return;               /* 被取消／中斷，不算失敗 */
+      var ec = u.error || '';
+      if(ec === 'interrupted' || ec === 'canceled') return;
+      if(onFail) onFail();
+    };
+    try{ window.speechSynthesis.speak(u); }catch(e){ if(my === Speech.token && onFail) onFail(); return null; }
+    return u;
+  },
+  cancel:function(){ this.token++; try{ window.speechSynthesis.cancel(); }catch(e){} },
+  hasVoice:function(){ return this.supported && !!this.voice; }
+};
+
+/* =========================================================
+   5 · 插畫（內嵌 SVG，全部 Q 版手繪風）
+   ========================================================= */
+function childSVG(opt){
+  opt = opt || {};
+  var sweater = opt.sweater || null;             /* {color, scale} */
+  var shirt = sweater ? sweater.color : '#8ecdf2';
+  var bodyW = sweater ? (30 * (sweater.scale||1)) : 26;
+  var bx = 32 - bodyW/2;
+  var hairColor = '#5b3d2e';
+  var s = '';
+  s += '<svg viewBox="0 0 64 96" role="img" aria-label="小主角">';
+  /* 腿 */
+  s += '<rect x="24" y="66" width="6" height="12" rx="3" fill="#f8d5b8" stroke="#5b4a42" stroke-width="2.4"/>';
+  s += '<rect x="34" y="66" width="6" height="12" rx="3" fill="#f8d5b8" stroke="#5b4a42" stroke-width="2.4"/>';
+  /* 鞋 */
+  s += '<rect x="20" y="77" width="11" height="8" rx="4" fill="#c98a63" stroke="#5b4a42" stroke-width="2.2"/>';
+  s += '<rect x="33" y="77" width="11" height="8" rx="4" fill="#c98a63" stroke="#5b4a42" stroke-width="2.2"/>';
+  /* 上衣／毛衣 */
+  s += '<rect x="'+bx+'" y="42" width="'+bodyW+'" height="27" rx="10" fill="'+shirt+'" stroke="#5b4a42" stroke-width="2.6"/>';
+  if(sweater){
+    s += '<rect x="'+bx+'" y="42" width="'+bodyW+'" height="27" rx="10" fill="none" stroke="rgba(91,74,66,.35)" stroke-width="1.6" stroke-dasharray="4 3"/>';
+    s += '<rect x="'+bx+'" y="64" width="'+bodyW+'" height="5" rx="2.5" fill="rgba(255,255,255,.5)"/>';
+  }
+  /* 手臂 */
+  s += '<rect x="'+(bx-9)+'" y="45" width="9" height="19" rx="4.5" fill="'+shirt+'" stroke="#5b4a42" stroke-width="2.4"/>';
+  s += '<rect x="'+(bx+bodyW)+'" y="45" width="9" height="19" rx="4.5" fill="'+shirt+'" stroke="#5b4a42" stroke-width="2.4"/>';
+  s += '<circle cx="'+(bx-4.5)+'" cy="66" r="4.4" fill="#f8d5b8" stroke="#5b4a42" stroke-width="2.2"/>';
+  s += '<circle cx="'+(bx+bodyW+4.5)+'" cy="66" r="4.4" fill="#f8d5b8" stroke="#5b4a42" stroke-width="2.2"/>';
+  /* 頭 */
+  s += '<circle cx="32" cy="26" r="17" fill="#f8d5b8" stroke="#5b4a42" stroke-width="2.6"/>';
+  s += '<path d="M15 25c0-10 7.6-17 17-17s17 7 17 17c-4.6-5.4-9.4-7-17-7s-12.4 1.8-17 7z" fill="'+hairColor+'" stroke="#5b4a42" stroke-width="2.4"/>';
+  s += '<circle cx="26" cy="28" r="2.5" fill="#3f3128"/><circle cx="38" cy="28" r="2.5" fill="#3f3128"/>';
+  s += '<circle cx="21.5" cy="33" r="3.4" fill="#ffb3bf" opacity=".8"/><circle cx="42.5" cy="33" r="3.4" fill="#ffb3bf" opacity=".8"/>';
+  s += '<path d="M28 34.5q4 3.6 8 0" fill="none" stroke="#3f3128" stroke-width="2.2" stroke-linecap="round"/>';
+  s += '</svg>';
+  return s;
+}
+function momSVG(opt){
+  opt = opt || {};
+  var dress = opt.dress || '#ff9db1';
+  var s = '';
+  s += '<svg viewBox="0 0 72 110" role="img" aria-label="媽媽">';
+  s += '<rect x="27" y="76" width="7" height="14" rx="3.5" fill="#f8d5b8" stroke="#5b4a42" stroke-width="2.4"/>';
+  s += '<rect x="38" y="76" width="7" height="14" rx="3.5" fill="#f8d5b8" stroke="#5b4a42" stroke-width="2.4"/>';
+  s += '<rect x="22" y="89" width="13" height="9" rx="4.5" fill="#a96fd6" stroke="#5b4a42" stroke-width="2.2"/>';
+  s += '<rect x="37" y="89" width="13" height="9" rx="4.5" fill="#a96fd6" stroke="#5b4a42" stroke-width="2.2"/>';
+  s += '<path d="M36 46c-9 0-16 10-18 34h36c-2-24-9-34-18-34z" fill="'+dress+'" stroke="#5b4a42" stroke-width="2.6"/>';
+  s += '<rect x="20" y="50" width="10" height="21" rx="5" fill="'+dress+'" stroke="#5b4a42" stroke-width="2.4"/>';
+  s += '<rect x="42" y="50" width="10" height="21" rx="5" fill="'+dress+'" stroke="#5b4a42" stroke-width="2.4"/>';
+  s += '<circle cx="25" cy="72" r="5" fill="#f8d5b8" stroke="#5b4a42" stroke-width="2.2"/>';
+  s += '<circle cx="47" cy="72" r="5" fill="#f8d5b8" stroke="#5b4a42" stroke-width="2.2"/>';
+  s += '<circle cx="36" cy="28" r="17" fill="#f8d5b8" stroke="#5b4a42" stroke-width="2.6"/>';
+  s += '<path d="M19 30c-2-14 6-21 17-21s19 7 17 21c-1-8-4-11-6-13-5 4-20 6-24 2-2 3-3 6-4 11z" fill="#4a3728" stroke="#5b4a42" stroke-width="2.4"/>';
+  s += '<path d="M19 28c-4 12-4 22-2 30 3-2 4-8 4-14z" fill="#4a3728" stroke="#5b4a42" stroke-width="2.2"/>';
+  s += '<path d="M53 28c4 12 4 22 2 30-3-2-4-8-4-14z" fill="#4a3728" stroke="#5b4a42" stroke-width="2.2"/>';
+  s += '<circle cx="30" cy="30" r="2.6" fill="#3f3128"/><circle cx="42" cy="30" r="2.6" fill="#3f3128"/>';
+  s += '<circle cx="25.5" cy="35" r="3.6" fill="#ffb3bf" opacity=".8"/><circle cx="46.5" cy="35" r="3.6" fill="#ffb3bf" opacity=".8"/>';
+  s += '<path d="M31.5 36.5q4.5 4 9 0" fill="none" stroke="#3f3128" stroke-width="2.2" stroke-linecap="round"/>';
+  s += '</svg>';
+  return s;
+}
+function sweaterSVG(color, scale){
+  scale = scale || 1;
+  var s = '';
+  s += '<svg viewBox="0 0 120 100" role="img" aria-label="毛衣">';
+  s += '<g transform="translate(60 50) scale('+scale+') translate(-60 -50)">';
+  s += '<rect x="26" y="22" width="68" height="62" rx="14" fill="'+color+'" stroke="#5b4a42" stroke-width="3"/>';
+  s += '<rect x="8" y="26" width="20" height="42" rx="10" fill="'+color+'" stroke="#5b4a42" stroke-width="3"/>';
+  s += '<rect x="92" y="26" width="20" height="42" rx="10" fill="'+color+'" stroke="#5b4a42" stroke-width="3"/>';
+  s += '<path d="M46 22q14 12 28 0" fill="none" stroke="#5b4a42" stroke-width="3"/>';
+  s += '<rect x="26" y="72" width="68" height="10" rx="5" fill="rgba(255,255,255,.42)"/>';
+  s += '<path d="M40 40v34M52 40v34M68 40v34M80 40v34" stroke="rgba(91,74,66,.28)" stroke-width="2"/>';
+  s += '</g>';
+  s += '<text x="60" y="96" text-anchor="middle" font-size="13" font-weight="700" fill="#5b4a42" opacity=".0">毛衣</text>';
+  s += '</svg>';
+  return s;
+}
+function itemSVG(kind){
+  var s = '';
+  if(kind === 'clothes'){
+    s = '<svg viewBox="0 0 60 60" role="img" aria-label="衣服"><rect x="14" y="18" width="32" height="30" rx="7" fill="#8ecdf2" stroke="#5b4a42" stroke-width="3"/><rect x="4" y="20" width="10" height="20" rx="5" fill="#8ecdf2" stroke="#5b4a42" stroke-width="3"/><rect x="46" y="20" width="10" height="20" rx="5" fill="#8ecdf2" stroke="#5b4a42" stroke-width="3"/><path d="M24 18q6 6 12 0" fill="none" stroke="#5b4a42" stroke-width="3"/></svg>';
+  } else if(kind === 'shoes'){
+    s = '<svg viewBox="0 0 60 60" role="img" aria-label="鞋子"><path d="M8 38c0-10 4-16 10-16 4 0 6 3 10 6 3 2 8 3 14 5 5 2 8 4 8 8H8z" fill="#ff9db1" stroke="#5b4a42" stroke-width="3"/><rect x="8" y="38" width="42" height="7" rx="3.5" fill="#ffe9c9" stroke="#5b4a42" stroke-width="3"/><path d="M20 24l6 6M26 22l6 7" stroke="#5b4a42" stroke-width="2.4"/></svg>';
+  } else if(kind === 'toys'){
+    s = '<svg viewBox="0 0 60 60" role="img" aria-label="玩具"><circle cx="22" cy="22" r="9" fill="#ffd166" stroke="#5b4a42" stroke-width="3"/><circle cx="38" cy="22" r="9" fill="#ffd166" stroke="#5b4a42" stroke-width="3"/><circle cx="30" cy="32" r="10" fill="#ffd166" stroke="#5b4a42" stroke-width="3"/><circle cx="26" cy="31" r="2" fill="#3f3128"/><circle cx="34" cy="31" r="2" fill="#3f3128"/><path d="M27 36q3 2.6 6 0" fill="none" stroke="#3f3128" stroke-width="2"/><path d="M22 22q8-6 16 0" fill="none" stroke="#5b4a42" stroke-width="2.4"/></svg>';
+  } else if(kind === 'drink'){
+    s = '<svg viewBox="0 0 60 60" role="img" aria-label="飲料"><path d="M18 16h24l-4 30H22z" fill="#7ed6a5" stroke="#5b4a42" stroke-width="3"/><rect x="16" y="12" width="28" height="6" rx="3" fill="#fff" stroke="#5b4a42" stroke-width="3"/><path d="M40 14l8-8" stroke="#5b4a42" stroke-width="3" stroke-linecap="round"/></svg>';
+  } else if(kind === 'phone'){
+    s = '<svg viewBox="0 0 60 60" role="img" aria-label="手機"><rect x="18" y="8" width="24" height="40" rx="6" fill="#c9cfd6" stroke="#5b4a42" stroke-width="3"/><rect x="22" y="14" width="16" height="24" rx="3" fill="#8ecdf2" stroke="#5b4a42" stroke-width="2"/><circle cx="30" cy="43" r="2.4" fill="#5b4a42"/></svg>';
+  } else {
+    s = '<svg viewBox="0 0 60 60" role="img" aria-label="書"><path d="M12 16h16c2 0 2 2 2 2v26c-4-2-8-2-18-1z" fill="#c3a6e8" stroke="#5b4a42" stroke-width="3"/><path d="M48 16H32c-2 0-2 2-2 2v26c4-2 8-2 18-1z" fill="#dfd0f5" stroke="#5b4a42" stroke-width="3"/></svg>';
+  }
+  return s;
+}
+function heartSVG(color){
+  return '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="fill" d="M12 21s-8-5.2-8-11.2A4.8 4.8 0 0 1 12 6.6a4.8 4.8 0 0 1 8 3.2C20 15.8 12 21 12 21z" fill="'+(color||'#f2e5da')+'" stroke="#5b4a42" stroke-width="2.2" stroke-linejoin="round"/></svg>';
+}
+function mallBuildingSVG(){
+  return '<svg viewBox="0 0 120 130" role="img" aria-label="商場大樓">'
+    + '<rect x="8" y="22" width="104" height="104" rx="10" fill="#ffe9c9" stroke="#5b4a42" stroke-width="3"/>'
+    + '<rect x="8" y="22" width="104" height="20" rx="8" fill="#ff9db1" stroke="#5b4a42" stroke-width="3"/>'
+    + '<text x="60" y="37" text-anchor="middle" font-size="13" font-weight="800" fill="#fff" stroke="#5b4a42" stroke-width="0.6">商場</text>'
+    + '<rect x="18" y="50" width="26" height="20" rx="4" fill="#bfe6ff" stroke="#5b4a42" stroke-width="2.4"/>'
+    + '<rect x="76" y="50" width="26" height="20" rx="4" fill="#bfe6ff" stroke="#5b4a42" stroke-width="2.4"/>'
+    + '<rect x="18" y="78" width="26" height="20" rx="4" fill="#bfe6ff" stroke="#5b4a42" stroke-width="2.4"/>'
+    + '<rect x="76" y="78" width="26" height="20" rx="4" fill="#bfe6ff" stroke="#5b4a42" stroke-width="2.4"/>'
+    + '<rect x="48" y="76" width="24" height="50" rx="6" fill="#ffd166" stroke="#5b4a42" stroke-width="2.6"/>'
+    + '<circle cx="66" cy="102" r="2.4" fill="#5b4a42"/>'
+    + '<path d="M14 22l10-14 10 14 10-14 10 14 10-14 10 14 10-14 10 14" fill="none" stroke="#5b4a42" stroke-width="2.4"/>'
+    + '<path d="M14 22h92" stroke="#5b4a42" stroke-width="2.4"/>'
+    + '</svg>';
+}
+function doorSVG(){
+  return '<svg viewBox="0 0 120 130" role="img" aria-label="商場門口">'
+    + '<rect x="18" y="30" width="84" height="96" rx="8" fill="#e9f6ff" stroke="#5b4a42" stroke-width="3"/>'
+    + '<rect x="18" y="18" width="84" height="16" rx="7" fill="#ffd166" stroke="#5b4a42" stroke-width="3"/>'
+    + '<text x="60" y="30" text-anchor="middle" font-size="11" font-weight="800" fill="#5b4a42">入口</text>'
+    + '<rect x="28" y="48" width="28" height="78" rx="5" fill="#bfe6ff" stroke="#5b4a42" stroke-width="2.6"/>'
+    + '<rect x="64" y="48" width="28" height="78" rx="5" fill="#bfe6ff" stroke="#5b4a42" stroke-width="2.6"/>'
+    + '<path d="M56 50v76M64 50v76" stroke="#5b4a42" stroke-width="2.4"/>'
+    + '<circle cx="52" cy="92" r="2.4" fill="#5b4a42"/><circle cx="68" cy="92" r="2.4" fill="#5b4a42"/>'
+    + '</svg>';
+}
+function bagSVG(){
+  return '<svg viewBox="0 0 110 110" role="img" aria-label="購物袋">'
+    + '<rect x="18" y="34" width="74" height="66" rx="10" fill="#ffd166" stroke="#5b4a42" stroke-width="3"/>'
+    + '<path d="M38 34c0-14 8-22 17-22s17 8 17 22" fill="none" stroke="#5b4a42" stroke-width="3"/>'
+    + '<text x="55" y="80" text-anchor="middle" font-size="18" font-weight="800" fill="#5b4a42">新衣</text>'
+    + '</svg>';
+}
+
+/* =========================================================
+   6 · DOM 參考與小工具
+   ========================================================= */
+var $ = function(id){ return document.getElementById(id); };
+var el = {
+  stage:$('stage'), hudScene:$('hud-scene'), hearts:$('hearts'), sound:$('btn-sound'), soundIcon:$('sound-icon'),
+  goalText:$('goal-text'), goalProgress:$('goal-progress'), hint:$('hint-text'), curtain:$('curtain'),
+  homeArt:$('home-art'), chapterGrid:$('chapter-grid'),
+  walker:$('walker'), door:$('s1-door'), s1Hearts:$('s1-hearts'), s1Pop:$('s1-pop'), bldgRow:$('bldg-row'),
+  tagList:$('tag-list'), peopleLayer:$('people-layer'), s2Pop:$('s2-pop'), mallDeco:$('mall-deco'),
+  rack:$('rack'), trywin:$('trywin'), s3Pop:$('s3-pop'), rackTitle:$('rack-title'),
+  pinDoor:$('pin-door'), pinMom:$('pin-mom'), pinChild:$('pin-child'), bag:$('bag'),
+  sweaterToken:$('sweater-token'), bubble:$('bubble'), shutter:$('shutter'), photo:$('photo'),
+  btnPhoto:$('btn-photo'), btnToEnd:$('btn-to-end'), s4Pop:$('s4-pop'),
+  textBody:$('text-body'), readNote:$('read-note'), endRewards:$('end-rewards'),
+  btnReadAll:$('btn-read-all'), btnReadAgain:$('btn-read-again'), btnReadStop:$('btn-read-stop'), btnRate:$('btn-rate')
+};
+function sceneEl(id){ return document.getElementById('scene-' + id); }
+function showPop(node, text){
+  node.textContent = text;
+  node.classList.remove('show');
+  void node.offsetWidth;
+  node.classList.add('show');
+  clearTimeout(node._t);
+  node._t = setTimeout(function(){ node.classList.remove('show'); }, 1500);
+}
+function sparkAt(host, xPct, yPct, text){
+  var s = document.createElement('span');
+  s.className = 'spark';
+  s.textContent = text;
+  s.style.left = xPct + '%'; s.style.top = yPct + '%';
+  host.appendChild(s);
+  setTimeout(function(){ if(s.parentNode) s.parentNode.removeChild(s); }, 950);
+}
+function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+
+/* =========================================================
+   7 · 畫面渲染（HUD／目標／愛心）
+   ========================================================= */
+function renderHearts(){
+  var html = '';
+  for(var i=0;i<4;i++){ html += heartSVG(i < state.hearts ? '#f2788f' : '#f2e5da'); }
+  el.hearts.innerHTML = html;
+  var nodes = el.hearts.querySelectorAll('svg');
+  for(var j=0;j<nodes.length;j++){
+    if(j < state.hearts){ nodes[j].classList.add('on'); }
+  }
+  el.hearts.setAttribute('aria-label', '已經得到 ' + state.hearts + ' 顆愛心');
+}
+function renderSoundIcon(){
+  var on = state.soundOn;
+  el.soundIcon.innerHTML = on
+    ? '<path d="M5 10h3l4-3v10l-4-3H5z" fill="#ffd166" stroke="#5b4a42" stroke-width="2.2" stroke-linejoin="round"/><path d="M16 9.5a4 4 0 0 1 0 5" fill="none" stroke="#5b4a42" stroke-width="2.2" stroke-linecap="round"/><path d="M18.5 7a7.5 7.5 0 0 1 0 10" fill="none" stroke="#5b4a42" stroke-width="2" stroke-linecap="round"/>'
+    : '<path d="M5 10h3l4-3v10l-4-3H5z" fill="#cfc3b8" stroke="#5b4a42" stroke-width="2.2" stroke-linejoin="round"/><path d="M15 9l6 6M21 9l-6 6" stroke="#5b4a42" stroke-width="2.2" stroke-linecap="round"/>';
+  el.sound.setAttribute('aria-pressed', on ? 'true' : 'false');
+  el.sound.setAttribute('aria-label', on ? '音效開啟中，點一下關閉' : '音效已關閉，點一下開啟');
+}
+function setGoal(text, progress){
+  el.goalText.textContent = text;
+  el.goalProgress.textContent = progress;
+}
+function setHint(text){ el.hint.textContent = text; }
+
+/* =========================================================
+   8 · 幕次切換
+   ========================================================= */
+function gotoScene(id, opts){
+  opts = opts || {};
+  var run = function(){
+    var prev = sceneEl(state.scene);
+    if(prev) prev.classList.remove('active');
+    stopSceneLogic(state.scene);
+    state.scene = id;
+    var next = sceneEl(id);
+    if(next) next.classList.add('active');
+    el.hudScene.textContent = SCENE_META[id].name;
+    setGoal(SCENE_META[id].goal, SCENE_META[id].progress);
+    setHint(SCENE_META[id].hint);
+    enterScene(id);
+  };
+  if(opts.silent){ run(); return; }
+  el.curtain.classList.remove('go');
+  void el.curtain.offsetWidth;
+  el.curtain.classList.add('go');
+  Sfx.curtain();
+  setTimeout(run, 200);
+}
+function stopSceneLogic(id){
+  if(loopId){ cancelAnimationFrame(loopId); loopId = null; }
+  if(id === 's1'){ Sfx.stopAmbience(); if(el.walker._cleanup){ el.walker._cleanup(); el.walker._cleanup = null; } }
+  if(id === 's2'){ Sfx.stopAmbience(); }
+  if(id === 's3' || id === 's4'){ Sfx.stopAmbience(); }
+  if(id === 's4'){ if(el._s4cleanup){ el._s4cleanup(); el._s4cleanup = null; } }
+  if(id === 'end'){ Sfx.stopAmbience(); Reader.stop(true); }
+  if(id === 'home'){ Sfx.stopAmbience(); }
+}
+
+/* =========================================================
+   9 · 第一幕：出發逛商場
+   ========================================================= */
+function renderHomeArt(){
+  el.homeArt.innerHTML = '<svg viewBox="0 0 320 190" role="img" aria-label="小主角和媽媽要去逛商場">'
+    + '<ellipse cx="160" cy="176" rx="150" ry="14" fill="rgba(91,74,66,.12)"/>'
+    + '<g transform="translate(206 60) scale(0.82)">' + mallBuildingSVG().replace(/<\/?svg[^>]*>/g,'') + '</g>'
+    + '<g transform="translate(30 84) scale(1.02)">' + childSVG({}) + '</g>'
+    + '<g transform="translate(96 66) scale(0.98)">' + momSVG({}) + '</g>'
+    + '<g transform="translate(140 152)">' + heartSVG('#f2788f') + '</g>'
+    + '<circle cx="60" cy="40" r="16" fill="#fff"/><ellipse cx="86" cy="40" r="12" fill="#fff"/>'
+    + '<circle cx="250" cy="30" r="13" fill="#fff"/><ellipse cx="230" cy="30" r="10" fill="#fff"/>'
+    + '</svg>';
+}
+function renderChapters(){
+  var list = [
+    {id:'s1', n:'一', t:'出發逛商場', d:'拖著走，撿心心'},
+    {id:'s2', n:'二', t:'熱鬧的商場', d:'找出三種人'},
+    {id:'s3', n:'三', t:'仔細挑毛衣', d:'放回不合適的'},
+    {id:'s4', n:'四', t:'穿上新毛衣', d:'拖曳穿上＋合照'}
+  ];
+  var html = '';
+  for(var i=0;i<list.length;i++){
+    html += '<button class="chip" data-jump="'+list[i].id+'"><span>'+list[i].n+'・'+list[i].t+'</span><small>'+list[i].d+'</small></button>';
+  }
+  el.chapterGrid.innerHTML = html;
+  var btns = el.chapterGrid.querySelectorAll('[data-jump]');
+  for(var k=0;k<btns.length;k++){
+    btns[k].addEventListener('click', function(e){
+      Sfx.unlock(); Sfx.tap();
+      gotoScene(e.currentTarget.getAttribute('data-jump'));
+    });
+  }
+}
+function setupScene1(){
+  el.bldgRow.innerHTML = '';
+  var defs = [
+    {l:'4%',  w:'30%', h:'52%', c:'#ffe4ef'},
+    {l:'26%', w:'24%', h:'38%', c:'#e6f4ff'},
+    {l:'58%', w:'20%', h:'44%', c:'#fdf0d5'}
+  ];
+  for(var i=0;i<defs.length;i++){
+    var d = document.createElement('div');
+    d.className = 'bldg';
+    d.style.left = defs[i].l; d.style.width = defs[i].w; d.style.height = defs[i].h;
+    d.innerHTML = '<svg viewBox="0 0 100 100" preserveAspectRatio="none"><rect x="0" y="0" width="100" height="100" rx="6" fill="'+defs[i].c+'" stroke="#5b4a42" stroke-width="3"/>'
+      + '<rect x="12" y="14" width="18" height="16" fill="#fff" opacity=".85"/><rect x="42" y="14" width="18" height="16" fill="#fff" opacity=".85"/><rect x="72" y="14" width="16" height="16" fill="#fff" opacity=".85"/>'
+      + '<rect x="12" y="42" width="18" height="16" fill="#fff" opacity=".85"/><rect x="42" y="42" width="18" height="16" fill="#fff" opacity=".85"/><rect x="72" y="42" width="16" height="16" fill="#fff" opacity=".85"/></svg>';
+    el.bldgRow.appendChild(d);
+  }
+  el.door.innerHTML = doorSVG();
+  el.walker.innerHTML = '<div class="bob" style="position:relative">'
+    + '<div style="position:absolute;left:-16%;bottom:0;width:78%">' + momSVG({}) + '</div>'
+    + '<div style="position:relative;margin-left:32%;width:62%">' + childSVG({}) + '</div>'
+    + '</div>';
+  el.s1Hearts.innerHTML = '';
+  for(var h=0; h<HEART_POS.length; h++){
+    var t = document.createElement('div');
+    t.className = 'heart-token';
+    t.setAttribute('data-heart', h);
+    t.style.left = HEART_POS[h] + '%';
+    t.style.top = '68%';
+    t.innerHTML = heartSVG('#f2788f');
+    el.s1Hearts.appendChild(t);
+  }
+  state.s1.x = 10; state.s1.targetX = 10; state.s1.done = false; state.s1.atDoor = false;
+  state.s1.taken = [false, false, false];
+  state.s1.lane = null;
+  renderWalker();
+  setGoal(SCENE_META.s1.goal, '心心 0/3');
+}
+function renderWalker(){
+  el.walker.style.left = state.s1.x + '%';
+  var moving = Math.abs(state.s1.x - state.s1.targetX) > 0.6 || state.s1.dragging;
+  el.walker.classList.toggle('walking', moving);
+}
+function pointerPct(e){
+  var r = el.stage.getBoundingClientRect();
+  return clamp(((e.clientX - r.left) / r.width) * 100, 6, 90);
+}
+function bindScene1(){
+  var s1 = sceneEl('s1');
+  if(el.walker._cleanup){ el.walker._cleanup(); el.walker._cleanup = null; }
+  var drag = false, lastStep = 0;
+  var onDown = function(e){
+    Sfx.unlock();
+    if(e.target.closest && e.target.closest('#walker')){
+      drag = true; state.s1.dragging = true;
+      el.walker.classList.add('dragging');
+      if(el.walker.setPointerCapture && e.pointerId != null){ try{ el.walker.setPointerCapture(e.pointerId); }catch(err){} }
+      state.s1.x = pointerPct(e); state.s1.targetX = state.s1.x;
+      e.preventDefault();
+    } else if(e.target.closest && e.target.closest('.heart-token')) {
+      /* 點心心也可以走過去 */
+      state.s1.targetX = clamp(parseFloat(e.target.closest('.heart-token').style.left), 6, 88);
+    } else {
+      state.s1.targetX = pointerPct(e);
+      if(Math.abs(state.s1.targetX - state.s1.x) > 1){ Sfx.step(); }
+    }
+    renderWalker();
+  };
+  var onMove = function(e){
+    if(!drag) return;
+    state.s1.x = pointerPct(e);
+    state.s1.targetX = state.s1.x;
+    renderWalker();
+    var now = performance.now();
+    if(now - lastStep > 320){ lastStep = now; Sfx.step(); }
+    e.preventDefault();
+  };
+  var onUp = function(){ drag = false; state.s1.dragging = false; el.walker.classList.remove('dragging'); renderWalker(); };
+  s1.addEventListener('pointerdown', onDown);
+  s1.addEventListener('pointermove', onMove);
+  s1.addEventListener('pointerup', onUp);
+  s1.addEventListener('pointercancel', onUp);
+  el.walker._cleanup = function(){
+    s1.removeEventListener('pointerdown', onDown);
+    s1.removeEventListener('pointermove', onMove);
+    s1.removeEventListener('pointerup', onUp);
+    s1.removeEventListener('pointercancel', onUp);
+  };
+}
+function updateScene1(dt){
+  var st = state.s1;
+  var prevX = st.x;
+  if(!st.dragging && Math.abs(st.x - st.targetX) > 0.5){
+    var dir = st.targetX > st.x ? 1 : -1;
+    var speed = 34;      /* 每秒 34% 畫面寬 */
+    var move = speed * dt;
+    st.x += dir * Math.min(move, Math.abs(st.targetX - st.x));
+    if(Math.random() < dt * 6){ Sfx.step(); }
+    renderWalker();
+  } else if(!st.dragging && st.x !== st.targetX){
+    st.x = st.targetX; renderWalker();
+  }
+  /* 撿心心 */
+  var tokens = el.s1Hearts.querySelectorAll('.heart-token');
+  for(var i=0;i<tokens.length;i++){
+    var idx = parseInt(tokens[i].getAttribute('data-heart'), 10);
+    if(st.taken[idx]) continue;
+    var hx = HEART_POS[idx];
+    var near = Math.abs(st.x - hx) < 5.5;
+    var crossed = (prevX - hx) * (st.x - hx) <= 0;
+    if(near || crossed){
+      st.taken[idx] = true;
+      tokens[i].classList.add('gone');
+      Sfx.heart();
+      sparkAt(sceneEl('s1'), clamp(st.x, 12, 86), 52, '+1');
+      var got = st.taken.filter(function(v){ return v; }).length;
+      setGoal(SCENE_META.s1.goal, '心心 ' + got + '/3');
+      if(got === 3){ setHint('心心都撿到了！走進商場的大門吧。'); }
+    }
+  }
+  /* 到門口 */
+  if(st.x >= 82 && !st.done){
+    var all = st.taken.filter(function(v){ return v; }).length === 3;
+    if(all){
+      st.done = true;
+      Sfx.cheer();
+      setHint('到商場了！裏面的人真多呀！');
+      setTimeout(function(){ awardHeart('第一幕完成：牽著媽媽走到商場！'); gotoScene('s2'); }, 700);
+    } else if(performance.now() - st.popAt > 2600){
+      st.popAt = performance.now();
+      Sfx.wrongSoft();
+      showPop(el.s1Pop, '路上還有心心沒撿到喔～');
+      setHint('往回走走，把 3 顆心心都撿起來，再一起進商場。');
+      st.targetX = 40;
+    }
+  }
+}
+
+/* =========================================================
+   10 · 第二幕：熱鬧的商場
+   ========================================================= */
+function renderMallDeco(){
+  el.mallDeco.innerHTML = '<svg viewBox="0 0 400 90" preserveAspectRatio="none">'
+    + '<rect x="0" y="0" width="400" height="26" fill="#fff3df"/>'
+    + '<rect x="0" y="24" width="400" height="4" fill="#e8cfae"/>'
+    + '<circle cx="60" cy="18" r="10" fill="#ff9db1"/><circle cx="90" cy="22" r="10" fill="#ffd166"/><circle cx="120" cy="18" r="10" fill="#8ecdf2"/>'
+    + '<circle cx="280" cy="20" r="10" fill="#7ed6a5"/><circle cx="310" cy="16" r="10" fill="#c3a6e8"/><circle cx="340" cy="21" r="10" fill="#ff9db1"/>'
+    + '</svg>';
+}
+function setupScene2(){
+  renderMallDeco();
+  el.peopleLayer.innerHTML = '';
+  people = [];
+  var order = {clothes:0, shoes:1, toys:2};
+  var tagsHtml = '';
+  for(var k=0;k<PEOPLE_DEF.length;k++){
+    if(!PEOPLE_DEF[k].correct) continue;
+    tagsHtml += '<div class="tag" data-tag="'+PEOPLE_DEF[k].item+'" title="'+PEOPLE_DEF[k].label+'">' + itemSVG(PEOPLE_DEF[k].item) + '</div>';
+  }
+  el.tagList.innerHTML = '<span class="tip">要找到</span>' + tagsHtml;
+  for(var i=0;i<PEOPLE_DEF.length;i++){
+    var d = PEOPLE_DEF[i];
+    var node = document.createElement('button');
+    node.className = 'person';
+    node.type = 'button';
+    node.setAttribute('data-id', d.id);
+    node.setAttribute('data-correct', d.correct ? '1' : '0');
+    node.setAttribute('aria-label', '一位客人，點一下看看他在做什麼');
+    node.innerHTML = '<span class="inner" style="display:block">' + personWithItemSVG(d, PERSON_LOOK[i]) + '</span>';
+    el.peopleLayer.appendChild(node);
+    var p = {
+      id:d.id, item:d.item, label:d.label, correct:d.correct,
+      x:d.x, dir:d.dir, speed:d.speed, lane:d.lane, found:false,
+      node:node, bobOffset: i * 0.27
+    };
+    node.addEventListener('click', function(ev){
+      ev.stopPropagation();
+      onPersonTap(ev.currentTarget.getAttribute('data-id'));
+    });
+    people.push(p);
+    placePerson(p);
+  }
+  state.s2.found = {}; state.s2.done = false; state.s2.wrong = 0;
+  setGoal(SCENE_META.s2.goal, '找到 0/3');
+}
+function placePerson(p){
+  p.node.style.left = p.x + '%';
+  p.node.style.top = LANES[p.lane] + '%';
+  p.node.style.animationDelay = (p.bobOffset) + 's';
+}
+var PERSON_LOOK = ['child','adult','child','adult','child','adult'];
+function personWithItemSVG(d, look){
+  var adult = (look === 'adult');
+  var body = adult
+    ? momSVG({dress: d.correct ? '#c3a6e8' : '#9fd7d0'})
+    : childSVG({});
+  var size = adult ? '76%' : '68%';
+  return '<span style="position:relative;display:block">'
+    + '<span style="display:block;width:' + size + ';margin:0 auto">' + body + '</span>'
+    + '<span style="position:absolute;left:74%;bottom:22%;width:62%;background:#fffdf7;'
+    + 'border:2.5px solid #5b4a42;border-radius:12px;padding:5%;box-shadow:0 2px 0 rgba(91,74,66,.22)">'
+    + itemSVG(d.item) + '</span>'
+    + '</span>';
+}
+function onPersonTap(id){
+  Sfx.unlock();
+  var p = null;
+  for(var i=0;i<people.length;i++){ if(people[i].id === id) p = people[i]; }
+  if(!p || p.found || state.s2.done) return;
+  if(p.correct){
+    p.found = true;
+    p.node.classList.add('found');
+    Sfx.right(p.item);
+    var tag = el.tagList.querySelector('[data-tag="' + p.item + '"]');
+    if(tag){ tag.classList.add('done'); }
+    var foundCount = 0;
+    for(var j=0;j<people.length;j++){ if(people[j].correct && people[j].found) foundCount++; }
+    setGoal(SCENE_META.s2.goal, '找到 ' + foundCount + '/3');
+    showPop(el.s2Pop, '找到了！他在' + p.label + '。');
+    if(foundCount >= 3){
+      state.s2.done = true;
+      Sfx.cheer();
+      setHint('三種人都找到了！商場裏面真熱鬧。');
+      setTimeout(function(){ awardHeart('第二幕完成：找出買衣服、看鞋子、挑玩具的人！'); gotoScene('s3'); }, 800);
+    } else {
+      setHint('答對了！還要找 ' + (3 - foundCount) + ' 位。');
+    }
+  } else {
+    state.s2.wrong++;
+    if(state.badge){ state.badge = false; }
+    Sfx.wrongSoft();
+    p.node.classList.add('shake');
+    setTimeout(function(){ p.node.classList.remove('shake'); }, 470);
+    showPop(el.s2Pop, '這位在' + p.label + '喔，再仔細看看～');
+    setHint('再仔細看看～找找手上拿著衣服、鞋子或玩具的人。');
+  }
+}
+function updateScene2(dt){
+  for(var i=0;i<people.length;i++){
+    var p = people[i];
+    if(p.found) continue;
+    p.x += p.dir * p.speed * dt;
+    if(p.x > 88){ p.x = 88; p.dir = -1; }
+    if(p.x < 10){ p.x = 10; p.dir = 1; }
+    p.node.style.left = p.x + '%';
+  }
+}
+
+/* =========================================================
+   11 · 第三幕：仔細挑毛衣
+   ========================================================= */
+function setupScene3(){
+  var html = '';
+  for(var i=0;i<SWEATERS.length;i++){
+    var s = SWEATERS[i];
+    html += '<button class="sweater" type="button" data-id="'+s.id+'" aria-label="一件毛衣，點一下看看">'
+      + sweaterSVG(s.color, s.scale)
+      + '<span class="size">' + s.size + '</span>'
+      + '<span class="mark" style="display:none"></span>'
+      + '</button>';
+  }
+  el.rack.innerHTML = html;
+  var btns = el.rack.querySelectorAll('.sweater');
+  for(var k=0;k<btns.length;k++){
+    btns[k].addEventListener('click', function(e){
+      Sfx.unlock(); Sfx.tap();
+      openTry(e.currentTarget.getAttribute('data-id'));
+    });
+  }
+  state.s3.out = {}; state.s3.chosen = null; state.s3.done = false; state.s3.opened = null;
+  el.trywin.classList.remove('show');
+  el.trywin.innerHTML = '';
+  el.rackTitle.textContent = '毛衣架 · 點一件看看媽媽怎麼說';
+  setGoal(SCENE_META.s3.goal, '0/5');
+  setHint(SCENE_META.s3.hint);
+}
+function findSweater(id){
+  for(var i=0;i<SWEATERS.length;i++){ if(SWEATERS[i].id === id) return SWEATERS[i]; }
+  return null;
+}
+function openTry(id){
+  var s = findSweater(id);
+  if(!s || state.s3.done) return;
+  if(state.s3.out[id]){ showPop(el.s3Pop, '這件已經放回架上了。'); return; }
+  state.s3.opened = id;
+  Sfx.fabric();
+  var good = !!s.good;
+  el.trywin.innerHTML = '<div class="trycard" role="dialog" aria-label="試衣間">'
+    + '<h4>' + (good ? '試穿看看' : '媽媽說……') + '</h4>'
+    + '<div class="tryrow">'
+    +   '<div class="piece">' + sweaterSVG(s.color, s.scale) + '</div>'
+    +   '<div class="wear">' + childSVG({sweater:{color:s.color, scale:s.scale}}) + '</div>'
+    + '</div>'
+    + '<p class="verdict">' + s.verdict + '</p>'
+    + '<button class="btn-sm" id="try-action">' + (good ? '就買這件' : '放回架上') + '</button>'
+    + '</div>';
+  el.trywin.classList.add('show');
+  var act = $('try-action');
+  act.addEventListener('click', function(){
+    Sfx.tap();
+    if(good){ chooseGreen(s); } else { putBack(s); }
+  });
+}
+function putBack(s){
+  state.s3.out[s.id] = true;
+  var node = el.rack.querySelector('[data-id="' + s.id + '"]');
+  if(node){
+    node.classList.add('out');
+    var mark = node.querySelector('.mark');
+    mark.style.display = 'block';
+    mark.textContent = s.short;
+  }
+  Sfx.putBack();
+  closeTry();
+  var done = SWEATERS.filter(function(x){ return state.s3.out[x.id]; }).length;
+  setGoal(SCENE_META.s3.goal, done + '/5');
+  if(done >= 4){
+    el.rackTitle.textContent = '架上只剩一件了，看起來剛剛好！';
+    var g = el.rack.querySelector('[data-id="green"]');
+    if(g){ g.classList.add('hintpick'); }
+    setHint('不合適的都放回去了！點一下剩下那件綠色的毛衣。');
+    Sfx.star();
+  } else {
+    setHint('放回去一件了，還有 ' + (4 - done) + ' 件不太合適的。');
+  }
+}
+function chooseGreen(s){
+  var left = SWEATERS.filter(function(x){ return !x.good && !state.s3.out[x.id]; }).length;
+  if(left > 0){
+    Sfx.wrongSoft();
+    closeTry();
+    showPop(el.s3Pop, '再看看，還有 ' + left + ' 件不合適的');
+    setHint('媽媽說要認真地看、仔細地挑：先把不合適的 ' + left + ' 件放回架上。');
+    return;
+  }
+  state.s3.chosen = 'green';
+  state.s3.done = true;
+  closeTry();
+  Sfx.chosen();
+  var g = el.rack.querySelector('[data-id="green"]');
+  if(g){ g.classList.remove('hintpick'); }
+  showPop(el.s3Pop, '就是這件！');
+  sparkAt(sceneEl('s3'), 50, 30, '買到了！');
+  setGoal(SCENE_META.s3.goal, '5/5');
+  setHint('買了一件綠色的毛衣，我們逛得很開心。');
+  setTimeout(function(){ awardHeart('第三幕完成：挑到最合適的綠色毛衣！'); gotoScene('s4'); }, 900);
+}
+function closeTry(){
+  el.trywin.classList.remove('show');
+  el.trywin.innerHTML = '';
+  state.s3.opened = null;
+}
+
+/* =========================================================
+   12 · 第四幕：穿上新毛衣
+   ========================================================= */
+var s4Drag = null;
+function setupScene4(){
+  el.pinDoor.innerHTML = '<svg viewBox="0 0 120 130" role="img" aria-label="我們回家囉">'
+    + '<rect x="10" y="26" width="100" height="100" rx="10" fill="#fff2dc" stroke="#5b4a42" stroke-width="3"/>'
+    + '<rect x="10" y="26" width="100" height="16" rx="7" fill="#ff9db1" stroke="#5b4a42" stroke-width="3"/>'
+    + '<rect x="26" y="52" width="30" height="74" rx="6" fill="#d8ecff" stroke="#5b4a42" stroke-width="2.6"/>'
+    + '<rect x="64" y="52" width="30" height="74" rx="6" fill="#d8ecff" stroke="#5b4a42" stroke-width="2.6"/>'
+    + '</svg>';
+  el.pinMom.innerHTML = momSVG({dress:'#ff9db1'});
+  el.pinChild.innerHTML = childSVG({});
+  el.bag.innerHTML = bagSVG();
+  el.sweaterToken.innerHTML = sweaterSVG('#5fc48c', 1);
+  el.bubble.classList.remove('show');
+  el.photo.classList.remove('show');
+  el.photo.innerHTML = '';
+  el.btnPhoto.style.display = 'none';
+  el.btnToEnd.style.display = 'none';
+  el.shutter.classList.remove('flash');
+  state.s4.wearing = false; state.s4.photo = false; state.s4.done = false;
+  setGoal(SCENE_META.s4.goal, '0/2');
+  setHint(SCENE_META.s4.hint);
+}
+function bindScene4(){
+  var scene = sceneEl('s4');
+  if(el._s4cleanup){ el._s4cleanup(); el._s4cleanup = null; }
+  var start = null;
+  var onDown = function(e){
+    Sfx.unlock();
+    if(state.s4.wearing) return;
+    if(!e.target.closest || !e.target.closest('#bag')) return;
+    var r = el.stage.getBoundingClientRect();
+    start = {x:e.clientX, y:e.clientY};
+    el.sweaterToken.classList.add('show');
+    s4Drag = true;
+    moveToken(e, r);
+    try{ scene.setPointerCapture(e.pointerId); }catch(err){}
+    e.preventDefault();
+  };
+  var moveToken = function(e, r){
+    el.sweaterToken.style.left = ((e.clientX - r.left) / r.width * 100) + '%';
+    el.sweaterToken.style.top = ((e.clientY - r.top) / r.height * 100) + '%';
+  };
+  var onMove = function(e){
+    if(!s4Drag) return;
+    moveToken(e, el.stage.getBoundingClientRect());
+    e.preventDefault();
+  };
+  var onUp = function(e){
+    if(!s4Drag) return;
+    s4Drag = false;
+    var childRect = el.pinChild.getBoundingClientRect();
+    var hit = e.clientX >= childRect.left - 26 && e.clientX <= childRect.right + 26
+           && e.clientY >= childRect.top - 40 && e.clientY <= childRect.bottom + 40;
+    if(hit){ wearIt(); }
+    else {
+      el.sweaterToken.classList.remove('show');
+      Sfx.wrongSoft();
+      showPop(el.s4Pop, '再靠近小主角一點，幫他穿上毛衣。');
+    }
+    start = null;
+  };
+  scene.addEventListener('pointerdown', onDown);
+  scene.addEventListener('pointermove', onMove);
+  scene.addEventListener('pointerup', onUp);
+  scene.addEventListener('pointercancel', onUp);
+  el.bag.addEventListener('click', function(){
+    if(state.s4.wearing) return;
+    Sfx.tap();
+    showPop(el.s4Pop, '把毛衣拖到小主角身上吧！');
+  });
+  el._s4cleanup = function(){
+    scene.removeEventListener('pointerdown', onDown);
+    scene.removeEventListener('pointermove', onMove);
+    scene.removeEventListener('pointerup', onUp);
+    scene.removeEventListener('pointercancel', onUp);
+  };
+  el.btnPhoto.onclick = function(){
+    Sfx.tap();
+    if(!state.s4.wearing){ showPop(el.s4Pop, '先幫小主角穿上毛衣吧！'); return; }
+    takePhoto();
+  };
+  el.btnToEnd.onclick = function(){
+    Sfx.tap();
+    if(!state.s4.photo){ showPop(el.s4Pop, '先和媽媽拍一張合照吧！'); return; }
+    showEnd();
+  };
+}
+function wearIt(){
+  state.s4.wearing = true;
+  el.sweaterToken.classList.remove('show');
+  el.pinChild.innerHTML = childSVG({sweater:{color:'#5fc48c', scale:1}});
+  Sfx.wear();
+  setGoal(SCENE_META.s4.goal, '1/2');
+  setHint('穿上了綠色的新毛衣！現在和媽媽拍一張合照吧。');
+  sparkAt(sceneEl('s4'), 50, 34, '好好看！');
+  el.bubble.textContent = '真好看！這件毛衣很適合你。';
+  el.bubble.classList.add('show');
+  el.btnPhoto.style.display = 'block';
+}
+function takePhoto(){
+  Sfx.shutter();
+  el.shutter.classList.remove('flash');
+  void el.shutter.offsetWidth;
+  el.shutter.classList.add('flash');
+  var html = '<svg viewBox="0 0 300 210" role="img" aria-label="小主角穿著新毛衣和媽媽的合照">'
+    + '<rect x="0" y="0" width="300" height="210" rx="10" fill="#eaf6ff"/>'
+    + '<rect x="0" y="150" width="300" height="60" fill="#ffe4c6"/>'
+    + '<g transform="translate(72 30) scale(1.08)">' + momSVG({dress:'#ff9db1'}) + '</g>'
+    + '<g transform="translate(178 52) scale(1.02)">' + childSVG({sweater:{color:'#5fc48c', scale:1}}) + '</g>'
+    + '<g transform="translate(20 16) scale(1.3)">' + heartSVG('#f2788f').replace(/<\/?svg[^>]*>/g,'') + '</g>'
+    + '<g transform="translate(250 14) scale(1.3)">' + heartSVG('#f2788f').replace(/<\/?svg[^>]*>/g,'') + '</g>'
+    + '</svg>';
+  el.photo.innerHTML = html + '<p>我們逛商場逛得很開心！</p>';
+  el.photo.classList.add('show');
+  state.s4.photo = true;
+  state.hearts = clamp(state.hearts + 1, 0, 4);
+  renderHearts();
+  setGoal(SCENE_META.s4.goal, '2/2');
+  setHint('拍好合照了！去看看今天的收穫吧。');
+  Sfx.star();
+  el.btnPhoto.style.display = 'none';
+  el.btnToEnd.style.display = 'block';
+}
+
+/* =========================================================
+   13 · 結算與課文朗讀
+   ========================================================= */
+var Reader = {
+  sentences: TEXT_LINES,
+  idx: -1,
+  playing: false,
+  rate: 1,
+  failed:false,
+  linesEls:[],
+  start:function(){
+    if(!Speech.hasVoice()){ Reader.showFallback(); return; }
+    if(Reader._t){ clearTimeout(Reader._t); Reader._t = null; }
+    Reader.retry = 0;
+    Speech.cancel();
+    Reader.idx = -1;
+    Reader.playing = true;
+    Reader.next();
+    Reader.syncButtons();
+  },
+  next:function(){
+    if(!ReadersPlaying()) return;
+    Reader.idx++;
+    if(Reader.idx >= Reader.sentences.length){
+      Reader.playing = false;
+      Reader.clearHighlight();
+      Reader.syncButtons();
+      setHint('朗讀完了，可以再聽一次，或點句子單獨聽。');
+      return;
+    }
+    Reader.highlight(Reader.idx);
+    Speech.speak(Reader.sentences[Reader.idx], Reader.rate, function(){
+      if(Reader.playing) Reader.next();
+      else { Reader.playing = false; Reader.syncButtons(); }
+    }, function(){ Reader.showFallback(); });
+  },
+  speakOne:function(i){
+    if(!Speech.hasVoice()){ Reader.showFallback(); return; }
+    Reader.stop(true);
+    Reader.idx = i;
+    Reader.highlight(i);
+    Reader.playing = true;
+    Speech.speak(Reader.sentences[i], Reader.rate, function(){
+      Reader.playing = false;
+      Reader.clearHighlight();
+      Reader.syncButtons();
+    }, function(){ Reader.showFallback(); });
+    Reader.syncButtons();
+  },
+  pause:function(){
+    if(!this.playing) return;
+    this.playing = false;
+    try{ window.speechSynthesis.pause(); }catch(e){}
+    this.syncButtons();
+  },
+  retry:0,
+  resume:function(){
+    if(!Speech.hasVoice() || this.playing) return;
+    this.playing = true;
+    try{ window.speechSynthesis.resume(); }catch(e){}
+    this.syncButtons();
+  },
+  stop:function(silent){
+    this.playing = false;
+    Speech.cancel();
+    this.clearHighlight();
+    if(!silent) this.syncButtons();
+  },
+  highlight:function(i){
+    for(var k=0;k<this.linesEls.length;k++){ this.linesEls[k].classList.remove('reading'); }
+    if(this.linesEls[i]){ this.linesEls[i].classList.add('reading'); }
+  },
+  clearHighlight:function(){
+    for(var k=0;k<this.linesEls.length;k++){ this.linesEls[k].classList.remove('reading'); }
+  },
+  syncButtons:function(){
+    var has = Speech.hasVoice();
+    el.btnReadAll.style.display = (!has) ? 'none' : (Reader.playing ? 'none' : 'block');
+    el.btnReadAgain.style.display = (has && !Reader.playing && Reader.idx >= 0 && Reader.idx < Reader.sentences.length) ? 'block' : 'none';
+    el.btnReadStop.style.display = (has && Reader.playing) ? 'block' : 'none';
+    el.btnReadAll.textContent = '▶ 播放全文朗讀';
+    el.btnReadAgain.textContent = '繼續朗讀';
+  },
+  showFallback:function(){
+    this.playing = false;
+    Speech.cancel();
+    if(Speech.hasVoice()){ this.restore(); return; }
+    if(!Speech.supported){
+      this.failed = true;
+      el.readNote.textContent = '這台裝置沒有語音朗讀功能，請由家長或老師帶著孩子讀一遍課文。';
+      el.btnReadAll.style.display = 'none';
+      el.btnReadAgain.style.display = 'none';
+      el.btnReadStop.style.display = 'none';
+      el.btnRate.style.display = 'none';
+      setHint('這台裝置沒有語音，請家長或老師陪孩子讀一遍課文。');
+      return;
+    }
+    /* 有些瀏覽器要等語音清單載入，先等待再重試 */
+    if(this.retry < 10){
+      this.retry++;
+      el.readNote.textContent = '正在準備普通話語音…';
+      var t = setTimeout(function(){ Reader.showFallback(); }, 400);
+      if(this._t) clearTimeout(this._t);
+      this._t = t;
+      return;
+    }
+    this.failed = true;
+    el.readNote.textContent = '這台裝置沒有可用的中文語音，請由家長或老師帶著孩子讀一遍課文。';
+    el.btnReadAll.style.display = 'none';
+    el.btnReadAgain.style.display = 'none';
+    el.btnReadStop.style.display = 'none';
+    el.btnRate.style.display = 'none';
+    setHint('這台裝置沒有中文語音，請家長或老師陪孩子讀一遍課文。');
+  },
+  restore:function(){
+    this.failed = false; this.retry = 0;
+    if(this._t){ clearTimeout(this._t); this._t = null; }
+    el.readNote.textContent = '點句子可以單獨再聽一次；也可以切換速度。';
+    el.btnRate.style.display = '';
+    this.syncButtons();
+  },
+  build:function(){
+    var html = '';
+    for(var i=0;i<this.sentences.length;i++){
+      html += '<div class="ln" data-line="'+i+'"><span class="no">'+(i+1)+'</span><span>'+this.sentences[i]+'</span></div>';
+    }
+    el.textBody.innerHTML = html;
+    this.linesEls = el.textBody.querySelectorAll('.ln');
+    for(var k=0;k<this.linesEls.length;k++){
+      (function(node){
+        node.setAttribute('role','button');
+        node.setAttribute('tabindex','0');
+        node.addEventListener('click', function(){ Sfx.unlock(); Sfx.tap(); Reader.speakOne(parseInt(node.getAttribute('data-line'),10)); });
+        node.addEventListener('keydown', function(e){ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); Reader.speakOne(parseInt(node.getAttribute('data-line'),10)); } });
+      })(this.linesEls[k]);
+    }
+    this.init = true;
+  }
+};
+function ReadersPlaying(){ return Reader.playing; }
+function showEnd(){
+  gotoScene('end');
+}
+function setupEnd(){
+  var html = '';
+  for(var i=0;i<4;i++){
+    var got = i < state.hearts;
+    html += '<span style="display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:800;color:#7a6559;opacity:' + (got?1:.5) + '">'
+      + '<span style="width:20px;display:inline-block">' + heartSVG(got ? '#f2788f' : '#f2e5da') + '</span> '
+      + ['走到商場','找到三種人','挑到毛衣','穿上＋合照'][i] + (got ? '' : '（沒玩到）') + '</span>';
+  }
+  html += '<span class="badge' + (state.badge ? '' : ' off') + '">' + (state.badge ? '順利拿到「仔細小幫手」徽章' : '這次沒有拿到「仔細小幫手」徽章') + '</span>';
+  el.endRewards.innerHTML = html;
+  Reader.build();
+  Reader.idx = -1; Reader.playing = false;
+  Reader.retry = 0;
+  Reader.restore();
+  if(!Speech.hasVoice()){ Reader.showFallback(); }
+  else { Reader.syncButtons(); }
+  Reader.rate = 1;
+  el.btnRate.textContent = '速度：正常';
+  el.btnRate.classList.remove('on');
+  el.btnRate.setAttribute('aria-pressed','false');
+  Sfx.ambience('home');
+  Sfx.cheer();
+}
+function awardHeart(msg){
+  state.hearts = clamp(state.hearts + 1, 0, 4);
+  renderHearts();
+  Sfx.star();
+  setHint(msg);
+}
+
+/* =========================================================
+   14 · 幕次生命週期
+   ========================================================= */
+function enterScene(id){
+  if(id === 's1'){ setupScene1(); bindScene1(); startLoop(); Sfx.ambience('street'); }
+  else if(id === 's2'){ setupScene2(); startLoop(); Sfx.ambience('mall'); }
+  else if(id === 's3'){ setupScene3(); Sfx.ambience('home'); }
+  else if(id === 's4'){ setupScene4(); bindScene4(); Sfx.ambience('home'); }
+  else if(id === 'end'){ setupEnd(); }
+  else if(id === 'home'){
+    Sfx.stopAmbience();
+    renderHomeArt();
+  }
+}
+function startLoop(){
+  if(loopId) return;
+  lastTs = 0;
+  var step = function(ts){
+    if(!lastTs) lastTs = ts;
+    var dt = Math.min(0.05, (ts - lastTs) / 1000);
+    lastTs = ts;
+    if(state.scene === 's1') updateScene1(dt);
+    else if(state.scene === 's2') updateScene2(dt);
+    loopId = requestAnimationFrame(step);
+  };
+  loopId = requestAnimationFrame(step);
+}
+
+/* =========================================================
+   15 · 全域命令（首頁、音效、朗讀、重玩）
+   ========================================================= */
+function resetGame(){
+  state.hearts = 0;
+  state.badge = true;
+  state.s1 = {x:10, targetX:10, dragging:false, lane:null, taken:[false,false,false], done:false, atDoor:false, popAt:0};
+  state.s2 = {found:{}, done:false, wrong:0};
+  state.s3 = {out:{}, chosen:null, done:false, opened:null};
+  state.s4 = {wearing:false, photo:false, done:false};
+  Reader.stop(true);
+  Reader.linesEls = [];
+  if(el.textBody) el.textBody.innerHTML = '';
+  renderHearts();
+}
+$('btn-home').addEventListener('click', function(){
+  Sfx.unlock(); Sfx.tap();
+  gotoScene('home');
+});
+$('btn-start').addEventListener('click', function(){
+  Sfx.unlock(); Sfx.tap();
+  resetGame();
+  gotoScene('s1');
+});
+el.sound.addEventListener('click', function(){
+  state.soundOn = !state.soundOn;
+  Sfx.unlock();
+  Sfx.setOn(state.soundOn);
+  renderSoundIcon();
+  if(state.soundOn){
+    if(state.scene === 's1') Sfx.ambience('street');
+    else if(state.scene === 's2') Sfx.ambience('mall');
+    else if(state.scene === 's3' || state.scene === 's4' || state.scene === 'end') Sfx.ambience('home');
+    Sfx.tap();
+  }
+});
+el.btnReadAll.addEventListener('click', function(){ Sfx.unlock(); Sfx.tap(); Reader.start(); });
+el.btnReadAgain.addEventListener('click', function(){ Sfx.unlock(); Sfx.tap(); Reader.resume(); });
+el.btnReadStop.addEventListener('click', function(){ Sfx.tap(); Reader.stop(); });
+el.btnRate.addEventListener('click', function(){
+  Sfx.tap();
+  Reader.rate = Reader.rate === 1 ? 0.72 : 1;
+  el.btnRate.textContent = Reader.rate === 1 ? '速度：正常' : '速度：慢慢讀';
+  el.btnRate.classList.toggle('on', Reader.rate !== 1);
+  el.btnRate.setAttribute('aria-pressed', Reader.rate === 1 ? 'false' : 'true');
+  if(Reader.playing){ Reader.stop(); Reader.start(); }
+});
+$('btn-replay').addEventListener('click', function(){
+  Sfx.tap();
+  resetGame();
+  gotoScene('s1');
+});
+$('btn-back-home').addEventListener('click', function(){
+  Sfx.tap();
+  resetGame();
+  gotoScene('home');
+});
+/* 桌面鍵盤：第一幕走路 */
+document.addEventListener('keydown', function(e){
+  if(state.scene !== 's1') return;
+  var k = e.key;
+  if(k === 'ArrowRight' || k === 'd' || k === 'D'){ state.s1.targetX = clamp(state.s1.targetX + 8, 6, 88); renderWalker(); }
+  else if(k === 'ArrowLeft' || k === 'a' || k === 'A'){ state.s1.targetX = clamp(state.s1.targetX - 8, 6, 88); renderWalker(); }
+});
+/* 分頁隱藏時暫停環境音與朗讀 */
+document.addEventListener('visibilitychange', function(){
+  if(document.hidden){
+    Sfx.stopAmbience();
+    if(Reader.playing) Reader.pause();
+  } else if(Sfx.on){
+    if(state.scene === 's1') Sfx.ambience('street');
+    else if(state.scene === 's2') Sfx.ambience('mall');
+  }
+});
+/* 尺寸變化時重畫第一幕位置 */
+window.addEventListener('resize', function(){
+  if(state.scene === 's1') renderWalker();
+});
+
+/* =========================================================
+   16 · 啟動
+   ========================================================= */
+function boot(){
+  Speech.init();
+  renderHearts();
+  renderSoundIcon();
+  renderHomeArt();
+  renderChapters();
+  setGoal(SCENE_META.home.goal, SCENE_META.home.progress);
+  setHint(SCENE_META.home.hint);
+  gotoScene('home', {silent:true});
+}
+boot();
+</script>
+</body>
+</html>

@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>四季小劇場｜課文情景互動</title>
+<meta name="description" content="跟著課文《四季》走進春夏秋冬，點一點、聽一聽，收集四季徽章，最後聽全文普通話朗讀。">
+<style>
+  :root{
+    --ink:#4A3B33;
+    --cream:#FFF9EE;
+    --spring:#74C465;
+    --summer:#45B4D6;
+    --autumn:#F0A63C;
+    --winter:#7E9BD1;
+    --muted:#8A7360;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    min-height:100dvh;
+    background:#FFE9C9;
+    background-image:
+      radial-gradient(circle at 10% 6%, #FFD8A6 0, rgba(255,216,166,0) 42%),
+      radial-gradient(circle at 92% 94%, #C9E8FF 0, rgba(201,232,255,0) 44%);
+    color:var(--ink);
+    font-family:"PingFang TC","Hiragino Sans TC","Microsoft JhengHei","Noto Sans TC",system-ui,-apple-system,sans-serif;
+    display:flex;justify-content:center;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  button{font-family:inherit;color:inherit}
+  #app{
+    width:100%;max-width:460px;min-height:100dvh;background:var(--cream);
+    position:relative;display:flex;flex-direction:column;overflow:hidden;
+  }
+  @media (min-width:600px){
+    #app{min-height:calc(100dvh - 40px);margin:20px 0;border-radius:34px;box-shadow:0 0 0 4px var(--ink),0 22px 48px rgba(74,59,51,.22)}
+  }
+  .screen{
+    display:none;flex-direction:column;flex:1;min-height:0;overflow-y:auto;
+    padding:0 16px calc(18px + env(safe-area-inset-bottom));
+    scrollbar-width:none;
+  }
+  .screen::-webkit-scrollbar{display:none}
+  .screen.active{display:flex}
+
+  /* ---------- 首頁 ---------- */
+  .home-top{padding:24px 4px 6px;text-align:center}
+  .home-kicker{
+    display:inline-block;font-size:11px;letter-spacing:2px;font-weight:800;color:var(--muted);
+    background:#FFF1D8;border:2px solid var(--ink);border-radius:999px;padding:4px 12px;
+  }
+  .home-title{margin:14px 0 0;font-size:46px;line-height:1;font-weight:900;letter-spacing:2px;color:#FF8A5B;text-shadow:3px 3px 0 #fff,6px 6px 0 rgba(74,59,51,.13)}
+  .home-title .t2{display:block;font-size:24px;letter-spacing:10px;color:var(--ink);text-shadow:none;margin-top:10px;padding-left:10px}
+  .home-sub{margin:12px 0 0;font-size:13px;color:var(--muted);font-weight:600;letter-spacing:1px}
+  .map-head{margin:20px 2px 10px;display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:800;color:var(--muted)}
+  .map-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .season-card{
+    position:relative;border:3px solid var(--ink);border-radius:24px;background:var(--bg);
+    padding:8px 8px 11px;text-align:left;cursor:pointer;overflow:hidden;
+    box-shadow:0 5px 0 var(--ink);transition:transform .12s ease,box-shadow .12s ease;
+  }
+  .season-card:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+  .sc-illus{height:84px;display:flex;align-items:center;justify-content:center}
+  .sc-illus svg{width:100%;height:100%;display:block}
+  .sc-name{display:block;font-size:17px;font-weight:900;line-height:1.15;margin-top:2px}
+  .sc-line{display:block;font-size:11px;color:#7A6553;margin-top:3px;font-weight:700;letter-spacing:.5px}
+  .sc-tag{position:absolute;top:9px;left:9px;font-size:11px;font-weight:900;background:#fff;border:2px solid var(--ink);border-radius:9px;padding:1px 7px;z-index:2}
+  .sc-star{position:absolute;top:7px;right:9px;font-size:17px;line-height:1;color:rgba(74,59,51,.22);z-index:2}
+  .season-card.done .sc-star{color:#FFC93C;text-shadow:0 1px 0 #fff}
+  .season-card.done{box-shadow:0 5px 0 var(--ink),inset 0 0 0 4px rgba(255,255,255,.6)}
+  .home-foot{margin-top:auto;padding-top:20px;display:flex;flex-direction:column;gap:10px}
+  .primary-btn{
+    width:100%;border:3px solid var(--ink);border-radius:18px;background:#FFD86B;padding:14px;
+    font-size:17px;font-weight:900;letter-spacing:1px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+    box-shadow:0 5px 0 var(--ink);transition:transform .12s ease,box-shadow .12s ease;
+  }
+  .primary-btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+  .primary-btn.ghost{background:#fff}
+  .text-btn{background:none;border:0;font-size:12px;color:var(--muted);font-weight:700;padding:6px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+  .all-done{
+    margin-top:14px;border:3px dashed var(--ink);border-radius:20px;padding:12px 14px;background:#FFF3C9;
+    font-size:13px;font-weight:800;line-height:1.6;text-align:center;
+  }
+
+  /* ---------- 關卡頁 ---------- */
+  .level-head{display:flex;align-items:center;gap:10px;padding:14px 0 10px;flex:0 0 auto}
+  .icon-btn{
+    width:42px;height:42px;flex:0 0 42px;border-radius:14px;border:3px solid var(--ink);background:#fff;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 3px 0 var(--ink);
+    transition:transform .1s ease,box-shadow .1s ease;
+  }
+  .icon-btn:active{transform:translateY(3px);box-shadow:0 0 0 var(--ink)}
+  .icon-btn svg{width:20px;height:20px;display:block}
+  .icon-btn.off{opacity:.42}
+  .season-pill{
+    margin:0 auto;font-size:15px;font-weight:900;letter-spacing:2px;padding:7px 20px;border-radius:999px;
+    border:3px solid var(--ink);background:#fff;
+  }
+  .level-body{flex:1 0 auto;display:flex;flex-direction:column;justify-content:center;padding-bottom:2px}
+  .scene-card{
+    border:3px solid var(--ink);border-radius:26px;overflow:hidden;background:#fff;
+    box-shadow:0 5px 0 rgba(74,59,51,.16);flex:0 0 auto;position:relative;
+  }
+  .scene-svg{display:block;width:100%;height:auto}
+  .scene-svg text{font-family:inherit}
+  .hint-bar{
+    margin:10px 0 0;font-size:13px;font-weight:700;color:var(--muted);text-align:center;
+    min-height:20px;line-height:1.5;
+  }
+  .task-panel{
+    margin-top:10px;background:#fff;border:3px solid var(--ink);border-radius:22px;
+    padding:14px 14px 16px;box-shadow:0 5px 0 rgba(74,59,51,.12);min-height:132px;
+  }
+  .task-q{margin:0;font-size:16px;font-weight:900;line-height:1.55}
+  .task-desc{margin:6px 0 14px;font-size:13px;color:var(--muted);font-weight:600;line-height:1.6}
+  .task-panel .primary-btn{margin-top:2px}
+  .options{display:flex;flex-direction:column;gap:9px;margin-top:12px}
+  .opt{
+    width:100%;text-align:left;padding:12px 15px;border:3px solid var(--ink);border-radius:16px;
+    background:#FFF7E6;font-size:16px;font-weight:800;cursor:pointer;
+    box-shadow:0 4px 0 var(--ink);transition:transform .1s ease,box-shadow .1s ease,background .15s;
+  }
+  .opt:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+  .opt.correct{background:#DFF6D0}
+  .opt.wrong{background:#FFDCDC;animation:shakeX .38s ease}
+  @keyframes shakeX{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}45%{transform:translateX(6px)}70%{transform:translateX(-4px)}}
+  .opt:disabled{cursor:default;opacity:.62}
+  .sentence-card{
+    margin-top:10px;display:flex;align-items:center;gap:10px;background:#fff;
+    border:3px solid var(--ink);border-radius:20px;padding:10px 12px;
+    box-shadow:0 4px 0 rgba(74,59,51,.12);
+  }
+  .sent-tag{
+    flex:0 0 auto;align-self:flex-start;margin-top:2px;font-size:10px;font-weight:900;letter-spacing:1px;
+    color:#FFF9EE;background:var(--ink);border-radius:8px;padding:3px 7px;
+  }
+  .sent-text{flex:1;min-width:0;margin:0;font-size:13.5px;line-height:1.65;font-weight:700;letter-spacing:.3px}
+  .listen-btn{
+    flex:0 0 44px;width:44px;height:44px;border-radius:14px;border:3px solid var(--ink);background:#FFF1D8;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 3px 0 var(--ink);
+  }
+  .listen-btn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
+
+  /* ---------- 完成彈層 ---------- */
+  .overlay{
+    position:fixed;inset:0;z-index:60;background:rgba(74,59,51,.48);
+    display:flex;align-items:center;justify-content:center;padding:22px;
+  }
+  .overlay[hidden]{display:none}
+  .badge-card{
+    width:100%;max-width:330px;background:var(--cream);border:3px solid var(--ink);border-radius:30px;
+    padding:22px 20px 20px;text-align:center;box-shadow:0 10px 0 rgba(0,0,0,.18);
+    animation:cardIn .34s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  @keyframes cardIn{from{transform:scale(.86) translateY(12px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+  .badge-ring{
+    width:104px;height:104px;margin:0 auto 12px;border-radius:50%;border:3px solid var(--ink);
+    display:flex;align-items:center;justify-content:center;background:#fff;
+    box-shadow:0 0 0 6px rgba(255,216,107,.55);animation:bob 2.4s ease-in-out infinite;
+  }
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+  .badge-ring svg{width:78px;height:78px}
+  .badge-kicker{margin:0;font-size:11px;font-weight:800;letter-spacing:2px;color:var(--muted)}
+  .badge-title{margin:6px 0 8px;font-size:23px;font-weight:900;letter-spacing:1px}
+  .badge-line{margin:0 0 18px;font-size:13px;line-height:1.7;color:#6E5A48;font-weight:600}
+  .badge-actions{display:flex;flex-direction:column;gap:9px}
+
+  /* ---------- 朗讀頁 ---------- */
+  .read-head{padding:6px 4px 14px;text-align:center}
+  .read-head h2{margin:0;font-size:30px;font-weight:900;letter-spacing:6px}
+  .read-head p{margin:8px 0 0;font-size:12px;color:var(--muted);font-weight:600}
+  .line-list{display:flex;flex-direction:column;gap:10px}
+  .line-card{
+    display:flex;align-items:flex-start;gap:10px;width:100%;text-align:left;
+    background:#fff;border:3px solid var(--ink);border-radius:20px;padding:13px 14px;
+    font-size:17px;line-height:1.75;font-weight:700;cursor:pointer;
+    box-shadow:0 4px 0 rgba(74,59,51,.16);transition:background .18s,transform .12s;
+  }
+  .line-card:active{transform:translateY(3px)}
+  .line-no{
+    flex:0 0 24px;height:24px;border-radius:50%;border:2.5px solid var(--ink);background:#FFF1D8;
+    font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;margin-top:3px;
+  }
+  .line-text{flex:1;min-width:0}
+  .line-card.on{background:#FFF3C9;box-shadow:0 4px 0 var(--ink),inset 0 0 0 3px #FFD86B}
+  .line-card.on .line-no{background:#FFD86B}
+  .read-actions{margin-top:16px;display:flex;flex-direction:column;gap:9px}
+  .read-tip{margin:10px 0 0;text-align:center;font-size:12px;color:var(--muted);font-weight:600;line-height:1.6;min-height:18px}
+
+  /* ---------- SVG 動畫 ---------- */
+  .hot{cursor:pointer}
+  .hot:active{opacity:.86}
+  .pulse{animation:pulseRing 1.9s ease-out infinite;transform-box:fill-box;transform-origin:center}
+  @keyframes pulseRing{0%{transform:scale(.72);opacity:.9}70%{transform:scale(1.06);opacity:0}100%{opacity:0}}
+  .pop-in{animation:popIn .58s cubic-bezier(.34,1.56,.64,1) both;transform-box:view-box;transform-origin:180px 250px}
+  @keyframes popIn{0%{transform:scale(.55,.7);opacity:0}65%{transform:scale(1.04,1.03);opacity:1}100%{transform:scale(1,1);opacity:1}}
+  .bird-in{animation:flyIn .7s cubic-bezier(.22,1,.36,1) both}
+  @keyframes flyIn{0%{transform:translate(70px,-46px);opacity:0}100%{transform:translate(0,0);opacity:1}}
+  .bubble-in{animation:bubbleIn .45s cubic-bezier(.34,1.56,.64,1) both;transform-box:view-box;transform-origin:180px 70px}
+  @keyframes bubbleIn{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
+  .hop-in{animation:hopIn .72s cubic-bezier(.3,1.2,.5,1) both}
+  @keyframes hopIn{0%{transform:translate(112px,-16px) scale(.9)}55%{transform:translate(52px,-52px) scale(1.02)}100%{transform:translate(0,0) scale(1)}}
+  .bend{animation:bendDown .8s cubic-bezier(.34,1.4,.64,1) both;transform-box:view-box;transform-origin:150px 244px}
+  @keyframes bendDown{0%{transform:rotate(0deg)}100%{transform:rotate(-26deg)}}
+  .leaf-fall{animation:leafFall 2.6s ease-in-out infinite}
+  @keyframes leafFall{0%{transform:translate(0,-6px) rotate(0)}50%{transform:translate(-6px,8px) rotate(18deg)}100%{transform:translate(0,-6px) rotate(0)}}
+  .tummy{animation:tummyPuff .7s cubic-bezier(.34,1.56,.64,1) both;transform-box:view-box;transform-origin:180px 232px}
+  @keyframes tummyPuff{0%{transform:scale(1,1)}45%{transform:scale(1.07,1.1)}100%{transform:scale(1,1)}}
+  .snowfall{animation:snowDrop 4s linear infinite}
+  @keyframes snowDrop{0%{transform:translateY(-6px);opacity:.2}50%{opacity:1}100%{transform:translateY(10px);opacity:.2}}
+  .sway{animation:sway 3.2s ease-in-out infinite;transform-box:view-box;transform-origin:180px 250px}
+  @keyframes sway{0%,100%{transform:rotate(-1.6deg)}50%{transform:rotate(1.6deg)}}
+
+  @media (prefers-reduced-motion: reduce){
+    .pulse,.bob,.leaf-fall,.snowfall,.sway{animation:none}
+  }
+</style>
+</head>
+<body>
+<div id="app" data-generated-by="vibe-coding-frontend-design">
+
+  <!-- 首頁 -->
+  <section class="screen active" id="screen-home">
+    <div class="home-top">
+      <div class="home-kicker">一年級語文 · 課文互動</div>
+      <h1 class="home-title">四季<span class="t2">小劇場</span></h1>
+      <p class="home-sub">點一點，聽一聽，和四季做朋友</p>
+    </div>
+
+    <div class="map-head">
+      <span>選一個季節開始</span>
+      <span id="progressText">0 / 4 枚徽章</span>
+    </div>
+    <div class="map-grid" id="mapGrid"></div>
+
+    <div id="allDoneBox"></div>
+
+    <div class="home-foot">
+      <button class="primary-btn ghost" id="readBtn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 13v-2a8 8 0 0 1 16 0v2"/><path d="M4 13h3v6H5a1 1 0 0 1-1-1z"/><path d="M20 13h-3v6h2a1 1 0 0 0 1-1z"/></svg>
+        全文朗讀
+      </button>
+      <button class="text-btn" id="resetBtn">清除進度</button>
+    </div>
+  </section>
+
+  <!-- 關卡 -->
+  <section class="screen" id="screen-level">
+    <div class="level-head">
+      <button class="icon-btn" id="backHome" aria-label="回到地圖">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7"/></svg>
+      </button>
+      <div class="season-pill" id="seasonPill">春天</div>
+      <button class="icon-btn" id="soundBtn" aria-label="開關音效">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4h4l5 4V6l-5 4z" fill="currentColor" stroke-linejoin="round"/><path d="M17 9.5a4 4 0 0 1 0 5"/><path d="M20 7a7.5 7.5 0 0 1 0 10"/></svg>
+      </button>
+    </div>
+    <div class="level-body">
+      <div class="scene-card" id="sceneWrap"></div>
+      <div class="hint-bar" id="hintBar"></div>
+      <div class="task-panel" id="taskPanel"></div>
+      <div class="sentence-card">
+        <span class="sent-tag">課文</span>
+        <p class="sent-text" id="sentText"></p>
+        <button class="listen-btn" id="replayBtn" aria-label="再聽一次句子">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#4A3B33" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 10v4h4l5 4V6l-5 4z" fill="#4A3B33" stroke-linejoin="round"/>
+            <path d="M17 9.5a4 4 0 0 1 0 5"/><path d="M20 7a7.5 7.5 0 0 1 0 10"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 全文朗讀 -->
+  <section class="screen" id="screen-read">
+    <div class="level-head">
+      <button class="icon-btn" id="readBack" aria-label="回到地圖">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7"/></svg>
+      </button>
+      <div class="season-pill">全文朗讀</div>
+      <button class="icon-btn" id="readSound" aria-label="開關音效">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4h4l5 4V6l-5 4z" fill="currentColor" stroke-linejoin="round"/><path d="M17 9.5a4 4 0 0 1 0 5"/><path d="M20 7a7.5 7.5 0 0 1 0 10"/></svg>
+      </button>
+    </div>
+    <div class="read-head">
+      <h2>四季</h2>
+      <p>點句子可以單獨聽，也可以從頭朗讀一遍</p>
+    </div>
+    <div class="line-list" id="lineList"></div>
+    <div class="read-actions">
+      <button class="primary-btn" id="playAll">開始朗讀</button>
+    </div>
+    <p class="read-tip" id="readTip"></p>
+  </section>
+
+  <!-- 完成彈層 -->
+  <div class="overlay" id="overlay" hidden>
+    <div class="badge-card">
+      <div class="badge-ring" id="badgeRing"></div>
+      <p class="badge-kicker" id="badgeKicker">春天 · 完成</p>
+      <h2 class="badge-title" id="badgeTitle">草芽小詩人</h2>
+      <p class="badge-line" id="badgeLine"></p>
+      <div class="badge-actions">
+        <button class="primary-btn" id="nextBtn">下一關</button>
+        <button class="primary-btn ghost" id="overlayHome">回到地圖</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ================= 資料 ================= */
+
+  var SEASONS = [
+    { id: 'spring', name: '春天', tag: '春', color: '#74C465', bg: '#E9F8DF', line: '草芽尖尖' },
+    { id: 'summer', name: '夏天', tag: '夏', color: '#45B4D6', bg: '#DDF2FB', line: '荷葉圓圓' },
+    { id: 'autumn', name: '秋天', tag: '秋', color: '#F0A63C', bg: '#FDF0D6', line: '穀穗彎彎' },
+    { id: 'winter', name: '冬天', tag: '冬', color: '#7E9BD1', bg: '#E9F0FB', line: '雪人大肚子一挺' }
+  ];
+
+  var LEVELS = {
+    spring: {
+      actTitle: '春天來了，土裡冒出一個小芽',
+      actDesc: '點一點小芽，看看它會長成什麼樣子。',
+      actBtn: '點一點小芽',
+      question: '草芽是什麼樣子的？',
+      options: ['尖尖的', '圓圓的', '彎彎的'],
+      answer: 0,
+      sentence: '草芽尖尖，他對小鳥說：「我是春天。」',
+      tts: '草芽尖尖，他对小鸟说：「我是春天。」',
+      badge: '草芽小詩人',
+      sfx: 'grow',
+      tip: '草芽的頭尖尖的，像一個小三角形。'
+    },
+    summer: {
+      actTitle: '池塘裡有好多荷葉',
+      actDesc: '點一點中間那片荷葉，請小青蛙跳上去。',
+      actBtn: '點一點荷葉',
+      question: '荷葉是什麼樣子的？',
+      options: ['圓圓的', '尖尖的', '方方的'],
+      answer: 0,
+      sentence: '荷葉圓圓，他對青蛙說：「我是夏天。」',
+      tts: '荷叶圆圆，他对青蛙说：「我是夏天。」',
+      badge: '荷葉小歌手',
+      sfx: 'hop',
+      tip: '荷葉像一把圓圓的小傘。'
+    },
+    autumn: {
+      actTitle: '風兒輕輕吹過來',
+      actDesc: '點一點風兒，看看穀穗會做什麼。',
+      actBtn: '點一點風兒',
+      question: '穀穗彎彎，他好像在對我們做什麼？',
+      options: ['鞠躬', '跑步', '唱歌'],
+      answer: 0,
+      sentence: '穀穗彎彎，他鞠著躬說：「我是秋天。」',
+      tts: '谷穗弯弯，他鞠着躬说：「我是秋天。」',
+      badge: '穀穗小演員',
+      sfx: 'wind',
+      tip: '穀穗成熟了，沉甸甸地彎下腰，像在鞠躬。'
+    },
+    winter: {
+      actTitle: '雪人站在雪地裡',
+      actDesc: '點一點雪人的大肚子，看看他多頑皮。',
+      actBtn: '點一點大肚子',
+      question: '雪人說：「我就是冬天。」他是一個怎樣的雪人？',
+      options: ['頑皮的', '害羞的', '生氣的'],
+      answer: 0,
+      sentence: '雪人大肚子一挺，他頑皮地說：「我就是冬天。」',
+      tts: '雪人大肚子一挺，他顽皮地说：「我就是冬天。」',
+      badge: '雪人小頑童',
+      sfx: 'boing',
+      tip: '「一挺」就是肚子往前一頂，很神氣、很頑皮。'
+    }
+  };
+
+  var LINES = [
+    { season: 'spring', text: '草芽尖尖，他對小鳥說：「我是春天。」', tts: '草芽尖尖，他对小鸟说：「我是春天。」' },
+    { season: 'summer', text: '荷葉圓圓，他對青蛙說：「我是夏天。」', tts: '荷叶圆圆，他对青蛙说：「我是夏天。」' },
+    { season: 'autumn', text: '穀穗彎彎，他鞠著躬說：「我是秋天。」', tts: '谷穗弯弯，他鞠着躬说：「我是秋天。」' },
+    { season: 'winter', text: '雪人大肚子一挺，他頑皮地說：「我就是冬天。」', tts: '雪人大肚子一挺，他顽皮地说：「我就是冬天。」' }
+  ];
+
+  var ICON_BACK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5 8 12l7 7"/></svg>';
+
+  /* ================= 音效（WebAudio 合成） ================= */
+
+  var ac = null, master = null, soundOn = true;
+
+  function initAudio() {
+    if (ac) return;
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    try {
+      ac = new AC();
+      master = ac.createGain();
+      master.gain.value = 0.5;
+      master.connect(ac.destination);
+    } catch (e) {
+      ac = null;
+    }
+  }
+
+  function unlockAudio() {
+    initAudio();
+    if (ac && ac.state === 'suspended') { ac.resume().catch(function () {}); }
+  }
+
+  function tone(freq, dur, type, vol, delay, slideTo) {
+    if (!ac || !soundOn) return;
+    var t = ac.currentTime + (delay || 0);
+    try {
+      var o = ac.createOscillator();
+      var g = ac.createGain();
+      o.type = type || 'sine';
+      o.frequency.setValueAtTime(freq, t);
+      if (slideTo) { o.frequency.exponentialRampToValueAtTime(slideTo, t + dur); }
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.linearRampToValueAtTime(vol || 0.16, t + 0.015);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g);
+      g.connect(master);
+      o.start(t);
+      o.stop(t + dur + 0.03);
+    } catch (e) {}
+  }
+
+  function noise(dur, freq, vol) {
+    if (!ac || !soundOn) return;
+    try {
+      var len = Math.floor(ac.sampleRate * dur);
+      var buf = ac.createBuffer(1, len, ac.sampleRate);
+      var data = buf.getChannelData(0);
+      for (var i = 0; i < len; i++) { data[i] = Math.random() * 2 - 1; }
+      var src = ac.createBufferSource();
+      src.buffer = buf;
+      var flt = ac.createBiquadFilter();
+      flt.type = 'bandpass';
+      flt.frequency.value = freq || 1100;
+      flt.Q.value = 0.7;
+      var g = ac.createGain();
+      g.gain.setValueAtTime(vol || 0.11, ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + dur);
+      src.connect(flt); flt.connect(g); g.connect(master);
+      src.start();
+    } catch (e) {}
+  }
+
+  function sfx(name) {
+    if (!soundOn) return;
+    initAudio();
+    if (!ac) return;
+    if (name === 'tap') { tone(720, 0.09, 'sine', 0.12); }
+    else if (name === 'pop') { tone(300, 0.16, 'sine', 0.18, 0, 780); }
+    else if (name === 'correct') {
+      tone(523, 0.12, 'sine', 0.16, 0);
+      tone(659, 0.12, 'sine', 0.16, 0.09);
+      tone(784, 0.24, 'sine', 0.17, 0.18);
+      tone(1046, 0.26, 'sine', 0.1, 0.3);
+    }
+    else if (name === 'wrong') {
+      tone(300, 0.16, 'triangle', 0.13, 0);
+      tone(210, 0.22, 'triangle', 0.12, 0.14);
+    }
+    else if (name === 'grow') {
+      tone(220, 0.36, 'sine', 0.14, 0, 620);
+      tone(880, 0.18, 'sine', 0.1, 0.3);
+      noise(0.25, 2400, 0.05);
+    }
+    else if (name === 'hop') {
+      tone(260, 0.2, 'sine', 0.16, 0, 760);
+      tone(760, 0.16, 'sine', 0.1, 0.16, 420);
+      noise(0.18, 900, 0.08);
+    }
+    else if (name === 'wind') {
+      noise(0.9, 800, 0.14);
+      noise(0.7, 1600, 0.06);
+      tone(392, 0.5, 'sine', 0.05, 0.1, 523);
+    }
+    else if (name === 'boing') {
+      tone(360, 0.3, 'sine', 0.16, 0, 900);
+      tone(900, 0.25, 'sine', 0.1, 0.18, 420);
+      noise(0.2, 3000, 0.05);
+    }
+    else if (name === 'unlock') {
+      tone(660, 0.1, 'sine', 0.12, 0);
+      tone(990, 0.14, 'sine', 0.1, 0.08);
+    }
+  }
+
+  /* ================= 語音朗讀 ================= */
+
+  var voices = [];
+
+  function loadVoices() {
+    if (!('speechSynthesis' in window)) return;
+    try { voices = window.speechSynthesis.getVoices() || []; } catch (e) { voices = []; }
+  }
+
+  function pickVoice() {
+    if (!voices.length) loadVoices();
+    if (!voices.length) return null;
+    var cn = voices.filter(function (v) {
+      return /zh[-_]?(CN|Hans)/i.test(v.lang) || /普通話|普通话|國語|国语|Chinese/i.test(v.name);
+    });
+    if (!cn.length) {
+      cn = voices.filter(function (v) { return /zh/i.test(v.lang); });
+    }
+    var female = cn.filter(function (v) {
+      return /xiaoxiao|xiaoyi|ting|hui|female|女|female/i.test(v.name);
+    });
+    return female[0] || cn[0] || null;
+  }
+
+  function canSpeak() {
+    return ('speechSynthesis' in window) && typeof window.SpeechSynthesisUtterance === 'function';
+  }
+
+  function speakLine(text, onDone) {
+    if (!canSpeak()) {
+      setTip('這個瀏覽器沒有語音朗讀功能，可以跟著文字讀一讀。');
+      if (onDone) onDone();
+      return false;
+    }
+    try {
+      window.speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = 'zh-CN';
+      u.rate = 0.82;
+      u.pitch = 1.08;
+      var v = pickVoice();
+      if (v) { u.voice = v; }
+      if (onDone) { u.onend = onDone; u.onerror = onDone; }
+      window.speechSynthesis.speak(u);
+      return true;
+    } catch (e) {
+      setTip('語音朗讀暫時無法使用，可以跟著文字讀一讀。');
+      if (onDone) onDone();
+      return false;
+    }
+  }
+
+  function stopSpeaking() {
+    if (canSpeak()) {
+      try { window.speechSynthesis.cancel(); } catch (e) {}
+    }
+  }
+
+  /* ================= 狀態 ================= */
+
+  var state = {
+    screen: 'home',
+    level: null,
+    acted: false,
+    answered: false,
+    progress: { spring: false, summer: false, autumn: false, winter: false }
+  };
+
+  function loadProgress() {
+    try {
+      var raw = window.localStorage.getItem('siji-progress-v1');
+      if (!raw) return;
+      var obj = JSON.parse(raw);
+      ['spring', 'summer', 'autumn', 'winter'].forEach(function (k) {
+        if (obj && obj[k] === true) { state.progress[k] = true; }
+      });
+    } catch (e) {}
+  }
+
+  function saveProgress() {
+    try { window.localStorage.setItem('siji-progress-v1', JSON.stringify(state.progress)); } catch (e) {}
+  }
+
+  function doneCount() {
+    return ['spring', 'summer', 'autumn', 'winter'].filter(function (k) { return state.progress[k]; }).length;
+  }
+
+  /* ================= 小工具 ================= */
+
+  function $(sel) { return document.querySelector(sel); }
+  function esc(str) {
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  var tipTimer = null;
+  function setTip(msg) {
+    var el = $('#hintBar');
+    if (!el) return;
+    el.textContent = msg;
+    if (tipTimer) clearTimeout(tipTimer);
+    tipTimer = setTimeout(function () { el.textContent = ''; }, 4200);
+  }
+
+  function setReadTip(msg) {
+    var el = $('#readTip');
+    if (el) el.textContent = msg;
+  }
+
+  /* ================= SVG 場景 ================= */
+
+  function sunRays(cx, cy, r1, r2) {
+    var out = '';
+    for (var i = 0; i < 8; i++) {
+      var a = (i * Math.PI) / 4;
+      out += '<line x1="' + (cx + Math.cos(a) * r1).toFixed(1) + '" y1="' + (cy + Math.sin(a) * r1).toFixed(1) +
+             '" x2="' + (cx + Math.cos(a) * r2).toFixed(1) + '" y2="' + (cy + Math.sin(a) * r2).toFixed(1) +
+             '" stroke="#4A3B33" stroke-width="3" stroke-linecap="round"/>';
+    }
+    return out;
+  }
+
+  function sun(cx, cy, r) {
+    return '<g>' + sunRays(cx, cy, r + 7, r + 15) +
+      '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="#FFD86B" stroke="#4A3B33" stroke-width="3"/>' +
+      '<circle cx="' + (cx - 8) + '" cy="' + (cy - 3) + '" r="2.6" fill="#4A3B33"/>' +
+      '<circle cx="' + (cx + 8) + '" cy="' + (cy - 3) + '" r="2.6" fill="#4A3B33"/>' +
+      '<path d="M' + (cx - 7) + ' ' + (cy + 6) + ' Q' + cx + ' ' + (cy + 12) + ' ' + (cx + 7) + ' ' + (cy + 6) + '" stroke="#4A3B33" stroke-width="2.2" fill="none" stroke-linecap="round"/>' +
+      '<ellipse cx="' + (cx - 15) + '" cy="' + (cy + 6) + '" rx="4.5" ry="3" fill="#FF9E7A" opacity=".7"/>' +
+      '<ellipse cx="' + (cx + 15) + '" cy="' + (cy + 6) + '" rx="4.5" ry="3" fill="#FF9E7A" opacity=".7"/>' +
+      '</g>';
+  }
+
+  function cloud(cx, cy, s) {
+    return '<g transform="translate(' + cx + ',' + cy + ') scale(' + s + ')">' +
+      '<path d="M-42 12 C-52 12 -56 2 -48 -5 C-50 -17 -38 -24 -28 -19 C-24 -31 -8 -34 0 -24 C8 -33 24 -31 28 -20 C40 -22 46 -12 42 -2 C50 3 48 12 38 12 Z" fill="#FFFFFF" stroke="#4A3B33" stroke-width="2.8" stroke-linejoin="round"/>' +
+      '</g>';
+  }
+
+  function bubble(text) {
+    return '<g class="bubble-in">' +
+      '<path d="M110 22 H250 Q262 22 262 34 V60 Q262 72 250 72 H196 L181 88 L186 72 H110 Q98 72 98 60 V34 Q98 22 110 22 Z" fill="#FFFFFF" stroke="#4A3B33" stroke-width="3" stroke-linejoin="round"/>' +
+      '<text x="180" y="54" text-anchor="middle" font-size="17" font-weight="800" fill="#4A3B33">' + esc(text) + '</text>' +
+      '</g>';
+  }
+
+  function bubbleLeft(text) {
+    return '<g class="bubble-in">' +
+      '<path d="M22 38 H132 Q146 38 146 52 V60 L166 74 L146 84 V86 Q146 92 134 92 H22 Q8 92 8 80 V50 Q8 38 22 38 Z" fill="#FFFFFF" stroke="#4A3B33" stroke-width="3" stroke-linejoin="round"/>' +
+      '<text x="76" y="72" text-anchor="middle" font-size="16" font-weight="800" fill="#4A3B33">' + esc(text) + '</text>' +
+      '</g>';
+  }
+
+  function frog(x, y, s) {
+    return '<g transform="translate(' + x + ',' + y + ') scale(' + s + ')">' +
+      '<ellipse cx="0" cy="0" rx="24" ry="19" fill="#8ED17A" stroke="#4A3B33" stroke-width="3"/>' +
+      '<ellipse cx="0" cy="8" rx="14" ry="10" fill="#DFF5C8"/>' +
+      '<circle cx="-13" cy="-15" r="10" fill="#8ED17A" stroke="#4A3B33" stroke-width="3"/>' +
+      '<circle cx="13" cy="-15" r="10" fill="#8ED17A" stroke="#4A3B33" stroke-width="3"/>' +
+      '<circle cx="-13" cy="-16" r="4.6" fill="#FFFFFF"/>' +
+      '<circle cx="13" cy="-16" r="4.6" fill="#FFFFFF"/>' +
+      '<circle cx="-13" cy="-16" r="2.2" fill="#4A3B33"/>' +
+      '<circle cx="13" cy="-16" r="2.2" fill="#4A3B33"/>' +
+      '<path d="M-8 1 Q0 8 8 1" stroke="#4A3B33" stroke-width="2.4" fill="none" stroke-linecap="round"/>' +
+      '<ellipse cx="-18" cy="1" rx="4" ry="3" fill="#FFB3B3" opacity=".85"/>' +
+      '<ellipse cx="18" cy="1" rx="4" ry="3" fill="#FFB3B3" opacity=".85"/>' +
+      '<path d="M-19 15 L-25 23 M19 15 L25 23" stroke="#4A3B33" stroke-width="3.2" stroke-linecap="round"/>' +
+      '</g>';
+  }
+
+  function bird(x, y) {
+    return '<g transform="translate(' + x + ',' + y + ')">' +
+      '<path d="M-24 6 C-36 10 -42 18 -40 24 C-31 24 -24 18 -20 12" fill="#8FD0F0" stroke="#4A3B33" stroke-width="3" stroke-linejoin="round"/>' +
+      '<ellipse cx="0" cy="2" rx="25" ry="21" fill="#8FD0F0" stroke="#4A3B33" stroke-width="3"/>' +
+      '<circle cx="15" cy="-15" r="15" fill="#A8DDF5" stroke="#4A3B33" stroke-width="3"/>' +
+      '<path d="M29 -15 L44 -10 L29 -5 Z" fill="#F5A623" stroke="#4A3B33" stroke-width="2.6" stroke-linejoin="round"/>' +
+      '<circle cx="19" cy="-19" r="3" fill="#4A3B33"/>' +
+      '<circle cx="20" cy="-20" r="1" fill="#FFFFFF"/>' +
+      '<path d="M-16 -4 C-4 -8 6 -2 4 8 C-6 10 -14 4 -16 -4 Z" fill="#6FBEE5" stroke="#4A3B33" stroke-width="2.6" stroke-linejoin="round"/>' +
+      '<ellipse cx="4" cy="10" rx="9" ry="6" fill="#B7E6F8" opacity=".9"/>' +
+      '</g>';
+  }
+
+  function sceneSpring(acted) {
+    var sprout;
+    if (acted) {
+      sprout = '<g class="pop-in">' +
+        '<path d="M180 248 V152" stroke="#4A3B33" stroke-width="38" stroke-linecap="round"/>' +
+        '<path d="M180 248 V152" stroke="#7CC96A" stroke-width="30" stroke-linecap="round"/>' +
+        '<path d="M180 198 C158 196 142 180 140 160 C162 158 178 174 180 192" fill="#8FD77A" stroke="#4A3B33" stroke-width="3" stroke-linejoin="round"/>' +
+        '<path d="M180 184 C202 180 218 164 220 144 C198 144 182 160 180 178" fill="#8FD77A" stroke="#4A3B33" stroke-width="3" stroke-linejoin="round"/>' +
+        '<circle cx="171" cy="208" r="3.2" fill="#4A3B33"/>' +
+        '<circle cx="189" cy="208" r="3.2" fill="#4A3B33"/>' +
+        '<path d="M174 216 Q180 222 186 216" stroke="#4A3B33" stroke-width="2.4" fill="none" stroke-linecap="round"/>' +
+        '<ellipse cx="161" cy="215" rx="5.5" ry="3.5" fill="#FFB3B3" opacity=".85"/>' +
+        '<ellipse cx="199" cy="215" rx="5.5" ry="3.5" fill="#FFB3B3" opacity=".85"/>' +
+        '</g>';
+    } else {
+      sprout = '<g class="hot" data-hot="1">' +
+        '<circle cx="180" cy="226" r="52" fill="#FFFFFF" fill-opacity="0.001" pointer-events="all"/>' +
+        '<path d="M180 248 C178 238 179 230 182 222" stroke="#4A3B33" stroke-width="13" stroke-linecap="round" fill="none"/>' +
+        '<path d="M180 248 C178 238 179 230 182 222" stroke="#7CC96A" stroke-width="8" stroke-linecap="round" fill="none"/>' +
+        '<path d="M180 236 C170 232 163 224 163 216 C173 216 179 224 180 232" fill="#8FD77A" stroke="#4A3B33" stroke-width="2.5" stroke-linejoin="round"/>' +
+        '<circle class="pulse" cx="181" cy="228" r="34" fill="none" stroke="#FF8A5B" stroke-width="3" stroke-dasharray="7 9" pointer-events="none"/>' +
+        '</g>';
+    }
+    return '<svg viewBox="0 0 360 260" class="scene-svg" role="img" aria-label="春天的草地，土裡長著一株小草芽，小鳥飛過來和它說話">' +
+      '<rect width="360" height="260" fill="#EAF8E1"/>' +
+      sun(304, 50, 22) +
+      cloud(64, 58, 1) +
+      '<path d="M0 214 Q60 176 120 206 Q180 172 240 204 Q300 178 360 208 L360 260 L0 260 Z" fill="#CFEBBA"/>' +
+      '<path d="M0 232 Q90 218 180 230 Q270 242 360 226 L360 260 L0 260 Z" fill="#A9DC8F"/>' +
+      '<ellipse cx="180" cy="248" rx="80" ry="24" fill="#D9B98C" stroke="#4A3B33" stroke-width="2.6"/>' +
+      sprout +
+      (acted ? '<g class="bird-in">' + bird(276, 132) + '</g>' : '') +
+      (acted ? bubble('我是春天！') : '') +
+      '<g class="sway">' +
+      '<path d="M40 246 C44 234 48 228 54 224" stroke="#5FAF4E" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+      '<path d="M40 250 C34 242 30 236 30 230" stroke="#5FAF4E" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+      '<path d="M318 250 C314 238 310 232 304 228" stroke="#5FAF4E" stroke-width="3" fill="none" stroke-linecap="round"/>' +
+      '</g>' +
+      '<circle cx="96" cy="246" r="3" fill="#FFD86B"/><circle cx="256" cy="250" r="2.5" fill="#FF9E7A"/><circle cx="126" cy="252" r="2" fill="#FFFFFF"/>' +
+      '</svg>';
+  }
+
+  function sceneSummer(acted) {
+    return '<svg viewBox="0 0 360 260" class="scene-svg" role="img" aria-label="夏天的池塘，池塘裡有圓圓的荷葉，小青蛙跳上荷葉">' +
+      '<rect width="360" height="260" fill="#DDF2FB"/>' +
+      sun(306, 46, 20) +
+      cloud(66, 52, 0.9) +
+      '<path d="M0 210 Q60 186 110 200 L110 260 L0 260 Z" fill="#BFE7B4"/>' +
+      '<path d="M360 210 Q300 186 250 204 L250 260 L360 260 Z" fill="#BFE7B4"/>' +
+      '<ellipse cx="180" cy="208" rx="192" ry="66" fill="#9FD9EE" stroke="#4A3B33" stroke-width="3"/>' +
+      '<ellipse cx="180" cy="202" rx="156" ry="48" fill="#BDE9F8" opacity=".7"/>' +
+      '<g>' +
+      '<ellipse cx="78" cy="214" rx="44" ry="21" fill="#6FC46A" stroke="#4A3B33" stroke-width="3"/>' +
+      '<path d="M50 210 Q78 200 106 210 M60 220 Q78 212 96 220" stroke="#4E9E4A" stroke-width="2.2" fill="none" stroke-linecap="round" opacity=".8"/>' +
+      '</g>' +
+      '<g>' +
+      '<ellipse cx="286" cy="204" rx="40" ry="19" fill="#6FC46A" stroke="#4A3B33" stroke-width="3"/>' +
+      '<path d="M260 200 Q286 192 312 200 M268 210 Q286 203 304 210" stroke="#4E9E4A" stroke-width="2.2" fill="none" stroke-linecap="round" opacity=".8"/>' +
+      '</g>' +
+      '<g class="' + (acted ? '' : 'hot') + '">' +
+      '<ellipse cx="180" cy="198" rx="62" ry="30" fill="#6FC46A" stroke="#4A3B33" stroke-width="3"/>' +
+      '<path d="M136 194 Q180 180 224 194 M150 206 Q180 196 210 206" stroke="#4E9E4A" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".8"/>' +
+      (acted ? '' : '<circle cx="180" cy="198" r="72" fill="#FFFFFF" fill-opacity="0.001" pointer-events="all"/>' +
+        '<circle class="pulse" cx="180" cy="198" r="70" fill="none" stroke="#FF8A5B" stroke-width="3" stroke-dasharray="7 9" pointer-events="none"/>' ) +
+      '</g>' +
+      '<g>' +
+      '<ellipse cx="62" cy="150" rx="7" ry="16" fill="#F7A8C4" stroke="#4A3B33" stroke-width="2.4" transform="rotate(-24 62 150)"/>' +
+      '<ellipse cx="76" cy="146" rx="7" ry="16" fill="#FBC4D6" stroke="#4A3B33" stroke-width="2.4" transform="rotate(22 76 146)"/>' +
+      '<ellipse cx="69" cy="140" rx="7" ry="16" fill="#F7A8C4" stroke="#4A3B33" stroke-width="2.4"/>' +
+      '<ellipse cx="69" cy="166" rx="10" ry="5" fill="#7FBF6A" stroke="#4A3B33" stroke-width="2.2"/>' +
+      '</g>' +
+      (acted
+        ? '<g class="hop-in">' + frog(180, 168, 1) + '</g>' + bubble('我是夏天！')
+        : '<g>' + frog(300, 176, 0.86) + '</g>') +
+      '<circle cx="110" cy="176" r="3" fill="#FFFFFF" opacity=".9"/>' +
+      '<circle cx="246" cy="236" r="4" fill="#FFFFFF" opacity=".7"/>' +
+      '<circle cx="128" cy="240" r="3" fill="#FFFFFF" opacity=".7"/>' +
+      '</svg>';
+  }
+
+  function sceneAutumn(acted) {
+    return '<svg viewBox="0 0 360 260" class="scene-svg" role="img" aria-label="秋天的田野，金黃的穀穗彎下腰，風兒輕輕吹過">' +
+      '<rect width="360" height="260" fill="#FDF0D6"/>' +
+      sun(300, 48, 21) +
+      cloud(70, 54, 0.85) +
+      '<path d="M0 212 Q90 198 180 210 Q270 222 360 206 L360 260 L0 260 Z" fill="#EBCB93"/>' +
+      '<path d="M0 232 Q90 220 180 230 Q270 240 360 228 L360 260 L0 260 Z" fill="#DDB878"/>' +
+      '<g>' +
+      '<path d="M306 240 V146" stroke="#A9764B" stroke-width="13" stroke-linecap="round"/>' +
+      '<path d="M306 178 L280 156 M306 194 L330 174" stroke="#A9764B" stroke-width="8" stroke-linecap="round"/>' +
+      '<ellipse cx="278" cy="152" rx="16" ry="11" fill="#F5A63C" stroke="#4A3B33" stroke-width="2.6" transform="rotate(-18 278 152)"/>' +
+      '<ellipse cx="334" cy="170" rx="15" ry="10" fill="#F7B955" stroke="#4A3B33" stroke-width="2.6" transform="rotate(16 334 170)"/>' +
+      '</g>' +
+      '<g class="' + (acted ? 'bend' : '') + '">' +
+      '<path d="M150 244 C146 210 150 176 168 152" stroke="#4A3B33" stroke-width="10" fill="none" stroke-linecap="round"/>' +
+      '<path d="M150 244 C146 210 150 176 168 152" stroke="#E0B23C" stroke-width="5.5" fill="none" stroke-linecap="round"/>' +
+      '<path d="M150 222 C132 218 122 204 122 190 C140 192 150 206 152 218" fill="#E8B93A" stroke="#4A3B33" stroke-width="2.6" stroke-linejoin="round"/>' +
+      '<path d="M152 208 C170 204 178 192 178 178 C162 180 152 192 151 204" fill="#F0C24E" stroke="#4A3B33" stroke-width="2.6" stroke-linejoin="round"/>' +
+      '<g fill="#F5C542" stroke="#4A3B33" stroke-width="2">' +
+      '<ellipse cx="170" cy="150" rx="9" ry="8"/>' +
+      '<ellipse cx="183" cy="156" rx="9" ry="8" transform="rotate(18 183 156)"/>' +
+      '<ellipse cx="192" cy="168" rx="9" ry="8" transform="rotate(28 192 168)"/>' +
+      '<ellipse cx="196" cy="182" rx="8.5" ry="7.5" transform="rotate(38 196 182)"/>' +
+      '<ellipse cx="193" cy="196" rx="8" ry="7" transform="rotate(48 193 196)"/>' +
+      '<ellipse cx="185" cy="208" rx="7.5" ry="6.6" transform="rotate(58 185 208)"/>' +
+      '</g>' +
+      '<path d="M170 150 L176 144 M184 157 L190 150 M193 169 L199 162" stroke="#A9761F" stroke-width="1.6" stroke-linecap="round" opacity=".7"/>' +
+      '</g>' +
+      (acted ? '' : '<g class="hot">' +
+        '<rect x="16" y="94" width="112" height="86" rx="26" fill="#FFFFFF" fill-opacity="0.001" pointer-events="all"/>' +
+        '<ellipse class="pulse" cx="72" cy="136" rx="44" ry="34" fill="none" stroke="#FF8A5B" stroke-width="3" stroke-dasharray="7 9" pointer-events="none"/>' +
+        '</g>') +
+      '<g stroke="#B98A4E" stroke-width="3" fill="none" stroke-linecap="round" opacity="' + (acted ? '.85' : '.35') + '">' +
+      '<path d="M36 116 Q66 100 96 112"/>' +
+      '<path d="M44 134 Q76 118 108 130"/>' +
+      '<path d="M30 152 Q58 138 86 148"/>' +
+      '</g>' +
+      '<g class="leaf-fall">' +
+      '<ellipse cx="238" cy="120" rx="9" ry="6" fill="#F5A63C" stroke="#4A3B33" stroke-width="2.2" transform="rotate(24 238 120)"/>' +
+      '<ellipse cx="262" cy="168" rx="8" ry="5" fill="#F7B955" stroke="#4A3B33" stroke-width="2.2" transform="rotate(-18 262 168)"/>' +
+      '</g>' +
+      '<circle cx="96" cy="244" r="3" fill="#F5C542"/><circle cx="238" cy="248" r="2.5" fill="#E8B93A"/>' +
+      (acted ? bubble('我是秋天！') : '') +
+      '</svg>';
+  }
+
+  function sceneWinter(acted) {
+    var snow = '<g fill="#FFFFFF" opacity=".95">' +
+      '<circle class="snowfall" cx="52" cy="80" r="3.4"/>' +
+      '<circle class="snowfall" cx="126" cy="48" r="2.6" style="animation-delay:-1.2s"/>' +
+      '<circle class="snowfall" cx="248" cy="66" r="3" style="animation-delay:-2s"/>' +
+      '<circle class="snowfall" cx="318" cy="118" r="2.6" style="animation-delay:-.6s"/>' +
+      '<circle class="snowfall" cx="290" cy="40" r="2.2" style="animation-delay:-2.6s"/>' +
+      '<circle class="snowfall" cx="88" cy="128" r="2.6" style="animation-delay:-1.8s"/>' +
+      '</g>';
+    return '<svg viewBox="0 0 360 260" class="scene-svg" role="img" aria-label="冬天的雪地，一個挺著大肚子的雪人頑皮地笑著">' +
+      '<rect width="360" height="260" fill="#E9F0FB"/>' +
+      '<circle cx="304" cy="46" r="20" fill="#FFF3C9" stroke="#4A3B33" stroke-width="3" opacity=".9"/>' +
+      '<path d="M0 214 Q70 196 130 208 Q200 222 260 206 Q310 194 360 210 L360 260 L0 260 Z" fill="#FFFFFF"/>' +
+      '<ellipse cx="180" cy="244" rx="176" ry="34" fill="#F7FBFF"/>' +
+      '<g class="' + (acted ? 'tummy' : '') + '">' +
+      '<ellipse cx="180" cy="206" rx="58" ry="50" fill="#FFFFFF" stroke="#4A3B33" stroke-width="3"/>' +
+      '<ellipse cx="180" cy="150" rx="38" ry="34" fill="#FFFFFF" stroke="#4A3B33" stroke-width="3"/>' +
+      '<circle cx="180" cy="104" r="29" fill="#FFFFFF" stroke="#4A3B33" stroke-width="3"/>' +
+      '<path d="M180 88 V74" stroke="#4A3B33" stroke-width="4" stroke-linecap="round"/>' +
+      '<circle cx="171" cy="102" r="3.4" fill="#4A3B33"/>' +
+      '<circle cx="189" cy="102" r="3.4" fill="#4A3B33"/>' +
+      '<circle cx="172" cy="101" r="1.1" fill="#FFFFFF"/>' +
+      '<circle cx="190" cy="101" r="1.1" fill="#FFFFFF"/>' +
+      '<path d="M180 108 L200 114 L180 118 Z" fill="#F08A3C" stroke="#4A3B33" stroke-width="2.4" stroke-linejoin="round"/>' +
+      '<path d="M171 122 Q180 129 189 122" stroke="#4A3B33" stroke-width="2.4" fill="none" stroke-linecap="round"/>' +
+      '<ellipse cx="160" cy="116" rx="6" ry="4" fill="#FFB3B3" opacity=".8"/>' +
+      '<ellipse cx="200" cy="116" rx="6" ry="4" fill="#FFB3B3" opacity=".8"/>' +
+      '<path d="M143 146 Q180 160 217 146 L219 160 Q180 174 141 160 Z" fill="#E86A6A" stroke="#4A3B33" stroke-width="2.6" stroke-linejoin="round"/>' +
+      '<path d="M206 158 L216 184 L200 178 Z" fill="#E86A6A" stroke="#4A3B33" stroke-width="2.4" stroke-linejoin="round"/>' +
+      '<circle cx="180" cy="188" r="4" fill="#4A3B33"/>' +
+      '<circle cx="180" cy="212" r="4" fill="#4A3B33"/>' +
+      '<circle cx="180" cy="236" r="4" fill="#4A3B33"/>' +
+      '<path d="M122 168 L96 148 M122 176 L92 176" stroke="#8A6A4B" stroke-width="4" stroke-linecap="round"/>' +
+      '<path d="M238 168 L264 148 M238 176 L268 176" stroke="#8A6A4B" stroke-width="4" stroke-linecap="round"/>' +
+      '<ellipse cx="180" cy="72" rx="30" ry="7" fill="#4A3B33"/>' +
+      '<path d="M154 72 V52 Q154 44 162 44 H198 Q206 44 206 52 V72 Z" fill="#5B7FC7" stroke="#4A3B33" stroke-width="2.8" stroke-linejoin="round"/>' +
+      '<path d="M152 66 H208" stroke="#FFF3C9" stroke-width="5"/>' +
+      (acted ? '<circle cx="180" cy="206" r="80" fill="#FFFFFF" fill-opacity="0.001" pointer-events="none"/>' : '') +
+      '</g>' +
+      (acted ? '' :
+        '<g class="hot" data-hot="1">' +
+        '<ellipse cx="180" cy="206" rx="62" ry="54" fill="#FFFFFF" fill-opacity="0.001" pointer-events="all"/>' +
+        '<ellipse class="pulse" cx="180" cy="206" rx="66" ry="58" fill="none" stroke="#FF8A5B" stroke-width="3" stroke-dasharray="7 9" pointer-events="none"/>' +
+        '</g>') +
+      snow +
+      (acted ? bubbleLeft('我就是冬天！') : '') +
+      '<ellipse cx="80" cy="234" rx="22" ry="8" fill="#FFFFFF" opacity=".9"/>' +
+      '<ellipse cx="286" cy="242" rx="26" ry="9" fill="#FFFFFF" opacity=".9"/>' +
+      '</svg>';
+  }
+
+  var SCENES = {
+    spring: sceneSpring,
+    summer: sceneSummer,
+    autumn: sceneAutumn,
+    winter: sceneWinter
+  };
+
+  /* ================= 首頁繪製 ================= */
+
+  function miniSpring() {
+    return '<svg viewBox="0 0 120 84" aria-hidden="true">' +
+      '<circle cx="96" cy="20" r="11" fill="#FFD86B" stroke="#4A3B33" stroke-width="2.4"/>' +
+      '<path d="M0 64 Q30 52 60 62 Q90 72 120 60 L120 84 L0 84 Z" fill="#A9DC8F"/>' +
+      '<ellipse cx="58" cy="76" rx="34" ry="9" fill="#D9B98C" stroke="#4A3B33" stroke-width="2"/>' +
+      '<path d="M58 76 V42" stroke="#4A3B33" stroke-width="14" stroke-linecap="round"/>' +
+      '<path d="M58 76 V42" stroke="#7CC96A" stroke-width="10" stroke-linecap="round"/>' +
+      '<path d="M58 56 C48 54 42 46 40 38 C50 38 57 46 58 54" fill="#8FD77A" stroke="#4A3B33" stroke-width="2" stroke-linejoin="round"/>' +
+      '<circle cx="53" cy="62" r="1.8" fill="#4A3B33"/><circle cx="63" cy="62" r="1.8" fill="#4A3B33"/>' +
+      '<path d="M55 66 Q58 69 61 66" stroke="#4A3B33" stroke-width="1.6" fill="none" stroke-linecap="round"/>' +
+      '</svg>';
+  }
+
+  function miniSummer() {
+    return '<svg viewBox="0 0 120 84" aria-hidden="true">' +
+      '<rect width="120" height="84" fill="#DDF2FB"/>' +
+      '<circle cx="98" cy="18" r="10" fill="#FFD86B" stroke="#4A3B33" stroke-width="2.4"/>' +
+      '<ellipse cx="60" cy="66" rx="62" ry="24" fill="#9FD9EE" stroke="#4A3B33" stroke-width="2.4"/>' +
+      '<ellipse cx="60" cy="62" rx="32" ry="15" fill="#6FC46A" stroke="#4A3B33" stroke-width="2.4"/>' +
+      '<path d="M40 60 Q60 54 80 60" stroke="#4E9E4A" stroke-width="2" fill="none"/>' +
+      '<g transform="translate(60,48) scale(.56)">' +
+      '<ellipse cx="0" cy="0" rx="24" ry="19" fill="#8ED17A" stroke="#4A3B33" stroke-width="3"/>' +
+      '<circle cx="-13" cy="-15" r="10" fill="#8ED17A" stroke="#4A3B33" stroke-width="3"/>' +
+      '<circle cx="13" cy="-15" r="10" fill="#8ED17A" stroke="#4A3B33" stroke-width="3"/>' +
+      '<circle cx="-13" cy="-16" r="4" fill="#FFFFFF"/><circle cx="13" cy="-16" r="4" fill="#FFFFFF"/>' +
+      '<circle cx="-13" cy="-16" r="2" fill="#4A3B33"/><circle cx="13" cy="-16" r="2" fill="#4A3B33"/>' +
+      '<path d="M-8 1 Q0 8 8 1" stroke="#4A3B33" stroke-width="2.4" fill="none" stroke-linecap="round"/>' +
+      '</g></svg>';
+  }
+
+  function miniAutumn() {
+    return '<svg viewBox="0 0 120 84" aria-hidden="true">' +
+      '<rect width="120" height="84" fill="#FDF0D6"/>' +
+      '<circle cx="98" cy="18" r="10" fill="#FFD86B" stroke="#4A3B33" stroke-width="2.4"/>' +
+      '<path d="M0 64 Q30 54 60 64 Q90 74 120 62 L120 84 L0 84 Z" fill="#EBCB93"/>' +
+      '<path d="M54 78 C50 60 54 42 66 30" stroke="#4A3B33" stroke-width="8" fill="none" stroke-linecap="round"/>' +
+      '<path d="M54 78 C50 60 54 42 66 30" stroke="#E0B23C" stroke-width="4.5" fill="none" stroke-linecap="round"/>' +
+      '<g fill="#F5C542" stroke="#4A3B33" stroke-width="2">' +
+      '<ellipse cx="68" cy="28" rx="7" ry="6"/><ellipse cx="77" cy="34" rx="7" ry="6" transform="rotate(20 77 34)"/>' +
+      '<ellipse cx="82" cy="44" rx="7" ry="6" transform="rotate(34 82 44)"/><ellipse cx="82" cy="55" rx="6.5" ry="5.6" transform="rotate(48 82 55)"/>' +
+      '</g>' +
+      '<path d="M54 56 C42 54 36 46 34 38 C46 40 52 48 54 54" fill="#E8B93A" stroke="#4A3B33" stroke-width="2" stroke-linejoin="round"/>' +
+      '<path d="M16 30 Q28 22 40 30" stroke="#B98A4E" stroke-width="2.4" fill="none" stroke-linecap="round"/>' +
+      '</svg>';
+  }
+
+  function miniWinter() {
+    return '<svg viewBox="0 0 120 84" aria-hidden="true">' +
+      '<rect width="120" height="84" fill="#E9F0FB"/>' +
+      '<path d="M0 68 Q30 58 60 66 Q90 74 120 64 L120 84 L0 84 Z" fill="#FFFFFF"/>' +
+      '<ellipse cx="60" cy="66" rx="26" ry="22" fill="#FFFFFF" stroke="#4A3B33" stroke-width="2.6"/>' +
+      '<circle cx="60" cy="40" r="18" fill="#FFFFFF" stroke="#4A3B33" stroke-width="2.6"/>' +
+      '<circle cx="54" cy="39" r="2.4" fill="#4A3B33"/><circle cx="66" cy="39" r="2.4" fill="#4A3B33"/>' +
+      '<path d="M60 43 L70 46 L60 49 Z" fill="#F08A3C" stroke="#4A3B33" stroke-width="1.8" stroke-linejoin="round"/>' +
+      '<path d="M54 53 Q60 57 66 53" stroke="#4A3B33" stroke-width="2" fill="none" stroke-linecap="round"/>' +
+      '<path d="M44 33 Q60 41 76 33 L77 41 Q60 49 43 41 Z" fill="#E86A6A" stroke="#4A3B33" stroke-width="2"/>' +
+      '<path d="M42 26 H78" stroke="#4A3B33" stroke-width="7" stroke-linecap="round"/>' +
+      '<circle cx="60" cy="58" r="2.6" fill="#4A3B33"/><circle cx="60" cy="66" r="2.6" fill="#4A3B33"/>' +
+      '<circle cx="26" cy="24" r="2" fill="#FFFFFF"/><circle cx="96" cy="18" r="2.4" fill="#FFFFFF"/>' +
+      '</svg>';
+  }
+
+  var MINIS = { spring: miniSpring, summer: miniSummer, autumn: miniAutumn, winter: miniWinter };
+
+  function renderHome() {
+    var grid = $('#mapGrid');
+    var html = '';
+    SEASONS.forEach(function (s) {
+      var done = !!state.progress[s.id];
+      html += '<button class="season-card' + (done ? ' done' : '') + '" data-level="' + s.id + '" ' +
+        'style="--bg:' + s.bg + '" aria-label="進入' + s.name + '關卡">' +
+        '<span class="sc-tag" style="color:' + s.color + '">' + s.tag + '</span>' +
+        '<span class="sc-star">★</span>' +
+        '<span class="sc-illus">' + MINIS[s.id]() + '</span>' +
+        '<span class="sc-name">' + s.name + '</span>' +
+        '<span class="sc-line">' + s.line + '</span>' +
+        '</button>';
+    });
+    grid.innerHTML = html;
+
+    $('#progressText').textContent = doneCount() + ' / 4 枚徽章';
+
+    var box = $('#allDoneBox');
+    if (doneCount() === 4) {
+      box.innerHTML = '<div class="all-done">四季小達人！四個季節都收集完成，<br>去聽一聽全文朗讀吧。</div>';
+    } else {
+      box.innerHTML = '';
+    }
+
+  }
+
+  /* ================= 畫面切換 ================= */
+
+  function showScreen(name) {
+    state.screen = name;
+    var screens = document.querySelectorAll('.screen');
+    for (var i = 0; i < screens.length; i++) {
+      screens[i].classList.toggle('active', screens[i].id === 'screen-' + name);
+    }
+    var app = $('#app');
+    if (app) {
+      var act = document.querySelector('.screen.active');
+      if (act) act.scrollTop = 0;
+    }
+    if (name !== 'level') {
+      stopSpeaking();
+      stopReading();
+    }
+  }
+
+  /* ================= 關卡 ================= */
+
+  function openLevel(id) {
+    if (!LEVELS[id]) return;
+    unlockAudio();
+    state.level = id;
+    state.acted = false;
+    state.answered = false;
+
+    var s = SEASONS.filter(function (x) { return x.id === id; })[0];
+    var pill = $('#seasonPill');
+    pill.textContent = s.name;
+    pill.style.background = s.bg;
+    pill.style.borderColor = s.color;
+
+    $('#hintBar').textContent = '';
+    $('#overlay').hidden = true;
+    renderLevel();
+    showScreen('level');
+  }
+
+  function renderLevel() {
+    var id = state.level;
+    if (!id) return;
+    var L = LEVELS[id];
+
+    $('#sceneWrap').innerHTML = SCENES[id](state.acted);
+    $('#sentText').textContent = L.sentence;
+
+    var panel = $('#taskPanel');
+    if (!state.acted) {
+      panel.innerHTML =
+        '<p class="task-q">' + esc(L.actTitle) + '</p>' +
+        '<p class="task-desc">' + esc(L.actDesc) + '</p>' +
+        '<button class="primary-btn" id="actBtn">' + esc(L.actBtn) + '</button>';
+      var actBtn = $('#actBtn');
+      if (actBtn) actBtn.addEventListener('click', doAction);
+    } else {
+      panel.innerHTML =
+        '<p class="task-q">' + esc(L.question) + '</p>' +
+        '<div class="options" id="options">' +
+        L.options.map(function (o, i) {
+          return '<button class="opt" data-i="' + i + '">' + esc(o) + '</button>';
+        }).join('') +
+        '</div>';
+      var opts = panel.querySelectorAll('.opt');
+      for (var i = 0; i < opts.length; i++) {
+        opts[i].addEventListener('click', function () {
+          answer(parseInt(this.getAttribute('data-i'), 10));
+        });
+      }
+    }
+  }
+
+  function doAction() {
+    if (!state.level || state.acted) return;
+    var id = state.level;
+    var L = LEVELS[id];
+    state.acted = true;
+
+    unlockAudio();
+    sfx(L.sfx);
+    renderLevel();
+    speakLine(L.tts);
+    setTip('聽一聽句子，再回答下面的問題。');
+  }
+
+  function answer(i) {
+    var L = LEVELS[state.level];
+    if (!L || state.answered) return;
+    var buttons = document.querySelectorAll('#options .opt');
+    if (!buttons.length) return;
+
+    if (i === L.answer) {
+      state.answered = true;
+      buttons[i].classList.add('correct');
+      for (var k = 0; k < buttons.length; k++) { buttons[k].disabled = true; }
+      sfx('correct');
+      setTip('答對了！' + L.tip);
+      speakLine(L.tts);
+      setTimeout(function () { completeLevel(); }, 760);
+    } else {
+      buttons[i].classList.add('wrong');
+      sfx('wrong');
+      setTip('再想一想，聽一聽句子裡是怎麼說的。');
+      setTimeout(function () { buttons[i].classList.remove('wrong'); }, 480);
+    }
+  }
+
+  function completeLevel() {
+    var id = state.level;
+    if (!id) return;
+    var L = LEVELS[id];
+    var s = SEASONS.filter(function (x) { return x.id === id; })[0];
+
+    state.progress[id] = true;
+    saveProgress();
+
+    $('#badgeRing').innerHTML = MINIS[id]();
+    $('#badgeKicker').textContent = s.name + ' · 完成';
+    $('#badgeTitle').textContent = L.badge;
+    $('#badgeLine').textContent = L.sentence;
+
+    var idx = ['spring', 'summer', 'autumn', 'winter'].indexOf(id);
+    var next = ['spring', 'summer', 'autumn', 'winter'][idx + 1];
+    var nextBtn = $('#nextBtn');
+    if (next) {
+      nextBtn.textContent = '下一關：' + SEASONS.filter(function (x) { return x.id === next; })[0].name;
+      nextBtn.setAttribute('data-next', next);
+    } else {
+      nextBtn.textContent = '去聽全文朗讀';
+      nextBtn.setAttribute('data-next', 'read');
+    }
+
+    $('#overlay').hidden = false;
+    sfx('unlock');
+    renderHome();
+  }
+
+  /* ================= 朗讀頁 ================= */
+
+  var readIdx = 0;
+  var reading = false;
+
+  function renderLines() {
+    var list = $('#lineList');
+    var html = '';
+    LINES.forEach(function (line, i) {
+      var s = SEASONS.filter(function (x) { return x.id === line.season; })[0];
+      html += '<button class="line-card" data-i="' + i + '" style="--c:' + s.color + '">' +
+        '<span class="line-no">' + (i + 1) + '</span>' +
+        '<span class="line-text">' + esc(line.text) + '</span>' +
+        '</button>';
+    });
+    list.innerHTML = html;
+    var cards = list.querySelectorAll('.line-card');
+    for (var i = 0; i < cards.length; i++) {
+      cards[i].addEventListener('click', function () {
+        var idx = parseInt(this.getAttribute('data-i'), 10);
+        stopReading();
+        highlightLine(idx);
+        unlockAudio();
+        speakLine(LINES[idx].tts);
+        setReadTip('正在朗讀第 ' + (idx + 1) + ' 句');
+      });
+    }
+  }
+
+  function highlightLine(idx) {
+    var cards = document.querySelectorAll('.line-card');
+    for (var i = 0; i < cards.length; i++) {
+      cards[i].classList.toggle('on', i === idx);
+    }
+    if (cards[idx] && cards[idx].scrollIntoView) {
+      cards[idx].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+  }
+
+  function clearHighlight() {
+    var cards = document.querySelectorAll('.line-card');
+    for (var i = 0; i < cards.length; i++) { cards[i].classList.remove('on'); }
+  }
+
+  function updatePlayBtn() {
+    var btn = $('#playAll');
+    if (!btn) return;
+    btn.textContent = reading ? '停止朗讀' : '開始朗讀';
+  }
+
+  function playAll() {
+    if (reading) { stopReading(); return; }
+    if (!canSpeak()) {
+      setReadTip('這個瀏覽器不支援語音朗讀，可以跟著文字讀一讀。');
+      return;
+    }
+    unlockAudio();
+    reading = true;
+    readIdx = 0;
+    updatePlayBtn();
+    setReadTip('正在朗讀全文⋯⋯');
+    speakIndex();
+  }
+
+  function speakIndex() {
+    if (!reading) return;
+    if (readIdx >= LINES.length) {
+      stopReading();
+      setReadTip('朗讀完了，你也可以自己讀一遍。');
+      return;
+    }
+    highlightLine(readIdx);
+    try {
+      var u = new SpeechSynthesisUtterance(LINES[readIdx].tts);
+      u.lang = 'zh-CN';
+      u.rate = 0.82;
+      u.pitch = 1.08;
+      var v = pickVoice();
+      if (v) { u.voice = v; }
+      u.onend = function () {
+        if (!reading) return;
+        readIdx += 1;
+        setTimeout(speakIndex, 280);
+      };
+      u.onerror = function () {
+        if (!reading) return;
+        stopReading();
+        setReadTip('語音朗讀中斷了，可以再按一次開始朗讀。');
+      };
+      window.speechSynthesis.speak(u);
+    } catch (e) {
+      stopReading();
+      setReadTip('語音朗讀暫時無法使用。');
+    }
+  }
+
+  function stopReading() {
+    reading = false;
+    updatePlayBtn();
+    stopSpeaking();
+  }
+
+  function stopAll() {
+    stopReading();
+  }
+
+  /* ================= 事件綁定 ================= */
+
+  loadProgress();
+
+  $('#mapGrid').addEventListener('click', function (e) {
+    var card = e.target.closest ? e.target.closest('.season-card') : null;
+    if (card) { openLevel(card.getAttribute('data-level')); }
+  });
+
+  $('#backHome').addEventListener('click', function () {
+    stopSpeaking();
+    $('#overlay').hidden = true;
+    showScreen('home');
+    renderHome();
+  });
+
+  $('#readBtn').addEventListener('click', function () {
+    unlockAudio();
+    renderLines();
+    clearHighlight();
+    updatePlayBtn();
+    setReadTip('');
+    showScreen('read');
+  });
+
+  $('#readBack').addEventListener('click', function () {
+    stopReading();
+    clearHighlight();
+    showScreen('home');
+    renderHome();
+  });
+
+  $('#playAll').addEventListener('click', function () {
+    playAll();
+  });
+
+  $('#replayBtn').addEventListener('click', function () {
+    if (!state.level) return;
+    unlockAudio();
+    sfx('tap');
+    speakLine(LEVELS[state.level].tts);
+    setTip('再聽一次，跟著讀一讀。');
+  });
+
+  $('#sceneWrap').addEventListener('click', function (e) {
+    var hot = e.target.closest ? e.target.closest('.hot') : null;
+    if (hot) { doAction(); }
+  });
+
+  $('#soundBtn').addEventListener('click', function () {
+    toggleSound(this);
+  });
+  $('#readSound').addEventListener('click', function () {
+    toggleSound(this);
+  });
+
+  function toggleSound(btn) {
+    soundOn = !soundOn;
+    if (master) { master.gain.value = soundOn ? 0.5 : 0; }
+    btn.classList.toggle('off', !soundOn);
+    if (soundOn) { unlockAudio(); sfx('tap'); }
+  }
+
+  $('#overlayHome').addEventListener('click', function () {
+    $('#overlay').hidden = true;
+    showScreen('home');
+    renderHome();
+  });
+
+  $('#nextBtn').addEventListener('click', function () {
+    var next = this.getAttribute('data-next');
+    $('#overlay').hidden = true;
+    if (next === 'read') {
+      renderLines();
+      clearHighlight();
+      updatePlayBtn();
+      setReadTip('');
+      showScreen('read');
+      setTimeout(function () { speakLine(LINES[0].tts); }, 320);
+    } else if (next) {
+      openLevel(next);
+    } else {
+      showScreen('home');
+      renderHome();
+    }
+  });
+
+  var resetArmed = false;
+  var resetTimer = null;
+  $('#resetBtn').addEventListener('click', function () {
+    if (!resetArmed) {
+      resetArmed = true;
+      this.textContent = '再點一次，確認清除進度';
+      var self = this;
+      resetTimer = setTimeout(function () {
+        resetArmed = false;
+        self.textContent = '清除進度';
+      }, 3200);
+      return;
+    }
+    if (resetTimer) clearTimeout(resetTimer);
+    resetArmed = false;
+    this.textContent = '清除進度';
+    state.progress = { spring: false, summer: false, autumn: false, winter: false };
+    saveProgress();
+    renderHome();
+  });
+
+  window.addEventListener('resize', function () {
+    // 佈局由 CSS 自適應，這裡只同步一次目前畫面
+    if (state.screen === 'home') { renderHome(); }
+  });
+
+  if ('speechSynthesis' in window) {
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+  }
+
+  // 首次手勢解鎖音訊
+  document.addEventListener('pointerdown', function once() {
+    unlockAudio();
+    document.removeEventListener('pointerdown', once);
+  }, { once: true });
+
+  renderHome();
+
+  window.addEventListener('beforeunload', function () {
+    stopSpeaking();
+  });
+})();
+</script>
+</body>
+</html>
